@@ -23,8 +23,8 @@ export default function HomeScreen({ navigation }) {
   }, [navigation]);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         {/* Header Hero */}
         <View style={styles.heroCard}>
@@ -159,7 +159,7 @@ export default function HomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: colors.background,
   },
   container: {
     flex: 1,
