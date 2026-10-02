@@ -169,13 +169,6 @@ export default function HomeScreen({ navigation }) {
                 <View style={styles.ahspBadge}>
                   <Text style={styles.ahspBadgeText}>AHSP PUPR 2025/2026</Text>
                 </View>
-                <TouchableOpacity
-                  style={styles.infoDisclaimerBtn}
-                  onPress={() => navigation.navigate('DisclaimerScreen')}
-                >
-                  <Ionicons name="information-circle-outline" size={14} color="#64748b" />
-                  <Text style={styles.infoDisclaimerText}>Disclaimer</Text>
-                </TouchableOpacity>
               </View>
               <Text style={styles.brandDesc}>
                 Aplikasi Estimator Konstruksi & Perhitungan Rencana Anggaran Biaya Otomatis
@@ -429,23 +422,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '800',
     color: '#b45309',
-  },
-  infoDisclaimerBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    backgroundColor: '#f1f5f9',
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    marginLeft: 6,
-  },
-  infoDisclaimerText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#64748b',
   },
   brandDesc: {
     fontSize: 11,

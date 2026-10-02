@@ -5,46 +5,18 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
-import { startSession, clearAppSession } from '../utils/sessionManager';
+import { startSession } from '../utils/sessionManager';
 import RABProLogo from '../components/RABProLogo';
 
-export default function DisclaimerScreen({ navigation, onContinue, onClearSession }) {
-  const isFromModal = navigation?.canGoBack && navigation.canGoBack();
-
+export default function DisclaimerScreen({ onContinue }) {
   const handleProceed = () => {
     startSession();
     if (onContinue) {
       onContinue();
-    } else if (isFromModal) {
-      navigation.goBack();
-    } else if (navigation) {
-      // Navigasi aman ke tab Home di dalam MainTabs navigator
-      navigation.navigate('MainTabs', { screen: 'HomeTab' });
     }
-  };
-
-  const handleManualClearSession = () => {
-    Alert.alert(
-      'Hapus Sesi Aplikasi',
-      'Apakah Anda yakin ingin menghapus sesi aktif dan kembali ke tampilan disclaimer pembuka?',
-      [
-        { text: 'Batal', style: 'cancel' },
-        {
-          text: 'Hapus Sesi',
-          style: 'destructive',
-          onPress: () => {
-            clearAppSession();
-            if (onClearSession) {
-              onClearSession();
-            }
-          },
-        },
-      ]
-    );
   };
 
   return (
@@ -62,14 +34,6 @@ export default function DisclaimerScreen({ navigation, onContinue, onClearSessio
             </View>
             <View style={styles.appBrandRow}>
               <RABProLogo size={32} textSize={20} textColor={colors.primaryDark} />
-              {isFromModal ? (
-                <TouchableOpacity
-                  style={styles.btnClose}
-                  onPress={() => navigation.goBack()}
-                >
-                  <Ionicons name="close" size={20} color="#64748b" />
-                </TouchableOpacity>
-              ) : null}
             </View>
           </View>
 
@@ -113,30 +77,14 @@ export default function DisclaimerScreen({ navigation, onContinue, onClearSessio
               onPress={handleProceed}
             >
               <Ionicons
-                name={isFromModal ? 'arrow-back' : 'checkmark-done'}
+                name="checkmark-done"
                 size={20}
                 color="#ffffff"
               />
               <Text style={styles.btnProceedText}>
-                {isFromModal
-                  ? 'Tutup & Kembali ke Aplikasi'
-                  : 'Saya Mengerti & Setuju — Buka Aplikasi'}
+                Saya Mengerti & Setuju — Buka Aplikasi
               </Text>
             </TouchableOpacity>
-
-            {/* Opsi Hapus Sesi jika dibuka dari dalam aplikasi */}
-            {isFromModal ? (
-              <TouchableOpacity
-                style={styles.btnClearSession}
-                activeOpacity={0.85}
-                onPress={handleManualClearSession}
-              >
-                <Ionicons name="log-out-outline" size={18} color="#ef4444" />
-                <Text style={styles.btnClearSessionText}>
-                  Hapus Sesi & Keluar
-                </Text>
-              </TouchableOpacity>
-            ) : null}
           </View>
         </View>
       </ScrollView>
@@ -201,13 +149,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
-  btnClose: {
-    padding: 4,
-    backgroundColor: '#f1f5f9',
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
   paragraphBox: {
     flexDirection: 'row',
     backgroundColor: '#fffdf5',
@@ -240,7 +181,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    gap: 10,
     marginTop: 10,
   },
   btnProceed: {
@@ -262,21 +202,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
     letterSpacing: 0.3,
-  },
-  btnClearSession: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#fee2e2',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#fca5a5',
-  },
-  btnClearSessionText: {
-    color: '#dc2626',
-    fontSize: 12,
-    fontWeight: '800',
   },
 });

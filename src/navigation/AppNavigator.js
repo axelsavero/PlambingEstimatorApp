@@ -222,24 +222,7 @@ export default function AppNavigator() {
           )}
         </Stack.Screen>
       ) : (
-        <>
-          <Stack.Screen name="MainTabs">
-            {(props) => (
-              <MainTabs
-                {...props}
-                screenProps={{ onClearSession: handleClearSession }}
-              />
-            )}
-          </Stack.Screen>
-          <Stack.Screen name="DisclaimerScreen">
-            {(props) => (
-              <DisclaimerScreen
-                {...props}
-                onClearSession={handleClearSession}
-              />
-            )}
-          </Stack.Screen>
-        </>
+        <Stack.Screen name="MainTabs" component={MainTabs} />
       )}
     </Stack.Navigator>
   );
