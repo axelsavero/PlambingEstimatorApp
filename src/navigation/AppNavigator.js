@@ -10,7 +10,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
-import { getDisclaimerStatus } from '../utils/rabStorage';
+import { isSessionValid, startSession, clearAppSession } from '../utils/sessionManager';
 
 // Screens
 import DisclaimerScreen from '../screens/DisclaimerScreen';
@@ -197,34 +197,54 @@ function MainTabs() {
 }
 
 export default function AppNavigator() {
-  const [initialRoute, setInitialRoute] = useState(null);
 
-  useEffect(() => {
-    (async () => {
-      const accepted = await getDisclaimerStatus();
-      setInitialRoute(accepted ? 'MainTabs' : 'DisclaimerIntro');
-    })();
-  }, []);
+  const [sessionActive, setSessionActive] = useState(isSessionValid());
 
-  if (!initialRoute) return null;
+  const handleStartSession = () => {
+    startSession();
+    setSessionActive(true);
+  };
+
+  const handleClearSession = () => {
+    clearAppSession();
+    setSessionActive(false);
+  };
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {initialRoute === 'DisclaimerIntro' ? (
+      {!sessionActive ? (
         <Stack.Screen name="DisclaimerIntro">
           {(props) => (
             <DisclaimerScreen
               {...props}
-              onContinue={() => props.navigation.replace('MainTabs')}
+              onContinue={handleStartSession}
             />
           )}
         </Stack.Screen>
-      ) : null}
-      <Stack.Screen name="MainTabs" component={MainTabs} />
-      <Stack.Screen name="DisclaimerScreen" component={DisclaimerScreen} />
+      ) : (
+        <>
+          <Stack.Screen name="MainTabs">
+            {(props) => (
+              <MainTabs
+                {...props}
+                screenProps={{ onClearSession: handleClearSession }}
+              />
+            )}
+          </Stack.Screen>
+          <Stack.Screen name="DisclaimerScreen">
+            {(props) => (
+              <DisclaimerScreen
+                {...props}
+                onClearSession={handleClearSession}
+              />
+            )}
+          </Stack.Screen>
+        </>
+      )}
     </Stack.Navigator>
   );
 }
+
 
 const styles = StyleSheet.create({
   sheetTabBarContainer: {

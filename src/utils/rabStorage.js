@@ -17,6 +17,7 @@ import {
   REKAP_RAB_BASELINE,
 } from './constructionCalculations';
 import { isSheetModified } from './modificationHelper';
+import { isSessionValid, startSession } from './sessionManager';
 
 const STORAGE_KEYS = {
   PROJECT_INPUTS: '@rabpro_project_inputs',
@@ -83,21 +84,13 @@ export const saveRoofChoice = async (choice) => {
 };
 
 export const getDisclaimerStatus = async () => {
-  try {
-    const val = await AsyncStorage.getItem(STORAGE_KEYS.DISCLAIMER_ACCEPTED);
-    return val === 'true';
-  } catch (e) {
-    return false;
-  }
+  return isSessionValid();
 };
 
 export const setDisclaimerAccepted = async () => {
-  try {
-    await AsyncStorage.setItem(STORAGE_KEYS.DISCLAIMER_ACCEPTED, 'true');
-  } catch (e) {
-    console.error('Error setting disclaimer status', e);
-  }
+  startSession();
 };
+
 
 // Generates dynamic Rekap RAB based on current active inputs and roof choice
 export const generateCurrentRekapRAB = async () => {

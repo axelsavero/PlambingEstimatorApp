@@ -5,17 +5,18 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
-import { setDisclaimerAccepted } from '../utils/rabStorage';
+import { startSession, clearAppSession } from '../utils/sessionManager';
 import RABProLogo from '../components/RABProLogo';
 
-export default function DisclaimerScreen({ navigation, onContinue }) {
+export default function DisclaimerScreen({ navigation, onContinue, onClearSession }) {
   const isFromModal = navigation?.canGoBack && navigation.canGoBack();
 
-  const handleProceed = async () => {
-    await setDisclaimerAccepted();
+  const handleProceed = () => {
+    startSession();
     if (onContinue) {
       onContinue();
     } else if (isFromModal) {
@@ -24,6 +25,26 @@ export default function DisclaimerScreen({ navigation, onContinue }) {
       // Navigasi aman ke tab Home di dalam MainTabs navigator
       navigation.navigate('MainTabs', { screen: 'HomeTab' });
     }
+  };
+
+  const handleManualClearSession = () => {
+    Alert.alert(
+      'Hapus Sesi Aplikasi',
+      'Apakah Anda yakin ingin menghapus sesi aktif dan kembali ke tampilan disclaimer pembuka?',
+      [
+        { text: 'Batal', style: 'cancel' },
+        {
+          text: 'Hapus Sesi',
+          style: 'destructive',
+          onPress: () => {
+            clearAppSession();
+            if (onClearSession) {
+              onClearSession();
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -102,6 +123,20 @@ export default function DisclaimerScreen({ navigation, onContinue }) {
                   : 'Saya Mengerti & Setuju — Buka Aplikasi'}
               </Text>
             </TouchableOpacity>
+
+            {/* Opsi Hapus Sesi jika dibuka dari dalam aplikasi */}
+            {isFromModal ? (
+              <TouchableOpacity
+                style={styles.btnClearSession}
+                activeOpacity={0.85}
+                onPress={handleManualClearSession}
+              >
+                <Ionicons name="log-out-outline" size={18} color="#ef4444" />
+                <Text style={styles.btnClearSessionText}>
+                  Hapus Sesi & Keluar
+                </Text>
+              </TouchableOpacity>
+            ) : null}
           </View>
         </View>
       </ScrollView>
@@ -142,84 +177,106 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 14,
+    paddingBottom: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
-    paddingBottom: 12,
   },
   titleBadge: {
-    backgroundColor: '#facc15',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    backgroundColor: '#fef3c7',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
     borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#fde68a',
   },
   titleBadgeText: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: '#000000',
-    letterSpacing: 0.3,
+    color: '#b45309',
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.2,
   },
   appBrandRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 12,
   },
   btnClose: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    padding: 4,
     backgroundColor: '#f1f5f9',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 6,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
   },
   paragraphBox: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#fffbeb',
+    backgroundColor: '#fffdf5',
+    padding: 12,
     borderRadius: 8,
-    padding: 14,
+    borderWidth: 1,
+    borderColor: '#fed7aa',
     marginBottom: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#f59e0b',
-    gap: 12,
+    gap: 10,
+    alignItems: 'flex-start',
   },
   copyrightBox: {
     backgroundColor: '#f0f9ff',
-    borderLeftColor: '#0284c7',
+    borderColor: '#bae6fd',
   },
   iconBullet: {
     marginTop: 2,
   },
   bodyText: {
     flex: 1,
-    fontSize: 13,
-    color: '#1e293b',
-    lineHeight: 20,
+    fontSize: 12,
+    lineHeight: 18,
+    color: '#334155',
   },
   boldText: {
     fontWeight: '800',
     color: '#0f172a',
   },
   actionRow: {
-    marginTop: 12,
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 10,
   },
   btnProceed: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     gap: 8,
-    backgroundColor: colors.primaryDark,
-    paddingHorizontal: 28,
-    paddingVertical: 12,
+    backgroundColor: colors.primary,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 8,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
     elevation: 2,
   },
   btnProceedText: {
     color: '#ffffff',
-    fontSize: 14,
+    fontSize: 13,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
+  btnClearSession: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#fee2e2',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#fca5a5',
+  },
+  btnClearSessionText: {
+    color: '#dc2626',
+    fontSize: 12,
     fontWeight: '800',
   },
 });
