@@ -17,6 +17,7 @@ import {
   saveRoofChoice,
   resetAllToDefault,
 } from '../utils/rabStorage';
+import RABProLogo from '../components/RABProLogo';
 
 export default function RekapRABScreen({ navigation }) {
   const [rekapData, setRekapData] = useState(null);
@@ -127,11 +128,7 @@ export default function RekapRABScreen({ navigation }) {
         {/* Top Header */}
         <View style={styles.headerCard}>
           <View style={styles.headerLeft}>
-            <Image
-              source={require('../../assets/icon.png')}
-              style={styles.logoIcon}
-              resizeMode="contain"
-            />
+            <RABProLogo size={36} showText={false} />
             <View>
               <Text style={styles.headerMainTitle}>REKAP</Text>
               <Text style={styles.headerSubTitle}>

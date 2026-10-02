@@ -10,6 +10,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
 import { setDisclaimerAccepted } from '../utils/rabStorage';
+import RABProLogo from '../components/RABProLogo';
 
 export default function DisclaimerScreen({ navigation, onContinue }) {
   const handleProceed = async () => {
@@ -35,12 +36,7 @@ export default function DisclaimerScreen({ navigation, onContinue }) {
               <Text style={styles.titleBadgeText}>Disclaimer untuk Pengguna</Text>
             </View>
             <View style={styles.appBrandRow}>
-              <Image
-                source={require('../../assets/icon.png')}
-                style={styles.logoIcon}
-                resizeMode="contain"
-              />
-              <Text style={styles.brandTitle}>RABPro</Text>
+              <RABProLogo size={32} textSize={20} textColor={colors.primaryDark} />
             </View>
           </View>
 

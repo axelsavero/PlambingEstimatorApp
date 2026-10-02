@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
-  Image,
 } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -32,15 +31,17 @@ const Stack = createNativeStackNavigator();
 function ExcelSheetTabBar({ state, descriptors, navigation }) {
   return (
     <View style={styles.sheetTabBarContainer}>
-      {/* Left branding icon */}
-      <View style={styles.sheetTabBarLeft}>
-        <Image
-          source={require('../../assets/icon.png')}
-          style={styles.sheetLogo}
-          resizeMode="contain"
-        />
+      {/* Left branding with clean vector blue cube */}
+      <TouchableOpacity
+        style={styles.sheetTabBarLeft}
+        activeOpacity={0.8}
+        onPress={() => navigation.navigate('HomeTab')}
+      >
+        <View style={styles.vectorCubeBadge}>
+          <Ionicons name="cube" size={13} color="#38bdf8" />
+        </View>
         <Text style={styles.sheetBrandText}>RABPro</Text>
-      </View>
+      </TouchableOpacity>
 
       {/* Horizontal scrolling sheet tabs */}
       <ScrollView
@@ -53,8 +54,7 @@ function ExcelSheetTabBar({ state, descriptors, navigation }) {
           const isFocused = state.index === index;
           const label = options.tabBarLabel || options.title || route.name;
           const icon = options.tabBarIconName || 'document-text-outline';
-          const isDisclaimer = route.name === 'DisclaimerTab';
-          const isRekap = route.name === 'RekapRABTab';
+          const isRekap = route.name === 'RekapRABScreen';
 
           const onPress = () => {
             const event = navigation.emit({
@@ -76,8 +76,6 @@ function ExcelSheetTabBar({ state, descriptors, navigation }) {
               style={[
                 styles.sheetTabItem,
                 isFocused && styles.sheetTabItemActive,
-                isDisclaimer && styles.sheetTabDisclaimer,
-                isDisclaimer && isFocused && styles.sheetTabDisclaimerActive,
                 isRekap && styles.sheetTabRekap,
                 isRekap && isFocused && styles.sheetTabRekapActive,
               ]}
@@ -86,22 +84,19 @@ function ExcelSheetTabBar({ state, descriptors, navigation }) {
                 name={icon}
                 size={13}
                 color={
-                  isDisclaimer
-                    ? '#ffffff'
-                    : isRekap
+                  isRekap
                     ? isFocused
                       ? '#ffffff'
-                      : '#0369a1'
+                      : '#38bdf8'
                     : isFocused
                     ? colors.primaryDark
-                    : '#475569'
+                    : '#94a3b8'
                 }
               />
               <Text
                 style={[
                   styles.sheetTabLabel,
                   isFocused && styles.sheetTabLabelActive,
-                  isDisclaimer && styles.sheetTabLabelDisclaimer,
                   isRekap && (isFocused ? styles.sheetTabLabelRekapActive : styles.sheetTabLabelRekap),
                 ]}
               >
@@ -116,7 +111,7 @@ function ExcelSheetTabBar({ state, descriptors, navigation }) {
   );
 }
 
-// Main Tab Navigator
+// Main Tab Navigator (Tanpa Disclaimer di sub menu nav bar)
 function MainTabs() {
   return (
     <Tab.Navigator
@@ -125,14 +120,6 @@ function MainTabs() {
         headerShown: false,
       }}
     >
-      <Tab.Screen
-        name="DisclaimerTab"
-        component={DisclaimerScreen}
-        options={{
-          tabBarLabel: 'DISCLAIMER',
-          tabBarIconName: 'alert-circle',
-        }}
-      />
       <Tab.Screen
         name="HomeTab"
         component={HomeScreen}
@@ -234,6 +221,7 @@ export default function AppNavigator() {
         </Stack.Screen>
       ) : null}
       <Stack.Screen name="MainTabs" component={MainTabs} />
+      <Stack.Screen name="DisclaimerScreen" component={DisclaimerScreen} />
     </Stack.Navigator>
   );
 }
@@ -242,9 +230,9 @@ const styles = StyleSheet.create({
   sheetTabBarContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1e293b',
+    backgroundColor: '#0f172a',
     borderTopWidth: 1,
-    borderTopColor: '#0f172a',
+    borderTopColor: '#0284c7',
     height: 40,
     paddingHorizontal: 6,
   },
@@ -256,9 +244,13 @@ const styles = StyleSheet.create({
     borderRightWidth: 1,
     borderRightColor: '#334155',
   },
-  sheetLogo: {
-    width: 20,
-    height: 20,
+  vectorCubeBadge: {
+    width: 22,
+    height: 22,
+    borderRadius: 5,
+    backgroundColor: '#0369a1',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   sheetBrandText: {
     color: '#ffffff',
@@ -276,8 +268,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: '#334155',
-    paddingHorizontal: 10,
+    backgroundColor: '#1e293b',
+    paddingHorizontal: 11,
     paddingVertical: 5,
     borderRadius: 4,
     position: 'relative',
@@ -288,7 +280,7 @@ const styles = StyleSheet.create({
   sheetTabLabel: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#cbd5e1',
+    color: '#94a3b8',
   },
   sheetTabLabelActive: {
     color: colors.primaryDark,
@@ -301,16 +293,6 @@ const styles = StyleSheet.create({
     right: 8,
     height: 2,
     backgroundColor: colors.primary,
-  },
-  sheetTabDisclaimer: {
-    backgroundColor: '#dc2626',
-  },
-  sheetTabDisclaimerActive: {
-    backgroundColor: '#b91c1c',
-  },
-  sheetTabLabelDisclaimer: {
-    color: '#ffffff',
-    fontWeight: '900',
   },
   sheetTabRekap: {
     backgroundColor: '#0369a1',

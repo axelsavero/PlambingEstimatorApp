@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,6 @@ import {
   Image,
   Modal,
   Share,
-  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
@@ -28,6 +27,14 @@ export default function LandscapeCalculatorLayout({
 }) {
   const [showImageModal, setShowImageModal] = useState(false);
   const [activeResultTab, setActiveResultTab] = useState('rab'); // 'rab' | 'volume'
+  const rightScrollRef = useRef(null);
+
+  const handleTabSwitch = (tab) => {
+    setActiveResultTab(tab);
+    if (rightScrollRef.current) {
+      rightScrollRef.current.scrollTo({ y: 0, animated: false });
+    }
+  };
 
   const handleShare = async () => {
     try {
@@ -68,6 +75,7 @@ export default function LandscapeCalculatorLayout({
             style={styles.scrollArea}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={true}
+            removeClippedSubviews={false}
           >
             {/* Header info */}
             <View style={styles.sectionHeader}>
@@ -86,18 +94,26 @@ export default function LandscapeCalculatorLayout({
             {diagramSource ? (
               <View style={styles.diagramCard}>
                 <View style={styles.diagramHeaderRow}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <View style={styles.diagramTitleWrap}>
                     <Ionicons name="image-outline" size={16} color={colors.primary} />
-                    <Text style={styles.diagramTitle}>{diagramTitle}</Text>
+                    <Text
+                      style={styles.diagramTitle}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      {diagramTitle}
+                    </Text>
                   </View>
                   <TouchableOpacity
                     style={styles.btnZoom}
                     onPress={() => setShowImageModal(true)}
+                    activeOpacity={0.8}
                   >
-                    <Ionicons name="expand-outline" size={14} color="#ffffff" />
-                    <Text style={styles.btnZoomText}>Perbesar Gambar</Text>
+                    <Ionicons name="expand-outline" size={13} color="#ffffff" />
+                    <Text style={styles.btnZoomText}>Perbesar</Text>
                   </TouchableOpacity>
                 </View>
+
                 <TouchableOpacity
                   activeOpacity={0.9}
                   onPress={() => setShowImageModal(true)}
@@ -180,9 +196,11 @@ export default function LandscapeCalculatorLayout({
         {/* KOLOM KANAN: HASIL PERHITUNGAN & RAB */}
         <View style={styles.rightColumn}>
           <ScrollView
+            ref={rightScrollRef}
             style={styles.scrollArea}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={true}
+            removeClippedSubviews={false}
           >
             {/* Grand Total Header Highlight */}
             <View style={styles.grandTotalCard}>
@@ -222,7 +240,7 @@ export default function LandscapeCalculatorLayout({
                   styles.resTabBtn,
                   activeResultTab === 'rab' && styles.resTabBtnActive,
                 ]}
-                onPress={() => setActiveResultTab('rab')}
+                onPress={() => handleTabSwitch('rab')}
               >
                 <Ionicons
                   name="receipt-outline"
@@ -244,7 +262,7 @@ export default function LandscapeCalculatorLayout({
                   styles.resTabBtn,
                   activeResultTab === 'volume' && styles.resTabBtnActive,
                 ]}
-                onPress={() => setActiveResultTab('volume')}
+                onPress={() => handleTabSwitch('volume')}
               >
                 <Ionicons
                   name="cube-outline"
@@ -262,88 +280,89 @@ export default function LandscapeCalculatorLayout({
               </TouchableOpacity>
             </View>
 
-            {activeResultTab === 'rab' ? (
-              <View>
-                {/* Tenaga Kerja Table */}
-                <View style={styles.tableCard}>
-                  <View style={styles.tableHeader}>
-                    <Text style={styles.tableHeaderText}>A. TENAGA KERJA</Text>
-                    <Text style={styles.tableSubTotalText}>
-                      Subtotal: {formatRupiah(results?.totalUpah || 0)}
+            {/* TAB 1: Rincian RAB (Upah & Bahan) - Kept mounted to prevent clipping bug */}
+            <View style={{ display: activeResultTab === 'rab' ? 'flex' : 'none' }}>
+              {/* Tenaga Kerja Table */}
+              <View style={styles.tableCard}>
+                <View style={styles.tableHeader}>
+                  <Text style={styles.tableHeaderText}>A. TENAGA KERJA</Text>
+                  <Text style={styles.tableSubTotalText}>
+                    Subtotal: {formatRupiah(results?.totalUpah || 0)}
+                  </Text>
+                </View>
+                <View style={styles.tableColHeaderRow}>
+                  <Text style={[styles.colHeader, { flex: 2.2 }]}>Uraian Tenaga</Text>
+                  <Text style={[styles.colHeader, { flex: 1, textAlign: 'right' }]}>Vol</Text>
+                  <Text style={[styles.colHeader, { flex: 0.8, textAlign: 'center' }]}>Sat</Text>
+                  <Text style={[styles.colHeader, { flex: 1.4, textAlign: 'right' }]}>Harga (Rp)</Text>
+                  <Text style={[styles.colHeader, { flex: 1.6, textAlign: 'right' }]}>Jumlah (Rp)</Text>
+                </View>
+                {results?.tenagaKerja?.map((t, idx) => (
+                  <View
+                    key={`tk-${idx}`}
+                    style={[styles.tableRow, idx % 2 === 1 && styles.tableRowAlt]}
+                  >
+                    <Text style={[styles.cellText, { flex: 2.2, fontWeight: '600' }]}>
+                      {t.uraian}
+                    </Text>
+                    <Text style={[styles.cellText, { flex: 1, textAlign: 'right' }]}>
+                      {formatNumber(t.volume, 2)}
+                    </Text>
+                    <Text style={[styles.cellTextMuted, { flex: 0.8, textAlign: 'center' }]}>
+                      {t.satuan}
+                    </Text>
+                    <Text style={[styles.cellText, { flex: 1.4, textAlign: 'right' }]}>
+                      {formatNumber(t.harga, 0)}
+                    </Text>
+                    <Text style={[styles.cellTextBold, { flex: 1.6, textAlign: 'right' }]}>
+                      {formatRupiah(t.subtotal)}
                     </Text>
                   </View>
-                  <View style={styles.tableColHeaderRow}>
-                    <Text style={[styles.colHeader, { flex: 2.2 }]}>Uraian Tenaga</Text>
-                    <Text style={[styles.colHeader, { flex: 1, textAlign: 'right' }]}>Vol</Text>
-                    <Text style={[styles.colHeader, { flex: 0.8, textAlign: 'center' }]}>Sat</Text>
-                    <Text style={[styles.colHeader, { flex: 1.4, textAlign: 'right' }]}>Harga (Rp)</Text>
-                    <Text style={[styles.colHeader, { flex: 1.6, textAlign: 'right' }]}>Jumlah (Rp)</Text>
-                  </View>
-                  {results?.tenagaKerja?.map((t, idx) => (
-                    <View
-                      key={`tk-${idx}`}
-                      style={[styles.tableRow, idx % 2 === 1 && styles.tableRowAlt]}
-                    >
-                      <Text style={[styles.cellText, { flex: 2.2, fontWeight: '600' }]}>
-                        {t.uraian}
-                      </Text>
-                      <Text style={[styles.cellText, { flex: 1, textAlign: 'right' }]}>
-                        {formatNumber(t.volume, 2)}
-                      </Text>
-                      <Text style={[styles.cellTextMuted, { flex: 0.8, textAlign: 'center' }]}>
-                        {t.satuan}
-                      </Text>
-                      <Text style={[styles.cellText, { flex: 1.4, textAlign: 'right' }]}>
-                        {formatNumber(t.harga, 0)}
-                      </Text>
-                      <Text style={[styles.cellTextBold, { flex: 1.6, textAlign: 'right' }]}>
-                        {formatRupiah(t.subtotal)}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-
-                {/* Bahan Table */}
-                <View style={[styles.tableCard, { marginTop: 12 }]}>
-                  <View style={styles.tableHeader}>
-                    <Text style={styles.tableHeaderText}>B. BAHAN & MATERIAL</Text>
-                    <Text style={styles.tableSubTotalText}>
-                      Subtotal: {formatRupiah(results?.totalBahan || 0)}
-                    </Text>
-                  </View>
-                  <View style={styles.tableColHeaderRow}>
-                    <Text style={[styles.colHeader, { flex: 2.2 }]}>Uraian Bahan</Text>
-                    <Text style={[styles.colHeader, { flex: 1, textAlign: 'right' }]}>Vol</Text>
-                    <Text style={[styles.colHeader, { flex: 0.8, textAlign: 'center' }]}>Sat</Text>
-                    <Text style={[styles.colHeader, { flex: 1.4, textAlign: 'right' }]}>Harga (Rp)</Text>
-                    <Text style={[styles.colHeader, { flex: 1.6, textAlign: 'right' }]}>Jumlah (Rp)</Text>
-                  </View>
-                  {results?.bahan?.map((b, idx) => (
-                    <View
-                      key={`bh-${idx}`}
-                      style={[styles.tableRow, idx % 2 === 1 && styles.tableRowAlt]}
-                    >
-                      <Text style={[styles.cellText, { flex: 2.2, fontWeight: '600' }]}>
-                        {b.uraian}
-                      </Text>
-                      <Text style={[styles.cellText, { flex: 1, textAlign: 'right' }]}>
-                        {formatNumber(b.volume, 2)}
-                      </Text>
-                      <Text style={[styles.cellTextMuted, { flex: 0.8, textAlign: 'center' }]}>
-                        {b.satuan}
-                      </Text>
-                      <Text style={[styles.cellText, { flex: 1.4, textAlign: 'right' }]}>
-                        {formatNumber(b.harga, 0)}
-                      </Text>
-                      <Text style={[styles.cellTextBold, { flex: 1.6, textAlign: 'right' }]}>
-                        {formatRupiah(b.subtotal)}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
+                ))}
               </View>
-            ) : (
-              /* Volume List */
+
+              {/* Bahan Table */}
+              <View style={[styles.tableCard, { marginTop: 12 }]}>
+                <View style={styles.tableHeader}>
+                  <Text style={styles.tableHeaderText}>B. BAHAN & MATERIAL</Text>
+                  <Text style={styles.tableSubTotalText}>
+                    Subtotal: {formatRupiah(results?.totalBahan || 0)}
+                  </Text>
+                </View>
+                <View style={styles.tableColHeaderRow}>
+                  <Text style={[styles.colHeader, { flex: 2.2 }]}>Uraian Bahan</Text>
+                  <Text style={[styles.colHeader, { flex: 1, textAlign: 'right' }]}>Vol</Text>
+                  <Text style={[styles.colHeader, { flex: 0.8, textAlign: 'center' }]}>Sat</Text>
+                  <Text style={[styles.colHeader, { flex: 1.4, textAlign: 'right' }]}>Harga (Rp)</Text>
+                  <Text style={[styles.colHeader, { flex: 1.6, textAlign: 'right' }]}>Jumlah (Rp)</Text>
+                </View>
+                {results?.bahan?.map((b, idx) => (
+                  <View
+                    key={`bh-${idx}`}
+                    style={[styles.tableRow, idx % 2 === 1 && styles.tableRowAlt]}
+                  >
+                    <Text style={[styles.cellText, { flex: 2.2, fontWeight: '600' }]}>
+                      {b.uraian}
+                    </Text>
+                    <Text style={[styles.cellText, { flex: 1, textAlign: 'right' }]}>
+                      {formatNumber(b.volume, 2)}
+                    </Text>
+                    <Text style={[styles.cellTextMuted, { flex: 0.8, textAlign: 'center' }]}>
+                      {b.satuan}
+                    </Text>
+                    <Text style={[styles.cellText, { flex: 1.4, textAlign: 'right' }]}>
+                      {formatNumber(b.harga, 0)}
+                    </Text>
+                    <Text style={[styles.cellTextBold, { flex: 1.6, textAlign: 'right' }]}>
+                      {formatRupiah(b.subtotal)}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+
+            {/* TAB 2: Ringkasan Volume Fisik - Kept mounted to prevent clipping bug */}
+            <View style={{ display: activeResultTab === 'volume' ? 'flex' : 'none' }}>
               <View style={styles.tableCard}>
                 <View style={styles.tableHeader}>
                   <Text style={styles.tableHeaderText}>HASIL KALKULASI VOLUME STRUKTUR</Text>
@@ -366,7 +385,7 @@ export default function LandscapeCalculatorLayout({
                     })}
                 </View>
               </View>
-            )}
+            </View>
 
             {/* Action Buttons: Simpan & Bagikan */}
             <View style={styles.actionRow}>
@@ -385,7 +404,7 @@ export default function LandscapeCalculatorLayout({
               {onReset ? (
                 <TouchableOpacity style={styles.btnReset} onPress={onReset}>
                   <Ionicons name="refresh" size={16} color="#475569" />
-                  <Text style={styles.btnResetText}>Reset Excel</Text>
+                  <Text style={styles.btnResetText}>Reset Default</Text>
                 </TouchableOpacity>
               ) : null}
             </View>
@@ -490,24 +509,34 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 6,
+    gap: 8,
+  },
+  diagramTitleWrap: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    minWidth: 0,
   },
   diagramTitle: {
     fontSize: 12,
     fontWeight: '700',
     color: '#1e293b',
+    flexShrink: 1,
   },
   btnZoom: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     backgroundColor: colors.primary,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
+    flexShrink: 0,
   },
   btnZoomText: {
     color: '#ffffff',
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
   },
   diagramThumbnail: {
