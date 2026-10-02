@@ -306,12 +306,12 @@ export default function MateriScreen({ navigation }) {
 
                   <Text style={styles.stepDescText}>{stepItem.desc}</Text>
 
-                  {/* Render Equation Component with KaTeX & Readable */}
+                  {/* Render Equation Component: Persamaan vs Teks Rumus */}
                   <MathEquation
-                    title={`Persamaan Tahap ${stepItem.step}: ${stepItem.title}`}
+                    title={`Tahap ${stepItem.step}: ${stepItem.title}`}
+                    persamaan={stepItem.persamaan}
                     latex={stepItem.latex}
                     readable={stepItem.rumus}
-                    height={60}
                   />
                 </View>
               ))}

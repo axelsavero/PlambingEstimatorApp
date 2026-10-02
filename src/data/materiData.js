@@ -23,6 +23,7 @@ export const MATERI_LIST = [
       {
         step: 1,
         title: 'Galian Tanah Pondasi Foot Plate',
+        persamaan: 'V_galian = P × L × D × n',
         desc: 'Dimulai dengan mengukur dimensi galian rencana mulai dari panjang, lebar, kedalaman tanah keras, hingga banyaknya titik rencana pondasi foot plate (contoh: 20 titik).',
         rumus: 'Volume Galian = Panjang × Lebar × Kedalaman × Jumlah Titik',
         latex: 'V_{\\text{galian}} = P \\times L \\times D \\times n',
@@ -30,6 +31,7 @@ export const MATERI_LIST = [
       {
         step: 2,
         title: 'Urugan Pasir Bawah Foot Plate',
+        persamaan: 'V_pasir = P × L × t_pasir × n',
         desc: 'Ukur panjang, lebar, dan ketebalan rencana urugan pasir (biasanya 5–10 cm) di bawah dasar foot plate, lalu kalikan dengan total jumlah titik pondasi.',
         rumus: 'Volume Pasir = Panjang × Lebar × Tebal Pasir × Jumlah Titik',
         latex: 'V_{\\text{pasir}} = P \\times L \\times t_{\\text{pasir}} \\times n',
@@ -37,6 +39,7 @@ export const MATERI_LIST = [
       {
         step: 3,
         title: 'Lantai Kerja Beton Non Struktur (B0 / Lean Concrete)',
+        persamaan: 'V_lantai_kerja = P × L × t_lk × n',
         desc: 'Ukur panjang, lebar, dan ketebalan lapisan lantai kerja beton rabat (lean concrete tebal 5 cm) sebagai perata sebelum pembesian dipasang.',
         rumus: 'Volume Lantai Kerja = Panjang × Lebar × Tebal Lantai Kerja × Jumlah Titik',
         latex: 'V_{\\text{lantai kerja}} = P \\times L \\times t_{\\text{lk}} \\times n',
@@ -44,6 +47,7 @@ export const MATERI_LIST = [
       {
         step: 4,
         title: 'Volume Foot Plate (Balok Bawah & Limas Terpancung)',
+        persamaan: 'V_FP = (P × L × t_b × n) + [ 1/3 · h · (A₁ + A₂ + √(A₁ · A₂)) × n ]',
         desc: 'Struktur tapak terdiri dari balok bawah (persegi panjang) dan piramida terpotong (limas terpancung). Hitung volume balok bawah (P × L × t × n), lalu hitung volume limas terpancung 1/3 × h × (A₁ + A₂ + √(A₁ × A₂)) × n. Jumlahkan kedua volume tersebut.',
         rumus: 'V_FP = (P × L × t_balok × n) + [1/3 × h × (A1 + A2 + √(A1 × A2)) × n]',
         latex: 'V_{\\text{FP}} = (P \\times L \\times t_{\\text{b}} \\times n) + \\left[\\frac{1}{3} h (A_1 + A_2 + \\sqrt{A_1 \\cdot A_2}) \\times n\\right]',
@@ -51,6 +55,7 @@ export const MATERI_LIST = [
       {
         step: 5,
         title: 'Bekisting Pondasi Foot Plate',
+        persamaan: 'A_bekisting = 2 × (P + L) × t_bekisting × n',
         desc: 'Hitung keliling sisi tegak tapak pondasi yang memerlukan papan bekisting dengan rumus keliling penampang dikalikan tebal bekisting dan banyaknya titik.',
         rumus: 'Luas Bekisting = 2 × (Panjang + Lebar) × Tebal Bekisting × Jumlah Titik',
         latex: 'A_{\\text{bekisting}} = 2 \\times (P + L) \\times t_{\\text{bekisting}} \\times n',
@@ -58,6 +63,7 @@ export const MATERI_LIST = [
       {
         step: 6,
         title: 'Kolom Pendek (Pedestal Foot Plate)',
+        persamaan: 'V_pedestal = n × (D × P_kolom × L_kolom)',
         desc: 'Hitung volume kolom pedestal penghubung tapak ke sloof dengan mengalikan luas penampang kolom (P × L), tinggi kolom pendek, dan jumlah titik.',
         rumus: 'Volume Kolom Pendek = Jumlah Titik × (Kedalaman × Panjang Kolom × Lebar Kolom)',
         latex: 'V_{\\text{pedestal}} = n \\times (D \\times P_{\\text{kolom}} \\times L_{\\text{kolom}})',
@@ -65,6 +71,7 @@ export const MATERI_LIST = [
       {
         step: 7,
         title: 'Urugan Tanah Kembali Pondasi Foot Plate',
+        persamaan: 'V_urug = [ V_galian - (V_FP + V_pedestal) ] × 1.2',
         desc: 'Kumpulkan data volume galian tanah awal, kurangi dengan total volume beton footplate dan kolom pendek tertanam, lalu kalikan faktor gembur 1.2.',
         rumus: 'Volume Urug Kembali = [V_galian - (V_footplate + V_pedestal)] × 1.2',
         latex: 'V_{\\text{urug}} = \\left[V_{\\text{galian}} - (V_{\\text{FP}} + V_{\\text{pedestal}})\\right] \\times 1.2',
@@ -87,6 +94,7 @@ export const MATERI_LIST = [
       {
         step: 1,
         title: 'Galian Tanah Pondasi Batu Kali',
+        persamaan: 'V_galian = L_galian × D_galian × P_pondasi',
         desc: 'Ukur total panjang keliling pondasi batu kali, lebar rencana galian bawah/atas, dan kedalaman galian tanah.',
         rumus: 'Volume Galian = Lebar Galian × Dalam Galian × Panjang Pondasi',
         latex: 'V_{\\text{galian}} = L_{\\text{galian}} \\times D_{\\text{galian}} \\times P_{\\text{pondasi}}',
@@ -94,6 +102,7 @@ export const MATERI_LIST = [
       {
         step: 2,
         title: 'Urugan Pasir Bawah Batu Kali',
+        persamaan: 'V_pasir = L × t_pasir × P_pondasi',
         desc: 'Tebal hamparan pasir uruk di bawah aanstamping (biasanya 5–10 cm) dikalikan lebar dasar galian dan panjang pondasi.',
         rumus: 'Volume Pasir Uruk = Lebar Galian × Tebal Pasir × Panjang Pondasi',
         latex: 'V_{\\text{pasir}} = L \\times t_{\\text{pasir}} \\times P_{\\text{pondasi}}',
@@ -101,6 +110,7 @@ export const MATERI_LIST = [
       {
         step: 3,
         title: 'Aanstamping (Batu Kosong)',
+        persamaan: 'V_aanstamping = L × D_aanstamping × P_pondasi',
         desc: 'Penyusunan batu belah tanpa adukan mortar (tebal 15–20 cm) sebagai drainase air tanah di bawah pasangan pondasi utama.',
         rumus: 'Volume Aanstamping = Lebar Dasar × Tebal Aanstamping × Panjang Pondasi',
         latex: 'V_{\\text{aanstamping}} = L \\times D_{\\text{aanstamping}} \\times P_{\\text{pondasi}}',
@@ -108,6 +118,7 @@ export const MATERI_LIST = [
       {
         step: 4,
         title: 'Pasangan Pondasi Batu Kali (Penampang Trapesium)',
+        persamaan: 'V_pasangan = [ (L_bawah + L_atas) / 2 × T × P ] - V_kolom',
         desc: 'Penampang pondasi berbentuk trapesium: luas rata-rata penampang [(lebar atas + lebar bawah) / 2 × tinggi pondasi] dikalikan panjang, lalu dikurangi volume pertemuan kolom pendek jika ada.',
         rumus: 'Volume Pasangan = [1/2 × (Lebar Bawah + Lebar Atas) × Tinggi] × Panjang - V_kolom_tertabrak',
         latex: 'V_{\\text{pasangan}} = \\left[\\frac{L_{\\text{bawah}} + L_{\\text{atas}}}{2} \\times T_{\\text{pondasi}} \\times P\\right] - V_{\\text{kolom}}',
@@ -115,6 +126,7 @@ export const MATERI_LIST = [
       {
         step: 5,
         title: 'Balok Sloof Beton di Atas Pondasi',
+        persamaan: 'V_sloof = P_sloof × (b_sloof × h_sloof)',
         desc: 'Balok sloof beton bertulang berfungsi meratakan beban dinding ke pondasi batu kali. Dihitung dari luas penampang sloof dikalikan panjang sloof.',
         rumus: 'Volume Balok Sloof = Panjang Sloof × (Lebar Sloof × Tinggi Sloof)',
         latex: 'V_{\\text{sloof}} = P_{\\text{sloof}} \\times (b_{\\text{sloof}} \\times h_{\\text{sloof}})',
@@ -122,6 +134,7 @@ export const MATERI_LIST = [
       {
         step: 6,
         title: 'Bekisting Balok Sloof',
+        persamaan: 'A_bekisting = 2 × (P_sloof × h_bekisting)',
         desc: 'Bekisting sloof dipasang pada kedua sisi samping balok sloof sepanjang jalur pondasi.',
         rumus: 'Luas Bekisting = 2 × (Panjang Sloof × Tinggi Bekisting)',
         latex: 'A_{\\text{bekisting}} = 2 \\times (P_{\\text{sloof}} \\times h_{\\text{bekisting}})',
@@ -144,6 +157,7 @@ export const MATERI_LIST = [
       {
         step: 1,
         title: 'Volume Kolom Induk',
+        persamaan: 'V_kolom = n × (P_kolom × L_kolom × T_kolom)',
         desc: 'Kumpulkan data jumlah kolom sejenis, dimensi penampang (panjang × lebar), dan tinggi kolom bersih dari sloof ke dasar balok.',
         rumus: 'Volume Kolom = Jumlah Kolom × (Panjang × Lebar × Tinggi Kolom)',
         latex: 'V_{\\text{kolom}} = n \\times (P_{\\text{kolom}} \\times L_{\\text{kolom}} \\times T_{\\text{kolom}})',
@@ -151,6 +165,7 @@ export const MATERI_LIST = [
       {
         step: 2,
         title: 'Bekisting Kolom Induk',
+        persamaan: 'A_bekisting = n × [ 2 × (P + L) × T ]',
         desc: 'Hitung luas permukaan selimut kolom yang bersentuhan dengan cetakan bekisting (keliling 4 sisi atau 2 sisi tergantung kondisi perlekatan dinding).',
         rumus: 'Luas Bekisting = Jumlah Kolom × [2 × (Panjang + Lebar) × Tinggi Kolom]',
         latex: 'A_{\\text{bekisting kolom}} = n \\times [2 \\times (P + L) \\times T]',
@@ -158,6 +173,7 @@ export const MATERI_LIST = [
       {
         step: 3,
         title: 'Balok Struktur & Kolom Tertabrak',
+        persamaan: 'V_balok = [ P · b · (h - t_p) ] - [ n_k · b · (h - t_p) · L_k ]',
         desc: 'Untuk menghindari penghitungan ganda (double count), hitung volume balok kotor lalu kurangi dengan volume pertemuan (kolom tertabrak) pada setiap titik pertemuan kolom induk.',
         rumus: 'V_balok = [P × L × (T - t_plat)] - [n_kolom × L_balok × (T - t_plat) × L_kolom]',
         latex: 'V_{\\text{balok}} = P \\cdot b (h - t_p) - \\left[n_k \\cdot b (h - t_p) \\cdot L_k\\right]',
@@ -165,6 +181,7 @@ export const MATERI_LIST = [
       {
         step: 4,
         title: 'Bekisting Balok Struktur',
+        persamaan: 'A_bekisting = 2 × (P_balok × h_efektif)',
         desc: 'Dihitung dari dua sisi samping balok (serta dasar balok jika tidak menumpu dinding bata) dikalikan panjang bentang balok bersih.',
         rumus: 'Luas Bekisting Balok = 2 × (Panjang Balok × Tinggi Efektif Balok)',
         latex: 'A_{\\text{bekisting balok}} = 2 \\times (P_{\\text{balok}} \\times h_{\\text{efektif}})',
@@ -172,6 +189,7 @@ export const MATERI_LIST = [
       {
         step: 5,
         title: 'Volume Plat Lantai Beton',
+        persamaan: 'V_plat = (P × L × t_plat) - (P_void × L_void × t_plat)',
         desc: 'Kumpulkan data tebal plat lantai, panjang, lebar bentangan gedung, kemudian kurangi dengan luas bukaan/lubang void tangga.',
         rumus: 'Volume Plat Lantai = (Panjang × Lebar × Tebal Plat) - Luas Lubang Tangga',
         latex: 'V_{\\text{plat}} = (P \\times L \\times t_{\\text{plat}}) - (P_{\\text{void}} \\times L_{\\text{void}} \\times t_{\\text{plat}})',
@@ -179,6 +197,7 @@ export const MATERI_LIST = [
       {
         step: 6,
         title: 'Bekisting Plat Lantai',
+        persamaan: 'A_bekisting = (P · L - A_void) + 2(P + L) · t_plat',
         desc: 'Hitung luas alas horizontal plat lantai ditambah bekisting keliling tepi luar plat.',
         rumus: 'Luas Bekisting = (Panjang × Lebar Plat) - Luas Lubang + 2 × (P + L) × t_plat',
         latex: 'A_{\\text{bekisting plat}} = (P \\cdot L - A_{\\text{void}}) + 2(P + L)t_{\\text{plat}}',
@@ -201,6 +220,7 @@ export const MATERI_LIST = [
       {
         step: 1,
         title: 'Panjang Plat Tangga Miring Bawah & Atas',
+        persamaan: 'P_bawah = P_samping / cos θ   |   P_atas = √(H² + P_samping²)',
         desc: 'Hitung panjang miring plat tangga bawah menggunakan sudut kemiringan tangga: P_bawah = P_samping / cos(sudut). Lalu hitung plat atas dengan rumus Pythagoras: √(tinggi² + panjang_samping²).',
         rumus: 'P_miring = P_samping / cos(sudut) | P_atas = √(2² + P_samping²)',
         latex: 'P_{\\text{bawah}} = \\frac{P_{\\text{samping}}}{\\cos(\\theta)}, \\quad P_{\\text{atas}} = \\sqrt{H^2 + P_{\\text{samping}}^2}',
@@ -208,6 +228,7 @@ export const MATERI_LIST = [
       {
         step: 2,
         title: 'Volume Plat Tangga Bawah, Atas & Bordes',
+        persamaan: 'V_plat = (P₁ + P₂) × L_tangga × t_plat + (P_b × L_b × t_b)',
         desc: 'Kalikan panjang masing-masing plat miring dengan lebar tangga dan tebal plat tangga. Tambahkan volume plat bordes datar (Panjang Bordes × Lebar Bordes × Tebal Bordes).',
         rumus: 'V_plat_tangga = (P_miring_1 + P_miring_2) × L_tangga × t_plat + V_bordes',
         latex: 'V_{\\text{plat tangga}} = (P_1 + P_2) \\times L_{\\text{tangga}} \\times t_{\\text{plat}} + (P_b \\times L_b \\times t_b)',
@@ -215,6 +236,7 @@ export const MATERI_LIST = [
       {
         step: 3,
         title: 'Bekisting Plat Tangga & Bordes',
+        persamaan: 'A_bekisting = 2 × (P_plat + P_bordes) × t_bekisting + (P_tot × L)',
         desc: 'Hitung luas permukaan cetakan bawah tangga dan bordes serta bekisting tepi samping sepanjang bentangan.',
         rumus: 'Luas Bekisting = 2 × (Panjang Plat + Panjang Bordes) × Tebal Bekisting + Luas Alas',
         latex: 'A_{\\text{bekisting}} = 2 \\times (P_{\\text{plat}} + P_{\\text{bordes}}) \\times t_{\\text{bekisting}} + (P_{\\text{tot}} \\times L)',
@@ -222,6 +244,7 @@ export const MATERI_LIST = [
       {
         step: 4,
         title: 'Volume Segitiga Anak Tangga (Optrede & Aantrede)',
+        persamaan: 'V_anak = n_anak × [ 1/2 · a · t · L_tangga ]',
         desc: 'Setiap anak tangga memiliki penampang prisma segitiga: 1/2 × lebar pijakan (aantrede) × tinggi tanjakan (optrede) × lebar tangga, dikalikan dengan total jumlah anak tangga.',
         rumus: 'V_anak_tangga = Jumlah Anak Tangga × [1/2 × Lebar Pijakan × Tinggi Tanjakan × Lebar Tangga]',
         latex: 'V_{\\text{anak tangga}} = n_{\\text{anak}} \\times \\left(\\frac{1}{2} \\times a \\times t \\times L_{\\text{tangga}}\\right)',
@@ -229,6 +252,7 @@ export const MATERI_LIST = [
       {
         step: 5,
         title: 'Total Volume Beton Tangga',
+        persamaan: 'V_total_tangga = V_plat + V_bordes + V_anak',
         desc: 'Jumlahkan seluruh volume plat tangga miring, plat bordes, dan volume segitiga anak tangga.',
         rumus: 'V_total_tangga = Volume Plat Tangga + Volume Plat Bordes + Volume Anak Tangga',
         latex: 'V_{\\text{total tangga}} = V_{\\text{plat}} + V_{\\text{bordes}} + V_{\\text{anak tangga}}',
@@ -251,6 +275,7 @@ export const MATERI_LIST = [
       {
         step: 1,
         title: 'Kaki Kuda-Kuda Miring',
+        persamaan: 'L_kaki = (T / sin α) × 2',
         desc: 'Hitung panjang batang miring kaki kuda-kuda menggunakan fungsi trigonometri sinus terhadap sudut kemiringan atap (misal 30°).',
         rumus: 'Panjang Kaki Kuda-Kuda = (Tinggi / sin(Sudut)) × 2 Sisi',
         latex: 'L_{\\text{kaki}} = \\left(\\frac{T}{\\sin(\\alpha)}\\right) \\times 2',
@@ -258,6 +283,7 @@ export const MATERI_LIST = [
       {
         step: 2,
         title: 'Balok Sokong / Batang Pengaku',
+        persamaan: 'L_sokong = (B_sokong / cos α) × 2',
         desc: 'Hitung panjang balok sokong penopang kaki kuda-kuda menggunakan fungsi cosinus terhadap sudut kemiringan.',
         rumus: 'Panjang Balok Sokong = (Bentang Sokong / cos(Sudut)) × 2',
         latex: 'L_{\\text{sokong}} = \\left(\\frac{B_{\\text{sokong}}}{\\cos(\\alpha)}\\right) \\times 2',
@@ -265,6 +291,7 @@ export const MATERI_LIST = [
       {
         step: 3,
         title: 'Total Panjang Batang & Volume Rangka Kuda-Kuda',
+        persamaan: 'V_kuda-kuda = ∑ L_batang × (b × h)_kayu × n_set',
         desc: 'Jumlahkan balok tarik bawah, tiang makelar tengah, balok gapit, balok pengunci, kaki kuda-kuda dan balok sokong. Kalikan dengan luas penampang kayu (misal kayu 8/12 = 0.08 × 0.12 m).',
         rumus: 'Volume Kuda-Kuda = Panjang Total Batang × (Lebar Kayu × Tinggi Kayu) × Jumlah Set',
         latex: 'V_{\\text{kuda-kuda}} = \\sum L_{\\text{batang}} \\times (b \\times h)_{\\text{kayu}} \\times n_{\\text{set}}',
@@ -272,6 +299,7 @@ export const MATERI_LIST = [
       {
         step: 4,
         title: 'Balok Rangkai Kuda-Kuda (Gording, Nok & Balok Tembok)',
+        persamaan: 'L_rangkai = L_nok + L_gording + L_murplat + L_ruiter',
         desc: 'Kumpulkan data balok tembok (murplat), balok gording memanjang, balok nok atas, papan ruiter, dan balok penyangga.',
         rumus: 'Panjang Total Balok Rangkai = Σ Panjang (Nok + Gording + Murplat + Ruiter)',
         latex: 'L_{\\text{rangkai}} = L_{\\text{nok}} + L_{\\text{gording}} + L_{\\text{murplat}} + L_{\\text{ruiter}}',
@@ -279,6 +307,7 @@ export const MATERI_LIST = [
       {
         step: 5,
         title: 'Perhitungan Batang Jurai Luar & Jurai Dalam',
+        persamaan: 'L_jurai = √[(1/2 · B · tan α)² + (1/2 · B)²] × 2',
         desc: 'Jurai adalah pertemuan bidang atap limas atau hip-and-valley. Dihitung dengan rumus akar kuadrat kombinasi tinggi dan lebar bentangan.',
         rumus: 'Panjang Jurai = √[(1/2 × Lebar × tan(Sudut))² + (1/2 × Lebar)²] × Faktor Sisi',
         latex: 'L_{\\text{jurai}} = \\sqrt{\\left(\\frac{1}{2} B \\tan(\\alpha)\\right)^2 + \\left(\\frac{1}{2} B\\right)^2} \\times 2',
@@ -301,6 +330,7 @@ export const MATERI_LIST = [
       {
         step: 1,
         title: 'Kebutuhan Batang Usuk (Kaso)',
+        persamaan: 'N_usuk = [ (P_atap / jarak_usuk) + 1 ] × Jumlah Sisi',
         desc: 'Kumpulkan data panjang atap dan jarak pasang antar usuk (biasanya 50 cm). Hitung jumlah batang per bidang atap.',
         rumus: 'Volume Usuk = [((Panjang Atap / Jarak Usuk) + 1) × Jumlah Sisi Bidang]',
         latex: 'N_{\\text{usuk}} = \\left(\\frac{P_{\\text{atap}}}{\\text{jarak usuk}} + 1\\right) \\times \\text{Jumlah Sisi}',
@@ -308,6 +338,7 @@ export const MATERI_LIST = [
       {
         step: 2,
         title: 'Kebutuhan Batang Reng',
+        persamaan: 'N_reng = [ (L_usuk / jarak_reng) + 1 ] × P_atap × Jumlah Sisi',
         desc: 'Kumpulkan data panjang bidang miring usuk, jarak pasang reng sesuai modul genteng (misal 25–35 cm), dan panjang bentang atap.',
         rumus: 'Volume Reng = [((Panjang Usuk / Jarak Reng) + 1) × Panjang Atap × Jumlah Sisi]',
         latex: 'N_{\\text{reng}} = \\left(\\frac{L_{\\text{usuk}}}{\\text{jarak reng}} + 1\\right) \\times P_{\\text{atap}} \\times \\text{Jumlah Sisi}',
@@ -315,6 +346,7 @@ export const MATERI_LIST = [
       {
         step: 3,
         title: 'Dekomposisi Luas Atap (Model Hip & Valley)',
+        persamaan: 'A_atap = [ (a + b) / 2 · t ] + (a · t) + (1/2 · a · t)',
         desc: 'Bagi tampak atas atap limas / perisai menjadi segmen geometri: trapesium, jajar genjang, dan segitiga. Hitung luas masing-masing segmen lalu jumlahkan.',
         rumus: 'Luas Atap = Σ (Luas Trapesium + Luas Jajargenjang + Luas Segitiga)',
         latex: 'A_{\\text{atap}} = \\left[\\frac{a+b}{2} \\cdot t\\right] + (a \\cdot t) + \\left(\\frac{1}{2} a \\cdot t\\right)',
@@ -322,6 +354,7 @@ export const MATERI_LIST = [
       {
         step: 4,
         title: 'Kebutuhan Genteng Penutup Atap',
+        persamaan: 'N_genteng = A_total_atap × Koefisien_m²',
         desc: 'Volume kebutuhan penutup atap diambil langsung dari luas total atap. Jika menggunakan genteng keping, kalikan luas dengan koefisien isi per m² (misal genteng metal = 1.62 lbr/m², genteng keramik = 14 bh/m²).',
         rumus: 'Kebutuhan Genteng = Luas Total Atap × Koefisien Kebutuhan per m²',
         latex: 'N_{\\text{genteng}} = A_{\\text{total atap}} \\times \\text{Koefisien}_{\\text{m}^2}',
@@ -329,6 +362,7 @@ export const MATERI_LIST = [
       {
         step: 5,
         title: 'Genteng Penutup Nok / Wuwung',
+        persamaan: 'L_wuwung = L_nok_horizontal + ∑ L_jurai_luar',
         desc: 'Volume kebutuhan genteng bubungan / nok dihitung berdasarkan total panjang jurai luar ditambah panjang nok horizontal.',
         rumus: 'Kebutuhan Wuwung = Total Panjang Nok Horizontal + Total Panjang Jurai Luar',
         latex: 'L_{\\text{wuwung}} = L_{\\text{nok horizontal}} + \\sum L_{\\text{jurai luar}}',
@@ -351,6 +385,7 @@ export const MATERI_LIST = [
       {
         step: 1,
         title: 'Data AHSP Kota / Kabupaten Setempat',
+        persamaan: 'HSP = Biaya Tenaga Kerja (A) + Biaya Bahan (B)',
         desc: 'Siapkan tabel AHSP resmi dari Dinas PUPR kota/kabupaten lokasi proyek yang mencakup standar koefisien dan daftar upah regional.',
         rumus: 'Acuan: Permen PUPR No. 1 / 2022 atau Peraturan Walikota/Bupati Setempat',
         latex: '\\text{HSP} = \\text{Total Biaya Tenaga Kerja (A)} + \\text{Total Biaya Bahan (B)}',
@@ -358,6 +393,7 @@ export const MATERI_LIST = [
       {
         step: 2,
         title: 'Analisa Biaya Tenaga Kerja (Upah)',
+        persamaan: 'Biaya Upah = ∑ (Koefisien_i × Tarif Upah_i)',
         desc: 'Kalikan koefisien standar pekerja, tukang batu/kayu, kepala tukang, dan mandor dengan tarif standar upah harian (Orang Hari / OH).',
         rumus: 'Total Upah = Σ (Koefisien OH Pekerja × Tarif Upah OH)',
         latex: '\\text{Biaya Upah} = \\sum_{i=1}^{k} \\left(\\text{Koefisien}_i \\times \\text{Tarif Upah}_i\\right)',
@@ -365,6 +401,7 @@ export const MATERI_LIST = [
       {
         step: 3,
         title: 'Analisa Biaya Bahan & Material',
+        persamaan: 'Biaya Bahan = ∑ (Koefisien_j × Harga Bahan_j)',
         desc: 'Kalikan koefisien kebutuhan material per satuan volume/luas (misal kg besi, sak semen, m³ pasir) dengan harga satuan material.',
         rumus: 'Total Bahan = Σ (Koefisien Bahan × Harga Satuan Bahan)',
         latex: '\\text{Biaya Bahan} = \\sum_{j=1}^{m} \\left(\\text{Koefisien}_j \\times \\text{Harga Bahan}_j\\right)',
@@ -372,6 +409,7 @@ export const MATERI_LIST = [
       {
         step: 4,
         title: 'Perhitungan Harga Satuan Pekerjaan (HSP)',
+        persamaan: 'HSP_pekerjaan = Total Upah + Total Bahan',
         desc: 'Jumlahkan total biaya upah tenaga kerja dan total biaya bahan. Pada pekerjaan khusus tertentu (seperti pembersihan lahan), komponen bahan bernilai nol dan hanya terdiri dari upah.',
         rumus: 'HSP = Total Biaya Upah + Total Biaya Bahan',
         latex: '\\text{HSP}_{\\text{pekerjaan}} = \\text{Total Upah} + \\text{Total Bahan}',
@@ -379,6 +417,7 @@ export const MATERI_LIST = [
       {
         step: 5,
         title: 'Studi Kasus: Pembersihan Lokasi & Bowplank',
+        persamaan: 'HSP_bowplank = Upah_total + Bahan_kayu, paku, papan',
         desc: 'Pembersihan lahan hanya membutuhkan upah pekerja (koef 0.10 OH) dan mandor (koef 0.05 OH). Pengukuran & bowplank membutuhkan upah plus bahan kayu 5/7, paku 2–3", dan kayu papan 3/20.',
         rumus: 'HSP Bowplank = Upah(Pekerja + Tukang + Mandor) + Bahan(Kayu + Paku + Papan)',
         latex: '\\text{HSP}_{\\text{bowplank}} = \\text{Upah}_{\\text{total}} + \\text{Bahan}_{\\text{kayu, paku, papan}}',
@@ -401,6 +440,7 @@ export const MATERI_LIST = [
       {
         step: 1,
         title: 'Pengumpulan Data Volume & Nilai AHSP',
+        persamaan: 'Data = { V₁, V₂, ..., V_n }  dan  { HSP₁, HSP₂, ..., HSP_n }',
         desc: 'Ambil seluruh hasil kalkulasi volume fisik pekerjaan (dari sheet pondasi, beton, tangga, atap, dll.) serta nilai HSP yang telah dihitung.',
         rumus: 'Data Masukan = Volume Fisik Pekerjaan dan HSP Tiap Satuan',
         latex: '\\text{Data} = \\{V_1, V_2, \\dots, V_n\\} \\quad \\text{dan} \\quad \\{\\text{HSP}_1, \\text{HSP}_2, \\dots, \\text{HSP}_n\\}',
@@ -408,6 +448,7 @@ export const MATERI_LIST = [
       {
         step: 2,
         title: 'Perhitungan Biaya Sub-Pekerjaan',
+        persamaan: 'Biaya_i = V_i × HSP_i',
         desc: 'Kalikan volume fisik masing-masing item pekerjaan dengan harga satuan pekerjaan (HSP) yang bersesuaian.',
         rumus: 'Subtotal Biaya Pekerjaan = Volume Pekerjaan × Harga Satuan (HSP)',
         latex: '\\text{Biaya}_i = V_i \\times \\text{HSP}_i',
@@ -415,6 +456,7 @@ export const MATERI_LIST = [
       {
         step: 3,
         title: 'Pengelompokan Sub-Pekerjaan Struktural',
+        persamaan: 'Subtotal_Kategori = ∑ Biaya_i  (untuk i ∈ Kategori)',
         desc: 'Kelompokkan item-item pekerjaan ke dalam kategori utama: Pekerjaan Persiapan & Tanah, Pekerjaan Pondasi, Pekerjaan Struktur Beton Bertulang, dan Pekerjaan Atap.',
         rumus: 'Subtotal Kategori = Σ Biaya Seluruh Pekerjaan dalam Kategori',
         latex: '\\text{Subtotal}_{\\text{Kategori}} = \\sum_{i \\in \\text{Kategori}} \\text{Biaya}_i',
@@ -422,6 +464,7 @@ export const MATERI_LIST = [
       {
         step: 4,
         title: 'Rekapitulasi Total Proyek (Grand Total)',
+        persamaan: 'Grand Total RAB = ∑ Subtotal_k  (k = 1..M)',
         desc: 'Jumlahkan seluruh subtotal kelompok pekerjaan untuk mendapatkan grand total nilai estimasi biaya konstruksi.',
         rumus: 'Grand Total RAB = Σ Subtotal Seluruh Kelompok Pekerjaan',
         latex: '\\text{Grand Total RAB} = \\sum_{k=1}^{M} \\text{Subtotal}_k',
@@ -444,6 +487,7 @@ export const MATERI_LIST = [
       {
         step: 1,
         title: 'Plotting Tenaga Kerja (Man-Days / OH)',
+        persamaan: 'Durasi = ⌈ (Koefisien OH × V_pekerjaan) / (Hari Kerja × Jumlah Tukang) ⌉',
         desc: 'Ambil koefisien OH pekerja dari AHSP, kalikan dengan volume pekerjaan untuk memperoleh total kebutuhan hari orang (OH), lalu bagi dengan jumlah hari kerja efektif per minggu.',
         rumus: 'Plotting Durasi = (Koefisien OH × Volume Pekerjaan) / Hari Kerja per Minggu',
         latex: '\\text{Durasi (minggu)} = \\left\\lceil \\frac{\\text{Koefisien OH} \\times V_{\\text{pekerjaan}}}{\\text{Hari Kerja} \\times \\text{Jumlah Tukang}} \\right\\rceil',
@@ -451,6 +495,7 @@ export const MATERI_LIST = [
       {
         step: 2,
         title: 'Penyesuaian Durasi Pekerjaan (Rounding Up)',
+        persamaan: 'Durasi Efektif = Roundup(Plotting Durasi)',
         desc: 'Hasil plotting dibulatkan ke atas. Jika pekerjaan butuh 2 minggu bagi 2, jika setengah minggu kali 2, dan sesuaikan dengan kapasitas tenaga di lapangan.',
         rumus: 'Durasi Rencana = Pembulatan Ke Atas (Ceiling)',
         latex: '\\text{Durasi Efektif} = \\text{roundup}(\\text{Plotting Durasi})',
@@ -458,6 +503,7 @@ export const MATERI_LIST = [
       {
         step: 3,
         title: 'Perhitungan Bobot Persentase Pekerjaan',
+        persamaan: 'Bobot_i (%) = (Biaya Sub-Pekerjaan_i / Total RAB) × 100%',
         desc: 'Hitung kontribusi finansial tiap sub-pekerjaan terhadap total biaya proyek dalam satuan persentase.',
         rumus: 'Bobot Pekerjaan (%) = (Biaya Sub-Pekerjaan / Total Rekapitulasi RAB) × 100%',
         latex: '\\text{Bobot}_i (\\%) = \\left(\\frac{\\text{Biaya Sub-Pekerjaan}_i}{\\text{Grand Total RAB}}\\right) \\times 100\\%',
@@ -465,6 +511,7 @@ export const MATERI_LIST = [
       {
         step: 4,
         title: 'Distribusi Bobot Mingguan (Rencana Fisik)',
+        persamaan: 'Bobot Mingguan_i,t = Bobot_i / Durasi Minggu_i',
         desc: 'Bagi nilai bobot pekerjaan ke dalam minggu-minggu durasi pelaksanaan pekerjaan tersebut secara merata atau bertahap.',
         rumus: 'Bobot Mingguan = Bobot Pekerjaan / Durasi Minggu Pelaksanaan',
         latex: '\\text{Bobot Mingguan}_{i, t} = \\frac{\\text{Bobot}_i}{\\text{Durasi Minggu}_i}',
@@ -472,6 +519,7 @@ export const MATERI_LIST = [
       {
         step: 5,
         title: 'Akumulasi Rencana Fisik Mingguan (Harus 100%)',
+        persamaan: 'Akumulasi_t = Akumulasi_(t-1) + Rencana Fisik_t   |   Akumulasi_T = 100%',
         desc: 'Jumlahkan rencana fisik minggu berjalan dengan akumulasi minggu sebelumnya. Nilai akhir pada minggu penyelesaian proyek wajib bernilai tepat 100%.',
         rumus: 'Akumulasi Minggu (t) = Akumulasi Minggu (t-1) + Rencana Fisik Minggu (t)',
         latex: '\\text{Akumulasi}_t = \\sum_{w=1}^{t} \\left(\\sum_{i} \\text{Bobot Mingguan}_{i, w}\\right), \\quad \\text{Akumulasi}_{T} = 100\\%',
@@ -479,6 +527,7 @@ export const MATERI_LIST = [
       {
         step: 6,
         title: 'Pembuatan Grafik Kurva S (S-Curve)',
+        persamaan: 'S(t) = (t, Akumulasi_t)   untuk t = 1, 2, ..., T',
         desc: 'Plot nilai akumulasi mingguan dari minggu awal hingga minggu akhir pada diagram cartesius. Hubungkan titik-titik tersebut hingga membentuk kurva berkarakteristik huruf S yang halus.',
         rumus: 'S-Curve: Garis Hubung Titik Akumulasi Rencana Fisik dari Minggu 1 s.d. Minggu Akhir',
         latex: 'S(t) = (t, \\text{Akumulasi}_t) \\quad \\text{untuk } t = 1, 2, \\dots, T',

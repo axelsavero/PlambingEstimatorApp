@@ -7,66 +7,34 @@ import {
   Platform,
   Share,
 } from 'react-native';
-import { WebView } from 'react-native-webview';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
 
 /**
  * MathEquation
- * Komponen render persamaan / rumus matematika dengan font KaTeX (Computer Modern)
- * Memiliki fallback tampilan formula native dan tombol salin formula LaTeX.
+ * Komponen render persamaan / rumus matematika RABPro.
+ * Menyediakan tampilan "Persamaan" (notasi matematis dengan font serif miring)
+ * dan tampilan "Teks Rumus" (acuan teks lapangan).
+ * 100% andal, langsung tampil tanpa delay, tidak pernah kosong/blank.
  */
 export default function MathEquation({
-  latex,
+  persamaan,
   readable,
+  latex,
   title,
-  height = 58,
 }) {
-  const [viewMode, setViewMode] = useState('katex'); // 'katex' | 'readable'
+  // Mode tampilan: 'persamaan' | 'teks'
+  const [viewMode, setViewMode] = useState('persamaan');
   const [copied, setCopied] = useState(false);
 
-  // HTML page rendering KaTeX via local script & CDN fallback
-  const katexHtml = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body {
-      background: transparent;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-    .katex-display {
-      margin: 0 !important;
-    }
-    .katex {
-      font-size: 1.12rem !important;
-      color: #0369a1;
-      font-weight: 600;
-    }
-  </style>
-</head>
-<body>
-  $$${latex || ''}$$
-</body>
-</html>
-`;
+  // Ambil string formula matematika terbaik
+  const displayEquation = persamaan || formatLatexToEquation(latex) || readable || '';
+  const displayTextFormula = readable || displayEquation;
 
   const handleShareOrCopy = async () => {
     try {
       await Share.share({
-        message: `Rumus: ${title || ''}\n• KaTeX LaTeX: ${latex}\n• Acuan: ${readable}`,
+        message: `*${title || 'Rumus Estimator RABPro'}*\n• Persamaan: ${displayEquation}\n• Teks Rumus: ${displayTextFormula}`,
       });
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -77,7 +45,7 @@ export default function MathEquation({
 
   return (
     <View style={styles.container}>
-      {/* Header Rumus */}
+      {/* Header Bar */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <View style={styles.mathBadge}>
@@ -89,28 +57,56 @@ export default function MathEquation({
         </View>
 
         <View style={styles.headerActions}>
-          {/* Toggle KaTeX vs Readable */}
-          <TouchableOpacity
-            style={[styles.toggleBtn, viewMode === 'katex' && styles.toggleBtnActive]}
-            onPress={() => setViewMode(viewMode === 'katex' ? 'readable' : 'katex')}
-            activeOpacity={0.7}
-          >
-            <Ionicons
-              name={viewMode === 'katex' ? 'sparkles' : 'code-outline'}
-              size={12}
-              color={viewMode === 'katex' ? '#0369a1' : '#64748b'}
-            />
-            <Text
+          {/* Segmented Switch: [Persamaan] [Teks Rumus] */}
+          <View style={styles.segmentedWrap}>
+            <TouchableOpacity
               style={[
-                styles.toggleBtnText,
-                viewMode === 'katex' && styles.toggleBtnTextActive,
+                styles.segmentBtn,
+                viewMode === 'persamaan' && styles.segmentBtnActive,
               ]}
+              onPress={() => setViewMode('persamaan')}
+              activeOpacity={0.7}
             >
-              {viewMode === 'katex' ? 'Font KaTeX' : 'Teks Rumus'}
-            </Text>
-          </TouchableOpacity>
+              <Ionicons
+                name="calculator"
+                size={11}
+                color={viewMode === 'persamaan' ? '#ffffff' : '#64748b'}
+              />
+              <Text
+                style={[
+                  styles.segmentBtnText,
+                  viewMode === 'persamaan' && styles.segmentBtnTextActive,
+                ]}
+              >
+                Persamaan
+              </Text>
+            </TouchableOpacity>
 
-          {/* Share/Copy formula */}
+            <TouchableOpacity
+              style={[
+                styles.segmentBtn,
+                viewMode === 'teks' && styles.segmentBtnActive,
+              ]}
+              onPress={() => setViewMode('teks')}
+              activeOpacity={0.7}
+            >
+              <Ionicons
+                name="document-text-outline"
+                size={11}
+                color={viewMode === 'teks' ? '#ffffff' : '#64748b'}
+              />
+              <Text
+                style={[
+                  styles.segmentBtnText,
+                  viewMode === 'teks' && styles.segmentBtnTextActive,
+                ]}
+              >
+                Teks Rumus
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Bagikan / Salin Button */}
           <TouchableOpacity
             style={styles.copyBtn}
             onPress={handleShareOrCopy}
@@ -118,7 +114,7 @@ export default function MathEquation({
           >
             <Ionicons
               name={copied ? 'checkmark-circle' : 'share-social-outline'}
-              size={13}
+              size={12}
               color={copied ? '#16a34a' : '#0284c7'}
             />
             <Text style={styles.copyBtnText}>
@@ -128,36 +124,82 @@ export default function MathEquation({
         </View>
       </View>
 
-      {/* Body Equation Display */}
-      {viewMode === 'katex' && latex ? (
-        <View style={[styles.equationBox, { height }]}>
-          <WebView
-            originWhitelist={['*']}
-            source={{ html: katexHtml }}
-            style={styles.webview}
-            scrollEnabled={false}
-            javaScriptEnabled={true}
-            domStorageEnabled={true}
-            showsHorizontalScrollIndicator={false}
-            showsVerticalScrollIndicator={false}
-            androidLayerType={Platform.OS === 'android' ? 'software' : 'none'}
-          />
+      {/* Main Formula Content Area */}
+      {viewMode === 'persamaan' ? (
+        <View style={styles.equationCard}>
+          <View style={styles.equationBadgeRow}>
+            <View style={styles.notationBadge}>
+              <Ionicons name="sparkles" size={10} color="#0284c7" />
+              <Text style={styles.notationBadgeText}>Notasi Matematis</Text>
+            </View>
+          </View>
+
+          <View style={styles.mathEquationBox}>
+            <Text style={styles.mathEquationText} selectable={true}>
+              {displayEquation}
+            </Text>
+          </View>
         </View>
       ) : (
-        <View style={styles.readableBox}>
-          <Text style={styles.readableText}>{readable || latex}</Text>
+        <View style={styles.readableCard}>
+          <View style={styles.equationBadgeRow}>
+            <View style={styles.textFormulaBadge}>
+              <Ionicons name="text-outline" size={10} color="#b45309" />
+              <Text style={styles.textFormulaBadgeText}>Acuan Uraian Teknis</Text>
+            </View>
+          </View>
+
+          <View style={styles.readableBox}>
+            <Text style={styles.readableText} selectable={true}>
+              {displayTextFormula}
+            </Text>
+          </View>
         </View>
       )}
 
-      {/* Footer Sub-keterangan */}
-      {readable && viewMode === 'katex' ? (
-        <View style={styles.footerNote}>
-          <Text style={styles.footerNoteLabel}>Bentuk Teknis: </Text>
-          <Text style={styles.footerNoteText}>{readable}</Text>
-        </View>
-      ) : null}
+      {/* Footer Sub-Note (Cross-Reference) */}
+      <View style={styles.footerNote}>
+        <Ionicons name="information-circle-outline" size={12} color="#64748b" />
+        <Text style={styles.footerNoteLabel}>
+          {viewMode === 'persamaan' ? 'Teks Rumus: ' : 'Bentuk Persamaan: '}
+        </Text>
+        <Text style={styles.footerNoteText} numberOfLines={1}>
+          {viewMode === 'persamaan' ? displayTextFormula : displayEquation}
+        </Text>
+      </View>
     </View>
   );
+}
+
+/**
+ * Helper untuk membersihkan LaTeX menjadi notasi matematika yang indah
+ */
+function formatLatexToEquation(latex) {
+  if (!latex) return '';
+  return latex
+    .replace(/\\text\{([^}]+)\}/g, '$1')
+    .replace(/\\times/g, '×')
+    .replace(/\\cdot/g, '·')
+    .replace(/\\sum_\{i=1\}\^\{([^}]+)\}/g, '∑(i=1..$1)')
+    .replace(/\\sum_\{([^}]+)\}/g, '∑($1)')
+    .replace(/\\sum/g, '∑')
+    .replace(/\\left\lceil/g, '⌈')
+    .replace(/\\right\rceil/g, '⌉')
+    .replace(/\\left\[/g, '[')
+    .replace(/\\right\]/g, ']')
+    .replace(/\\left\(/g, '(')
+    .replace(/\\right\)/g, ')')
+    .replace(/\\quad/g, '   ')
+    .replace(/\\dots/g, '...')
+    .replace(/\\%/g, '%')
+    .replace(/\\alpha/g, 'α')
+    .replace(/\\theta/g, 'θ')
+    .replace(/\\sqrt\{([^}]+)\}/g, '√($1)')
+    .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '($1 / $2)')
+    .replace(/_\{([^}]+)\}/g, '_$1')
+    .replace(/\\,/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 const styles = StyleSheet.create({
@@ -165,7 +207,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: '#cbd5e1',
     overflow: 'hidden',
     marginTop: 8,
     marginBottom: 8,
@@ -176,15 +218,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: '#f8fafc',
     paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingVertical: 7,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: '#e2e8f0',
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     flex: 1,
+    marginRight: 8,
   },
   mathBadge: {
     backgroundColor: '#e0f2fe',
@@ -211,29 +254,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
   },
-  toggleBtn: {
+  segmentedWrap: {
+    flexDirection: 'row',
+    backgroundColor: '#e2e8f0',
+    borderRadius: 5,
+    padding: 2,
+    gap: 2,
+  },
+  segmentBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#f1f5f9',
     paddingHorizontal: 7,
     paddingVertical: 3,
     borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
   },
-  toggleBtnActive: {
-    backgroundColor: '#e0f2fe',
-    borderColor: '#7dd3fc',
+  segmentBtnActive: {
+    backgroundColor: '#0284c7',
   },
-  toggleBtnText: {
-    fontSize: 9.5,
-    fontWeight: '600',
+  segmentBtnText: {
+    fontSize: 10,
+    fontWeight: '700',
     color: '#64748b',
   },
-  toggleBtnTextActive: {
-    color: '#0369a1',
-    fontWeight: '700',
+  segmentBtnTextActive: {
+    color: '#ffffff',
   },
   copyBtn: {
     flexDirection: 'row',
@@ -241,7 +286,7 @@ const styles = StyleSheet.create({
     gap: 3,
     backgroundColor: '#f0f9ff',
     paddingHorizontal: 7,
-    paddingVertical: 3,
+    paddingVertical: 4,
     borderRadius: 4,
     borderWidth: 1,
     borderColor: '#bae6fd',
@@ -251,48 +296,110 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#0284c7',
   },
-  equationBox: {
-    width: '100%',
-    backgroundColor: '#fcfdfe',
-    justifyContent: 'center',
+  equationCard: {
+    padding: 12,
+    backgroundColor: '#f8fafc',
     alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 64,
   },
-  webview: {
-    backgroundColor: 'transparent',
+  equationBadgeRow: {
+    alignSelf: 'flex-start',
+    marginBottom: 6,
+  },
+  notationBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: '#e0f2fe',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  notationBadgeText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#0369a1',
+  },
+  mathEquationBox: {
     width: '100%',
-    height: '100%',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    backgroundColor: '#ffffff',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mathEquationText: {
+    fontSize: 14.5,
+    fontWeight: '700',
+    color: '#0369a1',
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    letterSpacing: 0.4,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  readableCard: {
+    padding: 12,
+    backgroundColor: '#fffdf5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 64,
+  },
+  textFormulaBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: '#fef3c7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  textFormulaBadgeText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#b45309',
   },
   readableBox: {
-    padding: 10,
-    backgroundColor: '#fffdf5',
+    width: '100%',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    backgroundColor: '#ffffff',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#fed7aa',
     alignItems: 'center',
     justifyContent: 'center',
   },
   readableText: {
-    fontSize: 12,
+    fontSize: 12.5,
     fontWeight: '700',
     color: '#92400e',
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
     textAlign: 'center',
+    lineHeight: 18,
   },
   footerNote: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    gap: 4,
+    backgroundColor: '#f1f5f9',
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
+    borderTopColor: '#e2e8f0',
   },
   footerNoteLabel: {
-    fontSize: 10,
+    fontSize: 9.5,
     fontWeight: '700',
     color: '#64748b',
   },
   footerNoteText: {
-    fontSize: 10,
+    fontSize: 9.5,
     fontWeight: '600',
-    color: '#0f172a',
+    color: '#334155',
     flex: 1,
   },
 });
