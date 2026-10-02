@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -7,34 +7,92 @@ import {
   Platform,
   Share,
 } from 'react-native';
+import { WebView } from 'react-native-webview';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../constants/colors';
+import katex from 'katex';
+import { KATEX_CSS } from '../constants/katexCss';
 
 /**
  * MathEquation
- * Komponen render persamaan / rumus matematika RABPro.
- * Menyediakan tampilan "Persamaan" (notasi matematis dengan font serif miring)
- * dan tampilan "Teks Rumus" (acuan teks lapangan).
- * 100% andal, langsung tampil tanpa delay, tidak pernah kosong/blank.
+ * Komponen render persamaan matematika standar LaTeX / Microsoft Word Equation Editor.
+ * Menggunakan KaTeX renderToString lokal offline + MathML & KaTeX CSS embedded.
+ * Mendukung eksponen (pangkat kecil di atas), pecahan bertingkat, akar kuadrat bergaris atas,
+ * dan subskrip kecil di bawah, persis seperti Word Equation / LaTeX.
  */
 export default function MathEquation({
   persamaan,
   readable,
   latex,
   title,
+  height = 68,
 }) {
-  // Mode tampilan: 'persamaan' | 'teks'
+  // Mode tampilan: 'persamaan' (Word/LaTeX equation) | 'teks' (Teks acuan lapangan)
   const [viewMode, setViewMode] = useState('persamaan');
   const [copied, setCopied] = useState(false);
 
-  // Ambil string formula matematika terbaik
+  // Pre-render LaTeX ke HTML KaTeX secara sinkron dan 100% offline
+  const katexHtml = useMemo(() => {
+    const rawLatex = latex || persamaan || '';
+    if (!rawLatex) return '';
+    try {
+      const renderedMarkup = katex.renderToString(rawLatex, {
+        displayMode: true,
+        throwOnError: false,
+        output: 'htmlAndMathml',
+      });
+
+      return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <style>
+    ${KATEX_CSS}
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      background-color: #f8fafc;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-family: 'Cambria Math', 'STIX Two Math', 'Latin Modern Math', 'KaTeX_Math', 'Times New Roman', serif;
+    }
+    .katex-display {
+      margin: 0 !important;
+      text-align: center;
+    }
+    .katex {
+      font-size: 1.25rem !important;
+      color: #0369a1;
+      font-weight: 600;
+    }
+    math {
+      font-size: 1.25rem;
+      color: #0369a1;
+    }
+  </style>
+</head>
+<body>
+  ${renderedMarkup}
+</body>
+</html>
+      `;
+    } catch (e) {
+      console.log('KaTeX render error', e);
+      return '';
+    }
+  }, [latex, persamaan]);
+
   const displayEquation = persamaan || formatLatexToEquation(latex) || readable || '';
   const displayTextFormula = readable || displayEquation;
 
   const handleShareOrCopy = async () => {
     try {
       await Share.share({
-        message: `*${title || 'Rumus Estimator RABPro'}*\n• Persamaan: ${displayEquation}\n• Teks Rumus: ${displayTextFormula}`,
+        message: `*${title || 'Rumus Estimator RABPro'}*\n• Persamaan LaTeX: ${latex || displayEquation}\n• Acuan Lapangan: ${displayTextFormula}`,
       });
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -130,15 +188,29 @@ export default function MathEquation({
           <View style={styles.equationBadgeRow}>
             <View style={styles.notationBadge}>
               <Ionicons name="sparkles" size={10} color="#0284c7" />
-              <Text style={styles.notationBadgeText}>Notasi Matematis</Text>
+              <Text style={styles.notationBadgeText}>Notasi Equation Editor (Word / LaTeX)</Text>
             </View>
           </View>
 
-          <View style={styles.mathEquationBox}>
-            <Text style={styles.mathEquationText} selectable={true}>
-              {displayEquation}
-            </Text>
-          </View>
+          {/* Render Offline KaTeX HTML in WebView with True Equations */}
+          {katexHtml ? (
+            <View style={[styles.webviewContainer, { height }]}>
+              <WebView
+                originWhitelist={['*']}
+                source={{ html: katexHtml }}
+                style={styles.webview}
+                scrollEnabled={false}
+                javaScriptEnabled={true}
+                domStorageEnabled={true}
+                showsHorizontalScrollIndicator={false}
+                showsVerticalScrollIndicator={false}
+              />
+            </View>
+          ) : (
+            <View style={styles.fallbackBox}>
+              <Text style={styles.fallbackText}>{displayEquation}</Text>
+            </View>
+          )}
         </View>
       ) : (
         <View style={styles.readableCard}>
@@ -172,7 +244,7 @@ export default function MathEquation({
 }
 
 /**
- * Helper untuk membersihkan LaTeX menjadi notasi matematika yang indah
+ * Helper untuk membersihkan LaTeX menjadi notasi matematika yang dapat dibaca
  */
 function formatLatexToEquation(latex) {
   if (!latex) return '';
@@ -265,8 +337,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderRadius: 4,
   },
   segmentBtnActive: {
@@ -297,11 +369,11 @@ const styles = StyleSheet.create({
     color: '#0284c7',
   },
   equationCard: {
-    padding: 12,
+    padding: 10,
     backgroundColor: '#f8fafc',
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 64,
+    minHeight: 80,
   },
   equationBadgeRow: {
     alignSelf: 'flex-start',
@@ -321,10 +393,23 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#0369a1',
   },
-  mathEquationBox: {
+  webviewContainer: {
     width: '100%',
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+    backgroundColor: '#f8fafc',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    overflow: 'hidden',
+  },
+  webview: {
+    backgroundColor: '#f8fafc',
+    width: '100%',
+    height: '100%',
+  },
+  fallbackBox: {
+    width: '100%',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     backgroundColor: '#ffffff',
     borderRadius: 6,
     borderWidth: 1,
@@ -332,14 +417,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  mathEquationText: {
-    fontSize: 14.5,
+  fallbackText: {
+    fontSize: 14,
     fontWeight: '700',
     color: '#0369a1',
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-    letterSpacing: 0.4,
     textAlign: 'center',
-    lineHeight: 22,
   },
   readableCard: {
     padding: 12,
@@ -364,8 +447,8 @@ const styles = StyleSheet.create({
   },
   readableBox: {
     width: '100%',
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     backgroundColor: '#ffffff',
     borderRadius: 6,
     borderWidth: 1,
