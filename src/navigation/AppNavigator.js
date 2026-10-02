@@ -22,6 +22,7 @@ import KolomScreen from '../screens/KolomScreen';
 import BalokScreen from '../screens/BalokScreen';
 import AtapPelanaScreen from '../screens/AtapPelanaScreen';
 import AtapLimasScreen from '../screens/AtapLimasScreen';
+import MateriScreen from '../screens/MateriScreen';
 import RekapRABScreen from '../screens/RekapRABScreen';
 
 const Tab = createBottomTabNavigator();
@@ -55,6 +56,7 @@ function ExcelSheetTabBar({ state, descriptors, navigation }) {
           const label = options.tabBarLabel || options.title || route.name;
           const icon = options.tabBarIconName || 'document-text-outline';
           const isRekap = route.name === 'RekapRABScreen';
+          const isMateri = route.name === 'MateriScreen';
 
           const onPress = () => {
             const event = navigation.emit({
@@ -78,6 +80,8 @@ function ExcelSheetTabBar({ state, descriptors, navigation }) {
                 isFocused && styles.sheetTabItemActive,
                 isRekap && styles.sheetTabRekap,
                 isRekap && isFocused && styles.sheetTabRekapActive,
+                isMateri && styles.sheetTabMateri,
+                isMateri && isFocused && styles.sheetTabMateriActive,
               ]}
             >
               <Ionicons
@@ -88,6 +92,10 @@ function ExcelSheetTabBar({ state, descriptors, navigation }) {
                     ? isFocused
                       ? '#ffffff'
                       : '#38bdf8'
+                    : isMateri
+                    ? isFocused
+                      ? '#ffffff'
+                      : '#a5b4fc'
                     : isFocused
                     ? colors.primaryDark
                     : '#94a3b8'
@@ -98,6 +106,7 @@ function ExcelSheetTabBar({ state, descriptors, navigation }) {
                   styles.sheetTabLabel,
                   isFocused && styles.sheetTabLabelActive,
                   isRekap && (isFocused ? styles.sheetTabLabelRekapActive : styles.sheetTabLabelRekap),
+                  isMateri && (isFocused ? styles.sheetTabLabelMateriActive : styles.sheetTabLabelMateri),
                 ]}
               >
                 {label}
@@ -182,6 +191,14 @@ function MainTabs() {
         options={{
           tabBarLabel: 'Atap Limas',
           tabBarIconName: 'diamond-outline',
+        }}
+      />
+      <Tab.Screen
+        name="MateriScreen"
+        component={MateriScreen}
+        options={{
+          tabBarLabel: 'Materi & Rumus',
+          tabBarIconName: 'school-outline',
         }}
       />
       <Tab.Screen
@@ -308,6 +325,23 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   sheetTabLabelRekapActive: {
+    color: '#ffffff',
+    fontWeight: '900',
+  },
+  sheetTabMateri: {
+    backgroundColor: '#1e1b4b',
+    borderWidth: 1,
+    borderColor: '#3730a3',
+  },
+  sheetTabMateriActive: {
+    backgroundColor: '#4338ca',
+    borderColor: '#6366f1',
+  },
+  sheetTabLabelMateri: {
+    color: '#c7d2fe',
+    fontWeight: '700',
+  },
+  sheetTabLabelMateriActive: {
     color: '#ffffff',
     fontWeight: '900',
   },

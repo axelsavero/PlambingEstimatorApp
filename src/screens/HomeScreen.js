@@ -331,6 +331,51 @@ export default function HomeScreen({ navigation }) {
           </View>
         ))}
 
+        {/* Banner Materi & Teori Estimator Konstruksi */}
+        <View style={styles.materiSection}>
+          <TouchableOpacity
+            style={styles.materiCard}
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate('MateriScreen')}
+          >
+            <View style={styles.materiLeft}>
+              <View style={styles.materiIconWrap}>
+                <Ionicons name="school" size={24} color="#ffffff" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <View style={styles.materiTitleRow}>
+                  <Text style={styles.materiTitle}>MATERI & RUMUS ESTIMASI KONSTRUKSI</Text>
+                  <View style={styles.materiCodeBadge}>
+                    <Text style={styles.materiCodeBadgeText}>PERSAMAAN & RUMUS</Text>
+                  </View>
+                  <View style={styles.materiVideoBadge}>
+                    <Ionicons name="videocam" size={10} color="#4338ca" />
+                    <Text style={styles.materiVideoBadgeText}>VIDEO MATERI</Text>
+                  </View>
+                </View>
+                <Text style={styles.materiDesc}>
+                  Panduan langkah perhitungan volume (Foot Plate, Pondasi Batu Kali, Balok, Kolom, Tangga, Atap), rumus trigonometri, AHSP SNI, dan pembuatan Kurva S proyek.
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.materiRight}>
+              <View style={styles.materiPillsRow}>
+                <View style={styles.materiPillSmall}>
+                  <Text style={styles.materiPillSmallText}>7 Divisi Teori</Text>
+                </View>
+                <View style={styles.materiPillSmall}>
+                  <Text style={styles.materiPillSmallText}>Font KaTeX</Text>
+                </View>
+              </View>
+              <View style={styles.materiBtn}>
+                <Text style={styles.materiBtnText}>Buka Materi & Rumus</Text>
+                <Ionicons name="arrow-forward" size={13} color="#ffffff" />
+              </View>
+            </View>
+          </TouchableOpacity>
+        </View>
+
         {/* Master Rekapitulasi RAB Proyek Banner */}
         <View style={styles.rekapSection}>
           <TouchableOpacity
@@ -647,6 +692,113 @@ const styles = StyleSheet.create({
   btnOpenText: {
     fontSize: 10,
     fontWeight: '800',
+  },
+  materiSection: {
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  materiCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#1e1b4b',
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#4338ca',
+  },
+  materiLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+    paddingRight: 16,
+  },
+  materiIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    backgroundColor: '#4338ca',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  materiTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 3,
+  },
+  materiTitle: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#ffffff',
+    letterSpacing: 0.3,
+  },
+  materiCodeBadge: {
+    backgroundColor: '#312e81',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#4338ca',
+  },
+  materiCodeBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#c7d2fe',
+  },
+  materiVideoBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: '#e0e7ff',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  materiVideoBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#3730a3',
+  },
+  materiDesc: {
+    fontSize: 11,
+    color: '#cbd5e1',
+    lineHeight: 14,
+  },
+  materiRight: {
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  materiPillsRow: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  materiPillSmall: {
+    backgroundColor: '#312e81',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  materiPillSmallText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#a5b4fc',
+  },
+  materiBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#4f46e5',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 6,
+  },
+  materiBtnText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#ffffff',
   },
   rekapSection: {
     marginTop: 4,
