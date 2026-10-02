@@ -138,8 +138,18 @@ export default function AtapPelanaScreen() {
       title="Pekerjaan Atap Pelana Baja Ringan"
       subtitle="Sheet 11: Rangka Kuda-Kuda C75, Reng, Genteng Metal Pasir, Nok & Lisplank"
       iconName="triangle-outline"
-      diagramSource={require('../../assets/diagrams/atap_pelana.png')}
-      diagramTitle="Gambar Panduan Geometri Kuda-Kuda Atap Pelana & Bracing"
+      diagrams={[
+        {
+          title: 'Gambar 1: Analisa Panjang Profil C 75 Dalam Satu Set Kuda-Kuda',
+          tabLabel: '1. Profil C75 Kuda-Kuda',
+          source: require('../../assets/diagrams/atap_pelana_1.png'),
+        },
+        {
+          title: 'Gambar 2: Analisa Profil Reng (X Bracing) & Bottom Chord Bracing',
+          tabLabel: '2. X-Bracing Reng',
+          source: require('../../assets/diagrams/atap_pelana_2.png'),
+        },
+      ]}
       inputSections={inputSections}
       results={results}
       defaultInputs={DEFAULT_ATAP_PELANA}

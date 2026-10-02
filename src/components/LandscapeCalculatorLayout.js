@@ -24,6 +24,7 @@ export default function LandscapeCalculatorLayout({
   iconName = 'calculator-outline',
   diagramSource,
   diagramTitle = 'Panduan Gambar Teknis',
+  diagrams,
   inputSections = [],
   results,
   defaultInputs,
@@ -34,11 +35,21 @@ export default function LandscapeCalculatorLayout({
 }) {
   const [showImageModal, setShowImageModal] = useState(false);
   const [activeResultTab, setActiveResultTab] = useState('rab'); // 'rab' | 'volume'
+  const [activeDiagramIndex, setActiveDiagramIndex] = useState(0);
   const rightScrollRef = useRef(null);
+
+  // Normalize diagrams list (mendukung 1 diagram maupun multi-diagram seperti Atap Pelana)
+  const diagramList = diagrams && diagrams.length > 0
+    ? diagrams
+    : (diagramSource ? [{ title: diagramTitle, tabLabel: diagramTitle, source: diagramSource }] : []);
+
+  const hasDiagrams = diagramList.length > 0;
+  const currentDiagram = diagramList[activeDiagramIndex] || diagramList[0];
 
   // Periksa modifikasi parameter terhadap default Excel
   const modifiedInfo = checkModifiedInputs(currentInputs, defaultInputs);
   const isAnyModified = modifiedInfo.isModified;
+
 
   const handleTabSwitch = (tab) => {
     setActiveResultTab(tab);
@@ -142,7 +153,7 @@ export default function LandscapeCalculatorLayout({
             ) : null}
 
             {/* Gambar Panduan Teknis Button / Preview */}
-            {diagramSource ? (
+            {hasDiagrams ? (
               <View style={styles.diagramCard}>
                 <View style={styles.diagramHeaderRow}>
                   <View style={styles.diagramTitleWrap}>
@@ -152,7 +163,7 @@ export default function LandscapeCalculatorLayout({
                       numberOfLines={1}
                       ellipsizeMode="tail"
                     >
-                      {diagramTitle}
+                      {currentDiagram.title}
                     </Text>
                   </View>
                   <TouchableOpacity
@@ -165,12 +176,44 @@ export default function LandscapeCalculatorLayout({
                   </TouchableOpacity>
                 </View>
 
+                {/* Switcher Tab jika ada lebih dari 1 gambar (misal Atap Pelana: Profil C75 & X-Bracing) */}
+                {diagramList.length > 1 ? (
+                  <View style={styles.diagramTabsRow}>
+                    {diagramList.map((d, dIdx) => (
+                      <TouchableOpacity
+                        key={`diag-tab-${dIdx}`}
+                        style={[
+                          styles.diagramTabBtn,
+                          activeDiagramIndex === dIdx && styles.diagramTabBtnActive,
+                        ]}
+                        onPress={() => setActiveDiagramIndex(dIdx)}
+                        activeOpacity={0.8}
+                      >
+                        <Ionicons
+                          name={activeDiagramIndex === dIdx ? 'radio-button-on' : 'radio-button-off'}
+                          size={11}
+                          color={activeDiagramIndex === dIdx ? colors.primaryDark : '#64748b'}
+                        />
+                        <Text
+                          style={[
+                            styles.diagramTabText,
+                            activeDiagramIndex === dIdx && styles.diagramTabTextActive,
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {d.tabLabel || `Gambar ${dIdx + 1}`}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                ) : null}
+
                 <TouchableOpacity
                   activeOpacity={0.9}
                   onPress={() => setShowImageModal(true)}
                 >
                   <Image
-                    source={diagramSource}
+                    source={currentDiagram.source}
                     style={styles.diagramThumbnail}
                     resizeMode="contain"
                   />
@@ -733,7 +776,7 @@ export default function LandscapeCalculatorLayout({
       </View>
 
       {/* Modal View Full Image Diagram */}
-      {diagramSource ? (
+      {hasDiagrams ? (
         <Modal
           visible={showImageModal}
           transparent={true}
@@ -743,16 +786,58 @@ export default function LandscapeCalculatorLayout({
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>{diagramTitle}</Text>
+                <View style={{ flex: 1, marginRight: 12 }}>
+                  <Text style={styles.modalTitle} numberOfLines={1}>
+                    {currentDiagram?.title || diagramTitle}
+                  </Text>
+                  {diagramList.length > 1 ? (
+                    <Text style={styles.modalSubtitle}>
+                      Gambar {activeDiagramIndex + 1} dari {diagramList.length}
+                    </Text>
+                  ) : null}
+                </View>
                 <TouchableOpacity
                   style={styles.modalCloseBtn}
                   onPress={() => setShowImageModal(false)}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                  <Ionicons name="close" size={22} color="#ffffff" />
+                  <Ionicons name="close" size={24} color="#ffffff" />
                 </TouchableOpacity>
               </View>
+
+              {/* Modal Switcher jika lebih dari 1 gambar */}
+              {diagramList.length > 1 ? (
+                <View style={styles.modalTabsRow}>
+                  {diagramList.map((d, dIdx) => (
+                    <TouchableOpacity
+                      key={`modal-tab-${dIdx}`}
+                      style={[
+                        styles.modalTabBtn,
+                        activeDiagramIndex === dIdx && styles.modalTabBtnActive,
+                      ]}
+                      onPress={() => setActiveDiagramIndex(dIdx)}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons
+                        name={activeDiagramIndex === dIdx ? 'radio-button-on' : 'radio-button-off'}
+                        size={13}
+                        color={activeDiagramIndex === dIdx ? '#0284c7' : '#94a3b8'}
+                      />
+                      <Text
+                        style={[
+                          styles.modalTabText,
+                          activeDiagramIndex === dIdx && styles.modalTabTextActive,
+                        ]}
+                      >
+                        {d.tabLabel || `Gambar ${dIdx + 1}`}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              ) : null}
+
               <Image
-                source={diagramSource}
+                source={currentDiagram?.source}
                 style={styles.modalImage}
                 resizeMode="contain"
               />
@@ -920,6 +1005,37 @@ const styles = StyleSheet.create({
     height: 120,
     backgroundColor: '#f8fafc',
     borderRadius: 6,
+  },
+  diagramTabsRow: {
+    flexDirection: 'row',
+    gap: 6,
+    marginBottom: 8,
+  },
+  diagramTabBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    paddingVertical: 5,
+    paddingHorizontal: 6,
+    borderRadius: 5,
+    backgroundColor: '#f1f5f9',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  diagramTabBtnActive: {
+    backgroundColor: '#e0f2fe',
+    borderColor: '#0284c7',
+  },
+  diagramTabText: {
+    fontSize: 9.5,
+    fontWeight: '600',
+    color: '#64748b',
+  },
+  diagramTabTextActive: {
+    color: '#0369a1',
+    fontWeight: '700',
   },
   card: {
     backgroundColor: '#ffffff',
@@ -1427,7 +1543,45 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     color: '#ffffff',
-    fontSize: 14,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  modalSubtitle: {
+    color: '#94a3b8',
+    fontSize: 10,
+    marginTop: 2,
+  },
+  modalTabsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    backgroundColor: '#1e293b',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#334155',
+  },
+  modalTabBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 5,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    backgroundColor: '#0f172a',
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  modalTabBtnActive: {
+    backgroundColor: '#e0f2fe',
+    borderColor: '#38bdf8',
+  },
+  modalTabText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#94a3b8',
+  },
+  modalTabTextActive: {
+    color: '#0369a1',
     fontWeight: '700',
   },
   modalCloseBtn: {
