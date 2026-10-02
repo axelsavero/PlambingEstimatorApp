@@ -76,6 +76,9 @@ export default function RekapRABScreen({ navigation }) {
     if (!rekapData) return;
     let msg = `*REKAP RENCANA ANGGARAN BIAYA (RAB)*\n`;
     msg += `Aplikasi RABPro\n`;
+    if (rekapData.isAnySheetModified) {
+      msg += `[Status: Memuat Nilai Kustom/Disesuaikan *]\n`;
+    }
     msg += `====================================\n\n`;
 
     rekapData.table.forEach((row) => {
@@ -84,12 +87,16 @@ export default function RekapRABScreen({ navigation }) {
           ? ' [AKTIF]'
           : ' [TIDAK AKTIF]'
         : '';
-      msg += `${row.no}. ${row.uraian}${activeMark}\n`;
+      const customMark = row.isModified ? ' *' : '';
+      msg += `${row.no}. ${row.uraian}${activeMark}${customMark}\n`;
       msg += `   Jumlah: ${formatRupiah(row.jumlah)}\n`;
     });
 
     msg += `\n====================================\n`;
-    msg += `*TOTAL ESTIMASI PROYEK: ${formatRupiah(rekapData.totalProyek)}*\n`;
+    msg += `*TOTAL ESTIMASI PROYEK: ${formatRupiah(rekapData.totalProyek)}${rekapData.isAnySheetModified ? ' *' : ''}*\n`;
+    if (rekapData.isAnySheetModified) {
+      msg += `_*) Tanda bintang (*) menandakan modul dengan parameter yang telah disesuaikan._\n`;
+    }
     msg += `_Dihasilkan oleh Aplikasi Estimator RABPro_`;
 
     try {
@@ -101,17 +108,17 @@ export default function RekapRABScreen({ navigation }) {
 
   const handleReset = () => {
     Alert.alert(
-      'Konfirmasi Reset Proyek',
-      'Kembalikan seluruh data dan perhitungan proyek ke baseline standar Excel?',
+      'Konfirmasi Reset Rekap RAB',
+      'Kembalikan seluruh modul perhitungan (Pondasi, Foot Plate, Sloof, Kolom, Balok, Atap) ke nilai standar Excel?',
       [
         { text: 'Batal', style: 'cancel' },
         {
-          text: 'Reset Baseline',
+          text: 'Reset Seluruhnya',
           style: 'destructive',
           onPress: async () => {
             await resetAllToDefault();
             await loadData();
-            Alert.alert('Berhasil', 'Seluruh data telah di-reset ke baseline standar.');
+            Alert.alert('Sukses', 'Seluruh parameter proyek telah dikembalikan ke standar awal Excel.');
           },
         },
       ]
@@ -130,7 +137,14 @@ export default function RekapRABScreen({ navigation }) {
           <View style={styles.headerLeft}>
             <RABProLogo size={36} showText={false} />
             <View>
-              <Text style={styles.headerMainTitle}>REKAP</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={styles.headerMainTitle}>REKAP</Text>
+                {rekapData?.isAnySheetModified ? (
+                  <View style={styles.kustomActiveBadge}>
+                    <Text style={styles.kustomActiveBadgeText}>* Kustom Aktif</Text>
+                  </View>
+                ) : null}
+              </View>
               <Text style={styles.headerSubTitle}>
                 RENCANA ANGGARAN BIAYA (RAB)
               </Text>
@@ -143,12 +157,39 @@ export default function RekapRABScreen({ navigation }) {
               <Text style={styles.btnActionText}>Bagikan Rekap</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.btnReset} onPress={handleReset}>
-              <Ionicons name="refresh" size={16} color="#475569" />
-              <Text style={styles.btnResetText}>Reset Standar</Text>
+            <TouchableOpacity
+              style={[
+                styles.btnReset,
+                rekapData?.isAnySheetModified && styles.btnResetModified,
+              ]}
+              onPress={handleReset}
+            >
+              <Ionicons
+                name="refresh"
+                size={16}
+                color={rekapData?.isAnySheetModified ? '#b45309' : '#475569'}
+              />
+              <Text
+                style={[
+                  styles.btnResetText,
+                  rekapData?.isAnySheetModified && styles.btnResetTextModified,
+                ]}
+              >
+                Reset Standar
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Notice Banner jika ada nilai yang disesuaikan */}
+        {rekapData?.isAnySheetModified ? (
+          <View style={styles.rekapModifiedBanner}>
+            <Ionicons name="information-circle" size={16} color="#b45309" />
+            <Text style={styles.rekapModifiedBannerText}>
+              Beberapa modul pekerjaan memiliki parameter yang disesuaikan (*). Nilai pada kolom jumlah dan total biaya proyek dihitung berdasarkan input kustom.
+            </Text>
+          </View>
+        ) : null}
 
         {/* Roof Selector Banner */}
         <View style={styles.roofChoiceCard}>
@@ -222,23 +263,24 @@ export default function RekapRABScreen({ navigation }) {
           <View style={styles.tableHeadRow}>
             <Text style={[styles.thCell, { width: 50, textAlign: 'center' }]}>No</Text>
             <Text style={[styles.thCell, { flex: 1 }]}>Uraian Pekerjaan</Text>
-            <Text style={[styles.thCell, { width: 180, textAlign: 'right' }]}>
-              Jumlah (Rp)
+            <Text style={[styles.thCell, { width: 190, textAlign: 'right' }]}>
+              Jumlah (Rp) {rekapData?.isAnySheetModified ? '*' : ''}
             </Text>
-            <Text style={[styles.thCell, { width: 90, textAlign: 'center' }]}>Status</Text>
+            <Text style={[styles.thCell, { width: 95, textAlign: 'center' }]}>Status</Text>
           </View>
 
           <View style={styles.subThRow}>
             <Text style={[styles.subThCell, { width: 50, textAlign: 'center' }]}>A</Text>
             <Text style={[styles.subThCell, { flex: 1 }]}>B</Text>
-            <Text style={[styles.subThCell, { width: 180, textAlign: 'right' }]}>C</Text>
-            <Text style={[styles.subThCell, { width: 90, textAlign: 'center' }]}>-</Text>
+            <Text style={[styles.subThCell, { width: 190, textAlign: 'right' }]}>C</Text>
+            <Text style={[styles.subThCell, { width: 95, textAlign: 'center' }]}>-</Text>
           </View>
 
           {rekapData?.table.map((row, idx) => {
             const isClickable = row.isCalculated;
             const isRoofRow = row.isRoofChoice;
             const isRoofActive = row.isActiveRoof;
+            const isRowModified = row.isModified;
 
             return (
               <TouchableOpacity
@@ -250,6 +292,7 @@ export default function RekapRABScreen({ navigation }) {
                   idx % 2 === 1 && styles.tableRowAlt,
                   isClickable && styles.clickableRow,
                   isRoofRow && !isRoofActive && styles.inactiveRoofRow,
+                  isRowModified && styles.modifiedRow,
                 ]}
               >
                 <Text
@@ -275,10 +318,14 @@ export default function RekapRABScreen({ navigation }) {
                       styles.tdUraian,
                       isClickable && styles.clickableText,
                       isRoofRow && !isRoofActive && styles.textDisabled,
+                      isRowModified && styles.textModified,
                     ]}
                   >
                     {row.uraian}
                   </Text>
+                  {isRowModified ? (
+                    <Text style={styles.asteriskMark}>*</Text>
+                  ) : null}
                   {isClickable ? (
                     <Ionicons name="create-outline" size={13} color={colors.primary} />
                   ) : null}
@@ -287,15 +334,20 @@ export default function RekapRABScreen({ navigation }) {
                 <Text
                   style={[
                     styles.tdJumlah,
-                    { width: 180, textAlign: 'right' },
+                    { width: 190, textAlign: 'right' },
                     isRoofRow && !isRoofActive && styles.textDisabled,
+                    isRowModified && styles.amountModified,
                   ]}
                 >
-                  {row.jumlah > 0 ? formatRupiah(row.jumlah) : '-'}
+                  {row.jumlah > 0 ? `${formatRupiah(row.jumlah)}${isRowModified ? ' *' : ''}` : '-'}
                 </Text>
 
-                <View style={{ width: 90, alignItems: 'center' }}>
-                  {isClickable ? (
+                <View style={{ width: 95, alignItems: 'center' }}>
+                  {isRowModified ? (
+                    <View style={styles.badgeKustom}>
+                      <Text style={styles.badgeKustomText}>* Kustom</Text>
+                    </View>
+                  ) : isClickable ? (
                     <View style={styles.badgeKalkulator}>
                       <Text style={styles.badgeKalkulatorText}>Kalkulator</Text>
                     </View>
@@ -308,15 +360,33 @@ export default function RekapRABScreen({ navigation }) {
           })}
 
           {/* Grand Total Footer Row */}
-          <View style={styles.tableFooterRow}>
+          <View style={[styles.tableFooterRow, rekapData?.isAnySheetModified && styles.tableFooterRowModified]}>
             <Text style={[styles.tfLabel, { width: 50 + 10 }]}></Text>
-            <Text style={[styles.tfLabel, { flex: 1 }]}>JUMLAH TOTAL PROYEK (Rp)</Text>
-            <Text style={[styles.tfAmount, { width: 180, textAlign: 'right' }]}>
+            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={styles.tfLabel}>
+                JUMLAH TOTAL PROYEK (Rp) {rekapData?.isAnySheetModified ? '*' : ''}
+              </Text>
+              {rekapData?.isAnySheetModified ? (
+                <View style={styles.footerKustomBadge}>
+                  <Text style={styles.footerKustomBadgeText}>* Kustom</Text>
+                </View>
+              ) : null}
+            </View>
+            <Text style={[styles.tfAmount, { width: 190, textAlign: 'right' }, rekapData?.isAnySheetModified && styles.tfAmountModified]}>
               {formatRupiah(rekapData?.totalProyek || 0)}
             </Text>
-            <View style={{ width: 90 }} />
+            <View style={{ width: 95 }} />
           </View>
         </View>
+
+        {rekapData?.isAnySheetModified ? (
+          <View style={styles.rekapLegend}>
+            <Ionicons name="information-circle-outline" size={13} color="#b45309" />
+            <Text style={styles.rekapLegendText}>
+              *) Tanda bintang (*) menandakan pekerjaan atau jumlah biaya yang terpengaruh oleh parameter yang telah diedit/disesuaikan dari nilai standar Excel.
+            </Text>
+          </View>
+        ) : null}
       </ScrollView>
     </View>
   );
@@ -350,10 +420,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
-  logoIcon: {
-    width: 40,
-    height: 40,
-  },
   headerMainTitle: {
     fontSize: 16,
     fontWeight: '900',
@@ -362,8 +428,38 @@ const styles = StyleSheet.create({
   },
   headerSubTitle: {
     fontSize: 12,
-    fontWeight: '700',
-    color: colors.primaryDark,
+    fontWeight: '800',
+    color: '#0284c7',
+  },
+  kustomActiveBadge: {
+    backgroundColor: '#fef3c7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#fde68a',
+  },
+  kustomActiveBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#b45309',
+  },
+  rekapModifiedBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#fffbeb',
+    borderRadius: 8,
+    padding: 9,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#fde68a',
+  },
+  rekapModifiedBannerText: {
+    fontSize: 10.5,
+    color: '#92400e',
+    flex: 1,
+    lineHeight: 14,
   },
   headerActions: {
     flexDirection: 'row',
@@ -372,81 +468,89 @@ const styles = StyleSheet.create({
   btnShare: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 5,
     backgroundColor: '#10b981',
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 7,
     borderRadius: 6,
   },
   btnReset: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 5,
     backgroundColor: '#e2e8f0',
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 7,
     borderRadius: 6,
   },
+  btnResetModified: {
+    backgroundColor: '#fef3c7',
+    borderWidth: 1,
+    borderColor: '#f59e0b',
+  },
   btnActionText: {
+    color: '#ffffff',
     fontSize: 11,
     fontWeight: '700',
-    color: '#ffffff',
   },
   btnResetText: {
+    color: '#475569',
     fontSize: 11,
     fontWeight: '700',
-    color: '#475569',
+  },
+  btnResetTextModified: {
+    color: '#b45309',
+    fontWeight: '800',
   },
   roofChoiceCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#e0f2fe',
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    backgroundColor: '#ffffff',
+    borderRadius: 10,
+    padding: 10,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#bae6fd',
+    borderColor: '#e2e8f0',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   roofChoiceTitle: {
     fontSize: 12,
     fontWeight: '800',
-    color: '#0369a1',
+    color: '#1e293b',
   },
   roofToggleRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 8,
   },
   roofToggleBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#ffffff',
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 6,
+    backgroundColor: '#f1f5f9',
     borderWidth: 1,
     borderColor: '#cbd5e1',
   },
   roofToggleBtnActive: {
-    backgroundColor: '#f0fdf4',
+    backgroundColor: '#dcfce7',
     borderColor: '#86efac',
   },
   roofToggleText: {
     fontSize: 11,
+    color: '#475569',
     fontWeight: '600',
-    color: '#64748b',
   },
   roofToggleTextActive: {
-    color: '#166534',
+    color: '#15803d',
     fontWeight: '800',
   },
   tableCard: {
     backgroundColor: '#ffffff',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#cbd5e1',
+    borderColor: '#e2e8f0',
     overflow: 'hidden',
   },
   tableHeadRow: {
@@ -488,6 +592,9 @@ const styles = StyleSheet.create({
   clickableRow: {
     backgroundColor: '#f0f9ff',
   },
+  modifiedRow: {
+    backgroundColor: '#fffdf5',
+  },
   inactiveRoofRow: {
     opacity: 0.5,
   },
@@ -501,6 +608,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1e293b',
   },
+  textModified: {
+    color: '#92400e',
+    fontWeight: '800',
+  },
+  asteriskMark: {
+    color: '#d97706',
+    fontWeight: '900',
+    fontSize: 13,
+  },
   clickableText: {
     color: '#0369a1',
     fontWeight: '700',
@@ -509,6 +625,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     color: '#0f172a',
+  },
+  amountModified: {
+    color: '#b45309',
+    fontWeight: '800',
   },
   textDisabled: {
     color: '#94a3b8',
@@ -526,6 +646,19 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#1d4ed8',
   },
+  badgeKustom: {
+    backgroundColor: '#fef3c7',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#f59e0b',
+  },
+  badgeKustomText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#b45309',
+  },
   badgeStandarText: {
     fontSize: 9,
     fontWeight: '600',
@@ -538,14 +671,46 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 10,
   },
+  tableFooterRowModified: {
+    backgroundColor: '#0f172a',
+    borderTopWidth: 2,
+    borderTopColor: '#f59e0b',
+  },
   tfLabel: {
     color: '#ffffff',
     fontSize: 12,
     fontWeight: '900',
   },
+  footerKustomBadge: {
+    backgroundColor: '#b45309',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 4,
+  },
+  footerKustomBadgeText: {
+    fontSize: 8.5,
+    fontWeight: '800',
+    color: '#ffffff',
+  },
   tfAmount: {
     color: '#ffffff',
     fontSize: 15,
     fontWeight: '900',
+  },
+  tfAmountModified: {
+    color: '#fbbf24',
+  },
+  rekapLegend: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 8,
+    paddingHorizontal: 6,
+  },
+  rekapLegendText: {
+    fontSize: 9.5,
+    color: '#b45309',
+    fontStyle: 'italic',
+    flex: 1,
   },
 });

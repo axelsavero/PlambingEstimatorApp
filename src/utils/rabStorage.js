@@ -16,6 +16,7 @@ import {
   hitungAtapLimas,
   REKAP_RAB_BASELINE,
 } from './constructionCalculations';
+import { isSheetModified } from './modificationHelper';
 
 const STORAGE_KEYS = {
   PROJECT_INPUTS: '@rabpro_project_inputs',
@@ -123,21 +124,25 @@ export const generateCurrentRekapRAB = async () => {
 
   const table = REKAP_RAB_BASELINE.map((item) => {
     if (item.isCalculated && calculatedTotals[item.type] !== undefined) {
+      const isModified = isSheetModified(item.type, inputs[item.type]);
       return {
         ...item,
         jumlah: calculatedTotals[item.type],
         isActiveRoof: item.isRoofChoice ? (roofChoice === (item.type === 'atap_pelana' ? 'pelana' : 'limas')) : undefined,
+        isModified,
       };
     }
     return item;
   });
 
   const totalProyek = table.reduce((sum, item) => sum + (item.jumlah || 0), 0);
+  const isAnySheetModified = table.some((item) => item.isModified);
 
   return {
     table,
     totalProyek,
     roofChoice,
+    isAnySheetModified,
     details: {
       pondasi: pondasiRes,
       footplate: footPlateRes,
