@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
@@ -13,12 +12,17 @@ import { setDisclaimerAccepted } from '../utils/rabStorage';
 import RABProLogo from '../components/RABProLogo';
 
 export default function DisclaimerScreen({ navigation, onContinue }) {
+  const isFromModal = navigation?.canGoBack && navigation.canGoBack();
+
   const handleProceed = async () => {
     await setDisclaimerAccepted();
     if (onContinue) {
       onContinue();
+    } else if (isFromModal) {
+      navigation.goBack();
     } else if (navigation) {
-      navigation.navigate('HomeTab');
+      // Navigasi aman ke tab Home di dalam MainTabs navigator
+      navigation.navigate('MainTabs', { screen: 'HomeTab' });
     }
   };
 
@@ -37,6 +41,14 @@ export default function DisclaimerScreen({ navigation, onContinue }) {
             </View>
             <View style={styles.appBrandRow}>
               <RABProLogo size={32} textSize={20} textColor={colors.primaryDark} />
+              {isFromModal ? (
+                <TouchableOpacity
+                  style={styles.btnClose}
+                  onPress={() => navigation.goBack()}
+                >
+                  <Ionicons name="close" size={20} color="#64748b" />
+                </TouchableOpacity>
+              ) : null}
             </View>
           </View>
 
@@ -79,9 +91,15 @@ export default function DisclaimerScreen({ navigation, onContinue }) {
               activeOpacity={0.85}
               onPress={handleProceed}
             >
-              <Ionicons name="checkmark-done" size={20} color="#ffffff" />
+              <Ionicons
+                name={isFromModal ? 'arrow-back' : 'checkmark-done'}
+                size={20}
+                color="#ffffff"
+              />
               <Text style={styles.btnProceedText}>
-                Saya Mengerti & Setuju — Buka Aplikasi
+                {isFromModal
+                  ? 'Tutup & Kembali ke Aplikasi'
+                  : 'Saya Mengerti & Setuju — Buka Aplikasi'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -146,14 +164,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  logoIcon: {
+  btnClose: {
     width: 32,
     height: 32,
-  },
-  brandTitle: {
-    fontSize: 20,
-    fontWeight: '900',
-    color: colors.primaryDark,
+    borderRadius: 16,
+    backgroundColor: '#f1f5f9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 6,
   },
   paragraphBox: {
     flexDirection: 'row',
