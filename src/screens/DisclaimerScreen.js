@@ -101,25 +101,24 @@ export default function DisclaimerScreen({ onContinue }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
   },
   scrollArea: {
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
+    padding: 12,
+    flexGrow: 1,
     justifyContent: 'center',
-    minHeight: '100%',
+    alignItems: 'center',
   },
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: 10,
-    padding: 18,
+    padding: 14,
     borderWidth: 1.5,
     borderColor: '#FED7AA',
-    maxWidth: 780,
+    maxWidth: 740,
     width: '100%',
-    alignSelf: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
@@ -157,8 +156,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   brandLogo: {
-    width: 120,
-    height: 36,
+    width: 44,
+    height: 38,
   },
   paragraphBox: {
     flexDirection: 'row',

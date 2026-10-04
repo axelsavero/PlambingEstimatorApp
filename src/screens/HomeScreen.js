@@ -414,8 +414,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   brandLogo: {
-    width: 130,
-    height: 44,
+    width: 48,
+    height: 42,
   },
   brandTextWrap: {
     flex: 1,

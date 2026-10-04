@@ -1018,7 +1018,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   q2BrandWrap: {
-    width: 110,
+    width: 44,
     height: 38,
     justifyContent: 'center',
   },

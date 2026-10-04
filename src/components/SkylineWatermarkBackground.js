@@ -1,23 +1,22 @@
 import React from 'react';
-import { View, Image, StyleSheet, Dimensions } from 'react-native';
+import { View, Image, StyleSheet } from 'react-native';
 import { colors } from '../constants/colors';
-
-const { width, height } = Dimensions.get('window');
 
 export default function SkylineWatermarkBackground({ children, style, contentContainerStyle }) {
   return (
     <View style={[styles.container, style]}>
-      {/* Layer 1: Watermark Logo Transparan */}
-      <View style={styles.watermarkLayer} pointerEvents="none">
-        <Image
-          source={require('../../assets/brand/logo_icon.png')}
-          style={styles.watermarkImage}
-          resizeMode="contain"
-        />
-      </View>
+      {/* Background Decorator Layer: Murni Absolut, Terpisah dari Alur Flex Konten */}
+      <View style={styles.backgroundLayer} pointerEvents="none">
+        {/* Layer 1: Watermark Logo Transparan di Tengah */}
+        <View style={styles.watermarkCenter}>
+          <Image
+            source={require('../../assets/brand/logo_icon.png')}
+            style={styles.watermarkImage}
+            resizeMode="contain"
+          />
+        </View>
 
-      {/* Layer 2: Siluet Gedung Modern Skyline di Bagian Bawah */}
-      <View style={styles.skylineLayer} pointerEvents="none">
+        {/* Layer 2: Siluet Gedung Modern Skyline di Bagian Bawah */}
         <Image
           source={require('../../assets/brand/modern_skyline.png')}
           style={styles.skylineImage}
@@ -25,7 +24,7 @@ export default function SkylineWatermarkBackground({ children, style, contentCon
         />
       </View>
 
-      {/* Layer 3: Konten Aplikasi Utama */}
+      {/* Layer 3: Konten Utama Aplikasi */}
       <View style={[styles.contentLayer, contentContainerStyle]}>
         {children}
       </View>
@@ -40,32 +39,39 @@ const styles = StyleSheet.create({
     position: 'relative',
     overflow: 'hidden',
   },
-  watermarkLayer: {
-    ...StyleSheet.absoluteFillObject,
+  backgroundLayer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 0,
+  },
+  watermarkCenter: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 1,
   },
   watermarkImage: {
-    width: Math.min(width, height) * 0.95,
-    height: Math.min(width, height) * 0.95,
-    opacity: 0.08, // Transparan lembut agar tidak mengganggu keterbacaan teks
+    width: 200,
+    height: 200,
+    opacity: 0.08, // Transparan lembut elegan
   },
-  skylineLayer: {
+  skylineImage: {
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
-    height: 120, // Ketinggian siluet gedung di bagian bawah
-    zIndex: 2,
-  },
-  skylineImage: {
     width: '100%',
-    height: '100%',
-    opacity: 0.18, // Efek siluet skyline transparan
+    height: 90,
+    opacity: 0.16, // Siluet skyline lembut
   },
   contentLayer: {
     flex: 1,
-    zIndex: 10,
+    zIndex: 1,
   },
 });

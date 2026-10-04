@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   headerLogo: {
-    width: 120,
+    width: 44,
     height: 38,
   },
   headerMainTitle: {
