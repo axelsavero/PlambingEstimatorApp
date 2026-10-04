@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   ScrollView,
   StyleSheet,
+  Modal,
+  Image,
+  Pressable,
 } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -28,99 +31,307 @@ import RekapRABScreen from '../screens/RekapRABScreen';
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-// Custom Excel Sheet Tab Bar (Landscape horizontal scrollable)
-function ExcelSheetTabBar({ state, descriptors, navigation }) {
+// Definisi Kategori Submenu Navigasi Kalkulator
+const NAV_CATEGORIES = [
+  {
+    id: 'pondasi',
+    label: 'Pondasi',
+    icon: 'layers-outline',
+    activeIcon: 'layers',
+    screens: [
+      { name: 'PondasiScreen', label: 'Pondasi Batu Belah', code: '02', icon: 'layers-outline', desc: 'Galian, aanstamping, batu kali & urukan' },
+      { name: 'FootPlateScreen', label: 'Foot Plate (Tapak)', code: '03', icon: 'grid-outline', desc: 'Pondasi telapak 6 tipe, pedestal & cor' },
+    ],
+  },
+  {
+    id: 'beton',
+    label: 'Beton',
+    icon: 'business-outline',
+    activeIcon: 'business',
+    screens: [
+      { name: 'SloofScreen', label: 'Sloof Beton', code: '04', icon: 'remove-outline', desc: 'Tulangan pokok, sengkang & cor K-275' },
+      { name: 'KolomScreen', label: 'Kolom Beton', code: '05', icon: 'business-outline', desc: 'Dimensi kolom, pembesian & bekisting' },
+      { name: 'BalokScreen', label: 'Balok Beton', code: '06', icon: 'cube-outline', desc: 'Bentang balok, tulangan lentur & cor' },
+    ],
+  },
+  {
+    id: 'atap',
+    label: 'Atap',
+    icon: 'triangle-outline',
+    activeIcon: 'triangle',
+    screens: [
+      { name: 'AtapPelanaScreen', label: 'Atap Pelana C75', code: '11', icon: 'triangle-outline', desc: 'Kuda-kuda C75, reng, genteng metal pasir' },
+      { name: 'AtapLimasScreen', label: 'Atap Limas', code: '11.A', icon: 'diamond-outline', desc: 'Geometri limas trapesium, jurai & nok' },
+    ],
+  },
+];
+
+// Custom Excel Sheet Tab Bar dengan Submenu Navigasi
+function ExcelSheetTabBar({ state, navigation }) {
+  const currentRouteName = state.routes[state.index]?.name;
+  const [activeMenuCategory, setActiveMenuCategory] = useState(null);
+
+  // Cari apakah rute saat ini berada dalam salah satu kategori submenu
+  const getCurrentCategoryActive = (category) => {
+    return category.screens.some((s) => s.name === currentRouteName);
+  };
+
+  const getActiveSubmenuLabel = (category) => {
+    const found = category.screens.find((s) => s.name === currentRouteName);
+    return found ? found.label : null;
+  };
+
+  const handleOpenCategory = (cat) => {
+    setActiveMenuCategory(cat);
+  };
+
+  const handleSelectScreen = (screenName) => {
+    setActiveMenuCategory(null);
+    navigation.navigate(screenName);
+  };
+
+  const isHome = currentRouteName === 'HomeTab';
+  const isMateri = currentRouteName === 'MateriScreen';
+  const isRekap = currentRouteName === 'RekapRABScreen';
+
   return (
-    <View style={styles.sheetTabBarContainer}>
-      {/* Left branding with clean vector blue cube */}
-      <TouchableOpacity
-        style={styles.sheetTabBarLeft}
-        activeOpacity={0.8}
-        onPress={() => navigation.navigate('HomeTab')}
-      >
-        <View style={styles.vectorCubeBadge}>
-          <Ionicons name="cube" size={13} color="#38bdf8" />
-        </View>
-        <Text style={styles.sheetBrandText}>RABPro</Text>
-      </TouchableOpacity>
+    <>
+      <View style={styles.sheetTabBarContainer}>
+        {/* Left branding with Estimator Logo */}
+        <TouchableOpacity
+          style={styles.sheetTabBarLeft}
+          activeOpacity={0.8}
+          onPress={() => navigation.navigate('HomeTab')}
+        >
+          <Image
+            source={require('../../assets/brand/logo_icon.png')}
+            style={styles.brandLogoIcon}
+            resizeMode="contain"
+          />
+          <View>
+            <Text style={styles.sheetBrandText}>ESTIMATOR</Text>
+            <Text style={styles.sheetBrandSub}>RAB KONSTRUKSI</Text>
+          </View>
+        </TouchableOpacity>
 
-      {/* Horizontal scrolling sheet tabs */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.sheetTabScroll}
-      >
-        {state.routes.map((route, index) => {
-          const { options } = descriptors[route.key];
-          const isFocused = state.index === index;
-          const label = options.tabBarLabel || options.title || route.name;
-          const icon = options.tabBarIconName || 'document-text-outline';
-          const isRekap = route.name === 'RekapRABScreen';
-          const isMateri = route.name === 'MateriScreen';
+        {/* Horizontal Navigation Items */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.sheetTabScroll}
+        >
+          {/* 1. Beranda Tab */}
+          <TouchableOpacity
+            onPress={() => navigation.navigate('HomeTab')}
+            activeOpacity={0.8}
+            style={[styles.sheetTabItem, isHome && styles.sheetTabItemActive]}
+          >
+            <Ionicons
+              name={isHome ? 'home' : 'home-outline'}
+              size={13}
+              color={isHome ? colors.primaryDark : '#94A3B8'}
+            />
+            <Text style={[styles.sheetTabLabel, isHome && styles.sheetTabLabelActive]}>
+              Beranda
+            </Text>
+            {isHome && <View style={styles.activeIndicator} />}
+          </TouchableOpacity>
 
-          const onPress = () => {
-            const event = navigation.emit({
-              type: 'tabPress',
-              target: route.key,
-              canPreventDefault: true,
-            });
+          {/* 2. Submenu Kategori: Pondasi, Beton, Atap */}
+          {NAV_CATEGORIES.map((category) => {
+            const isCatActive = getCurrentCategoryActive(category);
+            const activeSubLabel = getActiveSubmenuLabel(category);
 
-            if (!isFocused && !event.defaultPrevented) {
-              navigation.navigate(route.name);
-            }
-          };
-
-          return (
-            <TouchableOpacity
-              key={route.key}
-              onPress={onPress}
-              activeOpacity={0.8}
-              style={[
-                styles.sheetTabItem,
-                isFocused && styles.sheetTabItemActive,
-                isRekap && styles.sheetTabRekap,
-                isRekap && isFocused && styles.sheetTabRekapActive,
-                isMateri && styles.sheetTabMateri,
-                isMateri && isFocused && styles.sheetTabMateriActive,
-              ]}
-            >
-              <Ionicons
-                name={icon}
-                size={13}
-                color={
-                  isRekap
-                    ? isFocused
-                      ? '#ffffff'
-                      : '#38bdf8'
-                    : isMateri
-                    ? isFocused
-                      ? '#ffffff'
-                      : '#a5b4fc'
-                    : isFocused
-                    ? colors.primaryDark
-                    : '#94a3b8'
-                }
-              />
-              <Text
+            return (
+              <TouchableOpacity
+                key={category.id}
+                onPress={() => handleOpenCategory(category)}
+                activeOpacity={0.8}
                 style={[
-                  styles.sheetTabLabel,
-                  isFocused && styles.sheetTabLabelActive,
-                  isRekap && (isFocused ? styles.sheetTabLabelRekapActive : styles.sheetTabLabelRekap),
-                  isMateri && (isFocused ? styles.sheetTabLabelMateriActive : styles.sheetTabLabelMateri),
+                  styles.sheetTabItem,
+                  styles.sheetTabCategory,
+                  isCatActive && styles.sheetTabCategoryActive,
                 ]}
               >
-                {label}
-              </Text>
-              {isFocused && <View style={styles.activeIndicator} />}
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
-    </View>
+                <Ionicons
+                  name={isCatActive ? category.activeIcon : category.icon}
+                  size={13}
+                  color={isCatActive ? colors.primary : '#94A3B8'}
+                />
+                <Text
+                  style={[
+                    styles.sheetTabLabel,
+                    isCatActive && styles.sheetTabCategoryLabelActive,
+                  ]}
+                >
+                  {category.label}
+                  {isCatActive && activeSubLabel ? ` : ${activeSubLabel}` : ''}
+                </Text>
+                <Ionicons
+                  name="chevron-down"
+                  size={11}
+                  color={isCatActive ? colors.primary : '#94A3B8'}
+                />
+                {isCatActive && <View style={styles.activeIndicator} />}
+              </TouchableOpacity>
+            );
+          })}
+
+          {/* 3. Panduan Teknis (Materi & Rumus) */}
+          <TouchableOpacity
+            onPress={() => navigation.navigate('MateriScreen')}
+            activeOpacity={0.8}
+            style={[
+              styles.sheetTabItem,
+              styles.sheetTabMateri,
+              isMateri && styles.sheetTabMateriActive,
+            ]}
+          >
+            <Ionicons
+              name={isMateri ? 'book' : 'book-outline'}
+              size={13}
+              color={isMateri ? '#FFFFFF' : '#FECA38'}
+            />
+            <Text
+              style={[
+                styles.sheetTabLabel,
+                styles.sheetTabLabelMateri,
+                isMateri && styles.sheetTabLabelMateriActive,
+              ]}
+            >
+              Panduan Teknis
+            </Text>
+            {isMateri && <View style={styles.activeIndicator} />}
+          </TouchableOpacity>
+
+          {/* 4. Rekapitulasi RAB Proyek */}
+          <TouchableOpacity
+            onPress={() => navigation.navigate('RekapRABScreen')}
+            activeOpacity={0.8}
+            style={[
+              styles.sheetTabItem,
+              styles.sheetTabRekap,
+              isRekap && styles.sheetTabRekapActive,
+            ]}
+          >
+            <Ionicons
+              name={isRekap ? 'receipt' : 'receipt-outline'}
+              size={13}
+              color={isRekap ? '#FFFFFF' : '#FECA38'}
+            />
+            <Text
+              style={[
+                styles.sheetTabLabel,
+                styles.sheetTabLabelRekap,
+                isRekap && styles.sheetTabLabelRekapActive,
+              ]}
+            >
+              Rekapitulasi RAB
+            </Text>
+            {isRekap && <View style={styles.activeIndicator} />}
+          </TouchableOpacity>
+        </ScrollView>
+      </View>
+
+      {/* Modal Dropdown Submenu */}
+      <Modal
+        visible={!!activeMenuCategory}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setActiveMenuCategory(null)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setActiveMenuCategory(null)}
+        >
+          <View style={styles.submenuContainer}>
+            <View style={styles.submenuHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Ionicons
+                  name={activeMenuCategory?.activeIcon || 'grid'}
+                  size={16}
+                  color={colors.primary}
+                />
+                <Text style={styles.submenuHeaderTitle}>
+                  Pilih Sub-Pekerjaan {activeMenuCategory?.label}
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => setActiveMenuCategory(null)}
+                style={styles.submenuCloseBtn}
+              >
+                <Ionicons name="close" size={16} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.submenuItemsList}>
+              {activeMenuCategory?.screens.map((item) => {
+                const isSelected = currentRouteName === item.name;
+                return (
+                  <TouchableOpacity
+                    key={item.name}
+                    style={[
+                      styles.submenuItemCard,
+                      isSelected && styles.submenuItemCardActive,
+                    ]}
+                    activeOpacity={0.8}
+                    onPress={() => handleSelectScreen(item.name)}
+                  >
+                    <View
+                      style={[
+                        styles.submenuCodeBadge,
+                        isSelected && styles.submenuCodeBadgeActive,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.submenuCodeText,
+                          isSelected && styles.submenuCodeTextActive,
+                        ]}
+                      >
+                        {item.code}
+                      </Text>
+                    </View>
+
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={[
+                          styles.submenuItemTitle,
+                          isSelected && styles.submenuItemTitleActive,
+                        ]}
+                      >
+                        {item.label}
+                      </Text>
+                      <Text style={styles.submenuItemDesc} numberOfLines={1}>
+                        {item.desc}
+                      </Text>
+                    </View>
+
+                    {isSelected ? (
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={18}
+                        color={colors.primary}
+                      />
+                    ) : (
+                      <Ionicons
+                        name="chevron-forward"
+                        size={15}
+                        color="#CBD5E1"
+                      />
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        </Pressable>
+      </Modal>
+    </>
   );
 }
 
-// Main Tab Navigator (Tanpa Disclaimer di sub menu nav bar)
+// Main Tab Navigator
 function MainTabs() {
   return (
     <Tab.Navigator
@@ -129,102 +340,26 @@ function MainTabs() {
         headerShown: false,
       }}
     >
-      <Tab.Screen
-        name="HomeTab"
-        component={HomeScreen}
-        options={{
-          tabBarLabel: 'Beranda',
-          tabBarIconName: 'grid-outline',
-        }}
-      />
-      <Tab.Screen
-        name="PondasiScreen"
-        component={PondasiScreen}
-        options={{
-          tabBarLabel: 'Pondasi',
-          tabBarIconName: 'layers-outline',
-        }}
-      />
-      <Tab.Screen
-        name="FootPlateScreen"
-        component={FootPlateScreen}
-        options={{
-          tabBarLabel: 'Foot Plate',
-          tabBarIconName: 'grid-outline',
-        }}
-      />
-      <Tab.Screen
-        name="SloofScreen"
-        component={SloofScreen}
-        options={{
-          tabBarLabel: 'Sloof',
-          tabBarIconName: 'remove-outline',
-        }}
-      />
-      <Tab.Screen
-        name="KolomScreen"
-        component={KolomScreen}
-        options={{
-          tabBarLabel: 'Kolom',
-          tabBarIconName: 'business-outline',
-        }}
-      />
-      <Tab.Screen
-        name="BalokScreen"
-        component={BalokScreen}
-        options={{
-          tabBarLabel: 'Balok',
-          tabBarIconName: 'cube-outline',
-        }}
-      />
-      <Tab.Screen
-        name="AtapPelanaScreen"
-        component={AtapPelanaScreen}
-        options={{
-          tabBarLabel: 'Atap Pelana',
-          tabBarIconName: 'triangle-outline',
-        }}
-      />
-      <Tab.Screen
-        name="AtapLimasScreen"
-        component={AtapLimasScreen}
-        options={{
-          tabBarLabel: 'Atap Limas',
-          tabBarIconName: 'diamond-outline',
-        }}
-      />
-      <Tab.Screen
-        name="MateriScreen"
-        component={MateriScreen}
-        options={{
-          tabBarLabel: 'Materi & Rumus',
-          tabBarIconName: 'school-outline',
-        }}
-      />
-      <Tab.Screen
-        name="RekapRABScreen"
-        component={RekapRABScreen}
-        options={{
-          tabBarLabel: 'Rekap RAB',
-          tabBarIconName: 'receipt-outline',
-        }}
-      />
+      <Tab.Screen name="HomeTab" component={HomeScreen} />
+      <Tab.Screen name="PondasiScreen" component={PondasiScreen} />
+      <Tab.Screen name="FootPlateScreen" component={FootPlateScreen} />
+      <Tab.Screen name="SloofScreen" component={SloofScreen} />
+      <Tab.Screen name="KolomScreen" component={KolomScreen} />
+      <Tab.Screen name="BalokScreen" component={BalokScreen} />
+      <Tab.Screen name="AtapPelanaScreen" component={AtapPelanaScreen} />
+      <Tab.Screen name="AtapLimasScreen" component={AtapLimasScreen} />
+      <Tab.Screen name="MateriScreen" component={MateriScreen} />
+      <Tab.Screen name="RekapRABScreen" component={RekapRABScreen} />
     </Tab.Navigator>
   );
 }
 
 export default function AppNavigator() {
-
   const [sessionActive, setSessionActive] = useState(isSessionValid());
 
   const handleStartSession = () => {
     startSession();
     setSessionActive(true);
-  };
-
-  const handleClearSession = () => {
-    clearAppSession();
-    setSessionActive(false);
   };
 
   return (
@@ -245,38 +380,40 @@ export default function AppNavigator() {
   );
 }
 
-
 const styles = StyleSheet.create({
   sheetTabBarContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0f172a',
-    borderTopWidth: 1,
-    borderTopColor: '#0284c7',
-    height: 40,
-    paddingHorizontal: 6,
+    backgroundColor: '#1E1E1E', // Dark Charcoal header/tab bar sesuai style guide klien
+    borderTopWidth: 2,
+    borderTopColor: colors.primary,
+    height: 42,
+    paddingHorizontal: 8,
+    zIndex: 50,
   },
   sheetTabBarLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 7,
     paddingRight: 10,
     borderRightWidth: 1,
     borderRightColor: '#334155',
   },
-  vectorCubeBadge: {
+  brandLogoIcon: {
     width: 22,
     height: 22,
-    borderRadius: 5,
-    backgroundColor: '#0369a1',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   sheetBrandText: {
-    color: '#ffffff',
-    fontSize: 12,
+    color: '#FECA38', // Emas Estimator
+    fontSize: 11,
     fontWeight: '900',
-    letterSpacing: -0.3,
+    letterSpacing: 0.5,
+  },
+  sheetBrandSub: {
+    color: '#94A3B8',
+    fontSize: 7.5,
+    fontWeight: '600',
+    letterSpacing: -0.2,
   },
   sheetTabScroll: {
     flexDirection: 'row',
@@ -288,19 +425,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: '#1e293b',
+    backgroundColor: '#2A2A2A',
     paddingHorizontal: 11,
-    paddingVertical: 5,
-    borderRadius: 4,
+    paddingVertical: 6,
+    borderRadius: 5,
     position: 'relative',
   },
   sheetTabItemActive: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#FFFFFF',
   },
   sheetTabLabel: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#94a3b8',
+    color: '#CBD5E1',
   },
   sheetTabLabelActive: {
     color: colors.primaryDark,
@@ -308,41 +445,148 @@ const styles = StyleSheet.create({
   },
   activeIndicator: {
     position: 'absolute',
-    bottom: -5,
+    bottom: -6,
     left: 8,
     right: 8,
-    height: 2,
+    height: 2.5,
     backgroundColor: colors.primary,
+    borderRadius: 2,
   },
-  sheetTabRekap: {
-    backgroundColor: '#0369a1',
-  },
-  sheetTabRekapActive: {
-    backgroundColor: '#0284c7',
-  },
-  sheetTabLabelRekap: {
-    color: '#e0f2fe',
-    fontWeight: '700',
-  },
-  sheetTabLabelRekapActive: {
-    color: '#ffffff',
-    fontWeight: '900',
-  },
-  sheetTabMateri: {
-    backgroundColor: '#1e1b4b',
+  // Category Submenu Button Styles
+  sheetTabCategory: {
+    backgroundColor: '#262626',
     borderWidth: 1,
-    borderColor: '#3730a3',
+    borderColor: '#3D3D3D',
+  },
+  sheetTabCategoryActive: {
+    backgroundColor: '#FFFFFF',
+    borderColor: colors.primary,
+  },
+  sheetTabCategoryLabelActive: {
+    color: colors.primaryDark,
+    fontWeight: '800',
+  },
+  // Panduan Teknis & Rekap
+  sheetTabMateri: {
+    backgroundColor: '#2D2010',
+    borderWidth: 1,
+    borderColor: '#5B3908',
   },
   sheetTabMateriActive: {
-    backgroundColor: '#4338ca',
-    borderColor: '#6366f1',
+    backgroundColor: colors.primary,
+    borderColor: colors.secondary,
   },
   sheetTabLabelMateri: {
-    color: '#c7d2fe',
+    color: '#FECA38',
     fontWeight: '700',
   },
   sheetTabLabelMateriActive: {
-    color: '#ffffff',
+    color: '#FFFFFF',
     fontWeight: '900',
+  },
+  sheetTabRekap: {
+    backgroundColor: '#352309',
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+  sheetTabRekapActive: {
+    backgroundColor: colors.primary,
+  },
+  sheetTabLabelRekap: {
+    color: '#FECA38',
+    fontWeight: '700',
+  },
+  sheetTabLabelRekapActive: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+  },
+
+  // Modal Submenu Popover
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  submenuContainer: {
+    width: 360,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    padding: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 8,
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+  },
+  submenuHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+    marginBottom: 8,
+  },
+  submenuHeaderTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#1E1E1E',
+  },
+  submenuCloseBtn: {
+    padding: 4,
+  },
+  submenuItemsList: {
+    gap: 6,
+  },
+  submenuItemCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: 10,
+    borderRadius: 7,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  submenuItemCardActive: {
+    backgroundColor: '#FFF7ED',
+    borderColor: colors.primary,
+  },
+  submenuCodeBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    backgroundColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  submenuCodeBadgeActive: {
+    backgroundColor: colors.primary,
+  },
+  submenuCodeText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#475569',
+  },
+  submenuCodeTextActive: {
+    color: '#FFFFFF',
+  },
+  submenuItemTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#1E1E1E',
+  },
+  submenuItemTitleActive: {
+    color: colors.primaryDark,
+    fontWeight: '800',
+  },
+  submenuItemDesc: {
+    fontSize: 10,
+    color: '#64748B',
+    marginTop: 2,
   },
 });

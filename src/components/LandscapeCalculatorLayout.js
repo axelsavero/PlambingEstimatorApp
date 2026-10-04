@@ -17,6 +17,7 @@ import {
   isFieldModified as isFieldModifiedHelper,
   checkModifiedInputs,
 } from '../utils/modificationHelper';
+import SkylineWatermarkBackground from './SkylineWatermarkBackground';
 
 export default function LandscapeCalculatorLayout({
   title,
@@ -34,14 +35,17 @@ export default function LandscapeCalculatorLayout({
   onReset,
 }) {
   const [showImageModal, setShowImageModal] = useState(false);
-  const [activeResultTab, setActiveResultTab] = useState('rab'); // 'rab' | 'volume'
+  const [activeResultTab, setActiveResultTab] = useState('rab'); // 'rab' | 'volume' | 'prices'
   const [activeDiagramIndex, setActiveDiagramIndex] = useState(0);
   const rightScrollRef = useRef(null);
 
-  // Normalize diagrams list (mendukung 1 diagram maupun multi-diagram seperti Atap Pelana)
-  const diagramList = diagrams && diagrams.length > 0
-    ? diagrams
-    : (diagramSource ? [{ title: diagramTitle, tabLabel: diagramTitle, source: diagramSource }] : []);
+  // Normalize diagrams list
+  const diagramList =
+    diagrams && diagrams.length > 0
+      ? diagrams
+      : diagramSource
+      ? [{ title: diagramTitle, tabLabel: diagramTitle, source: diagramSource }]
+      : [];
 
   const hasDiagrams = diagramList.length > 0;
   const currentDiagram = diagramList[activeDiagramIndex] || diagramList[0];
@@ -50,6 +54,22 @@ export default function LandscapeCalculatorLayout({
   const modifiedInfo = checkModifiedInputs(currentInputs, defaultInputs);
   const isAnyModified = modifiedInfo.isModified;
 
+  // Pisahkan inputSections menjadi:
+  // 1. Dimensi & Geometri & Toggles -> Kuadran 3 (Kiri Bawah)
+  // 2. Harga Satuan Upah & Bahan -> Kuadran 4 (Kanan Bawah)
+  const isPriceSection = (section) => {
+    const t = (section.title || '').toLowerCase();
+    return (
+      t.includes('harga') ||
+      t.includes('upah') ||
+      t.includes('bahan') ||
+      t.includes('material') ||
+      t.includes('tarif')
+    );
+  };
+
+  const dimensionSections = inputSections.filter((s) => !isPriceSection(s));
+  const priceSections = inputSections.filter((s) => isPriceSection(s));
 
   const handleTabSwitch = (tab) => {
     setActiveResultTab(tab);
@@ -61,23 +81,33 @@ export default function LandscapeCalculatorLayout({
   const handleShare = async () => {
     try {
       if (!results) return;
-      let msg = `*RABPro Estimator — ${title}*\n`;
+      let msg = `*ESTIMATOR — ${title}*\n`;
       if (isAnyModified) {
-        msg += `[Status: ${modifiedInfo.count} Parameter Kustom/Disesuaikan *]\n`;
+        msg += `[Status: ${modifiedInfo.count} Parameter Disesuaikan *]\n`;
       }
       msg += `==============================\n`;
-      msg += `TOTAL BIAYA: ${formatRupiah(results.grandTotal)}${isAnyModified ? ' *' : ''}\n`;
-      msg += `• Total Upah Tenaga: ${formatRupiah(results.totalUpah)}${isAnyModified ? ' *' : ''}\n`;
-      msg += `• Total Bahan/Material: ${formatRupiah(results.totalBahan)}${isAnyModified ? ' *' : ''}\n\n`;
+      msg += `TOTAL BIAYA: ${formatRupiah(results.grandTotal)}${
+        isAnyModified ? ' *' : ''
+      }\n`;
+      msg += `• Total Upah Tenaga: ${formatRupiah(results.totalUpah)}${
+        isAnyModified ? ' *' : ''
+      }\n`;
+      msg += `• Total Bahan/Material: ${formatRupiah(results.totalBahan)}${
+        isAnyModified ? ' *' : ''
+      }\n\n`;
 
       msg += `*Rincian Tenaga Kerja:*\n`;
       results.tenagaKerja?.forEach((t) => {
-        msg += `• ${t.uraian}: ${formatNumber(t.volume, 2)} ${t.satuan} = ${formatRupiah(t.subtotal)}\n`;
+        msg += `• ${t.uraian}: ${formatNumber(t.volume, 2)} ${t.satuan} = ${formatRupiah(
+          t.subtotal
+        )}\n`;
       });
 
       msg += `\n*Rincian Bahan Utama:*\n`;
       results.bahan?.slice(0, 8).forEach((b) => {
-        msg += `• ${b.uraian}: ${formatNumber(b.volume, 2)} ${b.satuan} = ${formatRupiah(b.subtotal)}\n`;
+        msg += `• ${b.uraian}: ${formatNumber(b.volume, 2)} ${b.satuan} = ${formatRupiah(
+          b.subtotal
+        )}\n`;
       });
       if (results.bahan?.length > 8) {
         msg += `• ... dan ${results.bahan.length - 8} material lainnya.\n`;
@@ -86,7 +116,7 @@ export default function LandscapeCalculatorLayout({
       if (isAnyModified) {
         msg += `\n_*) Dihitung berdasarkan nilai input yang disesuaikan._\n`;
       }
-      msg += `\n_Dihitung otomatis via Aplikasi RABPro_`;
+      msg += `\n_Dihitung otomatis via Aplikasi Estimator_`;
       await Share.share({ message: msg });
     } catch (e) {
       console.log('Share error', e);
@@ -94,1442 +124,1365 @@ export default function LandscapeCalculatorLayout({
   };
 
   return (
-    <View style={styles.container}>
-      {/* 2-Column Split View for Landscape Mode */}
-      <View style={styles.splitRow}>
-        {/* KOLOM KIRI: INPUT & FORMULA */}
-        <View style={styles.leftColumn}>
-          <ScrollView
-            style={styles.scrollArea}
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={true}
-            removeClippedSubviews={false}
-          >
-            {/* Header info */}
-            <View style={styles.sectionHeader}>
-              <View style={styles.titleRow}>
-                <View style={styles.iconCircle}>
-                  <Ionicons name={iconName} size={20} color={colors.primary} />
+    <SkylineWatermarkBackground style={styles.container}>
+      {/* 4-QUADRANT LAYOUT (SESUAI GAMBAR 3) */}
+      <View style={styles.quadrantsContainer}>
+        {/* ROW 1: TOP ROW (KUADRAN 1 & KUADRAN 2) */}
+        <View style={styles.rowTop}>
+          {/* ======================================================== */}
+          {/* KUADRAN 1: GAMBAR ILUSTRASI JENIS PEKERJAAN (KIRI-ATAS) */}
+          {/* ======================================================== */}
+          <View style={styles.quadrant1Card}>
+            <View style={styles.quadrantHeaderRow}>
+              <View style={styles.quadrantTitleWrap}>
+                <Ionicons name="image" size={15} color={colors.primary} />
+                <Text style={styles.quadrantTitleText}>
+                  GAMBAR ILUSTRASI PEKERJAAN
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                style={styles.btnZoom}
+                onPress={() => setShowImageModal(true)}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="expand" size={12} color="#FFFFFF" />
+                <Text style={styles.btnZoomText}>Perbesar</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Switcher Tab jika ada lebih dari 1 gambar */}
+            {diagramList.length > 1 && (
+              <View style={styles.diagramTabsRow}>
+                {diagramList.map((d, idx) => (
+                  <TouchableOpacity
+                    key={idx}
+                    style={[
+                      styles.diagramTabBtn,
+                      activeDiagramIndex === idx && styles.diagramTabBtnActive,
+                    ]}
+                    onPress={() => setActiveDiagramIndex(idx)}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons
+                      name="layers-outline"
+                      size={11}
+                      color={
+                        activeDiagramIndex === idx ? '#FFFFFF' : '#64748B'
+                      }
+                    />
+                    <Text
+                      style={[
+                        styles.diagramTabBtnText,
+                        activeDiagramIndex === idx &&
+                          styles.diagramTabBtnTextActive,
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {d.tabLabel || d.title}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+
+            {/* Area Tampilan Gambar Ilustrasi */}
+            <TouchableOpacity
+              style={styles.diagramImageContainer}
+              onPress={() => setShowImageModal(true)}
+              activeOpacity={0.9}
+            >
+              {hasDiagrams && currentDiagram.source ? (
+                <Image
+                  source={currentDiagram.source}
+                  style={styles.diagramImage}
+                  resizeMode="contain"
+                />
+              ) : (
+                <View style={styles.diagramPlaceholder}>
+                  <Ionicons name="image-outline" size={36} color="#CBD5E1" />
+                  <Text style={styles.diagramPlaceholderText}>
+                    Gambar ilustrasi teknis
+                  </Text>
                 </View>
-                <View style={{ flex: 1 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <Text style={styles.pageTitle}>{title}</Text>
-                    {isAnyModified ? (
-                      <View style={styles.headerModifiedBadge}>
-                        <Text style={styles.headerModifiedBadgeText}>* Disesuaikan</Text>
-                      </View>
-                    ) : null}
-                  </View>
-                  {subtitle ? <Text style={styles.pageSubtitle}>{subtitle}</Text> : null}
+              )}
+              <View style={styles.diagramCaptionBar}>
+                <Text style={styles.diagramCaptionText} numberOfLines={1}>
+                  {currentDiagram?.title || diagramTitle}
+                </Text>
+                <Text style={styles.tapToZoomHint}>Ketuk untuk zoom</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+
+          {/* ======================================================== */}
+          {/* KUADRAN 2: LOGO ESTIMATOR & HEADER AKSI (KANAN-ATAS) */}
+          {/* ======================================================== */}
+          <View style={styles.quadrant2Card}>
+            {/* Header dengan Logo Estimator Resmi & Judul */}
+            <View style={styles.q2TopRow}>
+              <View style={styles.q2BrandWrap}>
+                <Image
+                  source={require('../../assets/brand/logo_with_text.png')}
+                  style={styles.q2LogoImage}
+                  resizeMode="contain"
+                />
+              </View>
+
+              <View style={styles.q2TitleWrap}>
+                <View style={styles.q2TitleBadgeRow}>
+                  <Text style={styles.q2PageTitle} numberOfLines={1}>
+                    {title}
+                  </Text>
+                  {isAnyModified && (
+                    <View style={styles.q2ModifiedBadge}>
+                      <Text style={styles.q2ModifiedBadgeText}>* Kustom</Text>
+                    </View>
+                  )}
                 </View>
+                {subtitle ? (
+                  <Text style={styles.q2PageSubtitle} numberOfLines={1}>
+                    {subtitle}
+                  </Text>
+                ) : null}
               </View>
             </View>
 
-            {/* Banner Modifikasi Input (Jika ada nilai yang diubah) */}
-            {isAnyModified ? (
-              <View style={styles.inputModifiedBanner}>
-                <View style={styles.inputModifiedBannerLeft}>
-                  <Ionicons name="information-circle" size={16} color="#b45309" />
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.inputModifiedBannerTitle}>
-                      {modifiedInfo.count} Parameter Diubah dari Standar Excel (*)
-                    </Text>
-                    <Text style={styles.inputModifiedBannerSubtitle}>
-                      Kolom volume, upah & bahan di sisi kanan otomatis dihitung ulang.
-                    </Text>
-                  </View>
+            {/* Kartu Highlight Grand Total Biaya */}
+            <View style={styles.q2TotalCard}>
+              <View style={styles.q2TotalCardLeft}>
+                <Text style={styles.q2TotalLabel}>TOTAL ESTIMASI BIAYA</Text>
+                <View style={styles.q2TotalValueRow}>
+                  <Text style={styles.q2TotalValue}>
+                    {results ? formatRupiah(results.grandTotal) : 'Rp 0'}
+                  </Text>
+                  {isAnyModified && <Text style={styles.q2AsteriskMark}>*</Text>}
                 </View>
-                {onReset ? (
+                <View style={styles.q2MiniBreakdownRow}>
+                  <Text style={styles.q2MiniBreakdownText}>
+                    Upah: {results ? formatRupiah(results.totalUpah) : 'Rp 0'}
+                  </Text>
+                  <Text style={styles.q2MiniDot}>•</Text>
+                  <Text style={styles.q2MiniBreakdownText}>
+                    Bahan: {results ? formatRupiah(results.totalBahan) : 'Rp 0'}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Action Buttons: Simpan & Bagikan */}
+              <View style={styles.q2ActionButtons}>
+                <TouchableOpacity
+                  style={styles.btnSimpan}
+                  onPress={onSave}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="save" size={13} color="#FFFFFF" />
+                  <Text style={styles.btnSimpanText}>Simpan RAB</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.btnShare}
+                  onPress={handleShare}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="logo-whatsapp" size={13} color="#FFFFFF" />
+                  <Text style={styles.btnShareText}>Bagikan WA</Text>
+                </TouchableOpacity>
+
+                {isAnyModified && onReset && (
                   <TouchableOpacity
-                    style={styles.btnBannerReset}
+                    style={styles.btnResetStandar}
                     onPress={onReset}
                     activeOpacity={0.8}
                   >
-                    <Ionicons name="refresh" size={12} color="#b45309" />
-                    <Text style={styles.btnBannerResetText}>Reset Standar</Text>
+                    <Ionicons name="refresh" size={12} color={colors.primaryDark} />
+                    <Text style={styles.btnResetStandarText}>Reset</Text>
                   </TouchableOpacity>
-                ) : null}
+                )}
               </View>
-            ) : null}
-
-            {/* Gambar Panduan Teknis Button / Preview */}
-            {hasDiagrams ? (
-              <View style={styles.diagramCard}>
-                <View style={styles.diagramHeaderRow}>
-                  <View style={styles.diagramTitleWrap}>
-                    <Ionicons name="image-outline" size={16} color={colors.primary} />
-                    <Text
-                      style={styles.diagramTitle}
-                      numberOfLines={1}
-                      ellipsizeMode="tail"
-                    >
-                      {currentDiagram.title}
-                    </Text>
-                  </View>
-                  <TouchableOpacity
-                    style={styles.btnZoom}
-                    onPress={() => setShowImageModal(true)}
-                    activeOpacity={0.8}
-                  >
-                    <Ionicons name="expand-outline" size={13} color="#ffffff" />
-                    <Text style={styles.btnZoomText}>Perbesar</Text>
-                  </TouchableOpacity>
-                </View>
-
-                {/* Switcher Tab jika ada lebih dari 1 gambar (misal Atap Pelana: Profil C75 & X-Bracing) */}
-                {diagramList.length > 1 ? (
-                  <View style={styles.diagramTabsRow}>
-                    {diagramList.map((d, dIdx) => (
-                      <TouchableOpacity
-                        key={`diag-tab-${dIdx}`}
-                        style={[
-                          styles.diagramTabBtn,
-                          activeDiagramIndex === dIdx && styles.diagramTabBtnActive,
-                        ]}
-                        onPress={() => setActiveDiagramIndex(dIdx)}
-                        activeOpacity={0.8}
-                      >
-                        <Ionicons
-                          name={activeDiagramIndex === dIdx ? 'radio-button-on' : 'radio-button-off'}
-                          size={11}
-                          color={activeDiagramIndex === dIdx ? colors.primaryDark : '#64748b'}
-                        />
-                        <Text
-                          style={[
-                            styles.diagramTabText,
-                            activeDiagramIndex === dIdx && styles.diagramTabTextActive,
-                          ]}
-                          numberOfLines={1}
-                        >
-                          {d.tabLabel || `Gambar ${dIdx + 1}`}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                ) : null}
-
-                <TouchableOpacity
-                  activeOpacity={0.9}
-                  onPress={() => setShowImageModal(true)}
-                >
-                  <Image
-                    source={currentDiagram.source}
-                    style={styles.diagramThumbnail}
-                    resizeMode="contain"
-                  />
-                </TouchableOpacity>
-              </View>
-            ) : null}
-
-            {/* Dynamic Input Sections */}
-            {inputSections.map((sec, idx) => (
-              <View key={`sec-${idx}`} style={styles.card}>
-                <View style={styles.cardHeader}>
-                  <Ionicons name={sec.icon || 'options-outline'} size={16} color={colors.primary} />
-                  <Text style={styles.cardHeaderTitle}>{sec.title}</Text>
-                </View>
-
-                {sec.subtitle ? (
-                  <Text style={styles.cardHeaderSubtitle}>{sec.subtitle}</Text>
-                ) : null}
-
-                {/* Render toggles if any */}
-                {sec.toggles ? (
-                  <View style={styles.togglesRow}>
-                    {sec.toggles.map((tog, tIdx) => (
-                      <TouchableOpacity
-                        key={`tog-${tIdx}`}
-                        style={[styles.toggleBtn, tog.active && styles.toggleBtnActive]}
-                        onPress={tog.onPress}
-                      >
-                        <Ionicons
-                          name={tog.active ? 'radio-button-on' : 'radio-button-off'}
-                          size={14}
-                          color={tog.active ? colors.primary : colors.textMuted}
-                        />
-                        <Text style={[styles.toggleText, tog.active && styles.toggleTextActive]}>
-                          {tog.label}
-                        </Text>
-                        {tog.isModified ? (
-                          <Text style={styles.modifiedAsterisk}>*</Text>
-                        ) : null}
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                ) : null}
-
-                {/* Render Input Fields with Edit Detection */}
-                <View style={styles.fieldsGrid}>
-                  {sec.fields.map((f, fIdx) => {
-                    const defaultValue = f.defaultValue !== undefined
-                      ? f.defaultValue
-                      : (defaultInputs && f.fieldKey ? defaultInputs[f.fieldKey] : undefined);
-                    const isFieldModified = f.isModified !== undefined
-                      ? f.isModified
-                      : (defaultValue !== undefined && isFieldModifiedHelper(f.value, defaultValue));
-
-                    return (
-                      <View
-                        key={`field-${fIdx}`}
-                        style={[
-                          styles.fieldWrapper,
-                          isFieldModified && styles.fieldWrapperModified,
-                        ]}
-                      >
-                        <View style={styles.fieldLabelRow}>
-                          <View style={styles.fieldLabelLeft}>
-                            <Text
-                              style={[
-                                styles.fieldLabel,
-                                isFieldModified && styles.fieldLabelModified,
-                              ]}
-                              numberOfLines={1}
-                            >
-                              {f.label}
-                            </Text>
-                            {isFieldModified ? (
-                              <Text style={styles.modifiedAsterisk}>*</Text>
-                            ) : null}
-                            {f.symbol ? (
-                              <Text style={styles.fieldSymbol}>({f.symbol})</Text>
-                            ) : null}
-                          </View>
-
-                          {isFieldModified ? (
-                            <View style={styles.modifiedBadge}>
-                              <Text style={styles.modifiedBadgeText}>* Diubah</Text>
-                            </View>
-                          ) : null}
-                        </View>
-
-                        <View
-                          style={[
-                            styles.inputContainer,
-                            isFieldModified && styles.inputContainerModified,
-                          ]}
-                        >
-                          <TextInput
-                            style={[
-                              styles.input,
-                              isFieldModified && styles.inputModified,
-                            ]}
-                            keyboardType="numeric"
-                            value={String(f.value ?? '')}
-                            onChangeText={f.onChange}
-                            placeholder="0"
-                            placeholderTextColor="#94a3b8"
-                            selectTextOnFocus={true}
-                          />
-                          {f.unit ? (
-                            <Text
-                              style={[
-                                styles.inputUnit,
-                                isFieldModified && styles.inputUnitModified,
-                              ]}
-                            >
-                              {f.unit}
-                            </Text>
-                          ) : null}
-
-                          {/* Inline single field reset */}
-                          {isFieldModified && (f.onReset || (onResetField && f.fieldKey)) ? (
-                            <TouchableOpacity
-                              style={styles.fieldResetBtn}
-                              onPress={() => {
-                                if (f.onReset) {
-                                  f.onReset();
-                                } else if (onResetField && f.fieldKey) {
-                                  onResetField(f.fieldKey);
-                                }
-                              }}
-                              hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
-                              title="Kembalikan ke standar"
-                            >
-                              <Ionicons name="refresh" size={13} color="#b45309" />
-                            </TouchableOpacity>
-                          ) : null}
-                        </View>
-
-                        {/* Standar Excel Hint */}
-                        {isFieldModified && defaultValue !== undefined ? (
-                          <Text style={styles.defaultHintText}>
-                            Standar: {defaultValue} {f.unit || ''}
-                          </Text>
-                        ) : null}
-                      </View>
-                    );
-                  })}
-                </View>
-              </View>
-            ))}
-          </ScrollView>
+            </View>
+          </View>
         </View>
 
-        {/* KOLOM KANAN: HASIL PERHITUNGAN & RAB */}
-        <View style={styles.rightColumn}>
-          <ScrollView
-            ref={rightScrollRef}
-            style={styles.scrollArea}
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={true}
-            removeClippedSubviews={false}
-          >
-            {/* Banner Keterangan Kolom Terpengaruh (Jika ada parameter yang diubah) */}
-            {isAnyModified ? (
-              <View style={styles.affectedNoticeBanner}>
-                <Ionicons name="alert-circle" size={15} color="#b45309" />
-                <Text style={styles.affectedNoticeText}>
-                  <Text style={{ fontWeight: '800' }}>Hasil Disesuaikan (*): </Text>
-                  Kolom bertanda (*) otomatis dihitung ulang berdasarkan {modifiedInfo.count} parameter input yang Anda ubah.
+        {/* ROW 2: BOTTOM ROW (KUADRAN 3 & KUADRAN 4) */}
+        <View style={styles.rowBottom}>
+          {/* ======================================================== */}
+          {/* KUADRAN 3: KOLOM DIMENSI DAN VOLUME (KIRI-BAWAH) */}
+          {/* ======================================================== */}
+          <View style={styles.quadrant3Card}>
+            <View style={styles.quadrantHeaderRow}>
+              <View style={styles.quadrantTitleWrap}>
+                <Ionicons name="resize-outline" size={15} color={colors.primary} />
+                <Text style={styles.quadrantTitleText}>
+                  KOLOM DIMENSI & VOLUME
                 </Text>
               </View>
-            ) : null}
 
-            {/* Grand Total Header Highlight */}
-            <View style={[styles.grandTotalCard, isAnyModified && styles.grandTotalCardModified]}>
-              <View style={styles.gtTopRow}>
-                <View>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <Text style={styles.gtLabel}>
-                      TOTAL BIAYA ESTIMASI PEKERJAAN {isAnyModified ? '*' : ''}
-                    </Text>
-                    {isAnyModified ? (
-                      <View style={styles.gtCustomBadge}>
-                        <Text style={styles.gtCustomBadgeText}>* Kustom</Text>
-                      </View>
-                    ) : null}
-                  </View>
-                  <Text style={[styles.gtAmount, isAnyModified && styles.gtAmountModified]}>
-                    {formatRupiah(results?.grandTotal || 0)}
+              {isAnyModified && (
+                <View style={styles.q3ModCountBadge}>
+                  <Text style={styles.q3ModCountText}>
+                    {modifiedInfo.count} nilai diubah (*)
                   </Text>
                 </View>
-                <View style={[styles.gtBadge, isAnyModified && styles.gtBadgeModified]}>
-                  <Ionicons
-                    name={isAnyModified ? 'sparkles' : 'cash-outline'}
-                    size={24}
-                    color="#ffffff"
-                  />
-                </View>
-              </View>
-
-              <View style={styles.gtSubRow}>
-                <View style={styles.gtSubItem}>
-                  <Text style={styles.gtSubLabel}>
-                    Upah Tenaga Kerja {isAnyModified ? '*' : ''}
-                  </Text>
-                  <Text style={styles.gtSubValue}>
-                    {formatRupiah(results?.totalUpah || 0)}
-                  </Text>
-                </View>
-                <View style={styles.gtDivider} />
-                <View style={styles.gtSubItem}>
-                  <Text style={styles.gtSubLabel}>
-                    Bahan & Material {isAnyModified ? '*' : ''}
-                  </Text>
-                  <Text style={styles.gtSubValue}>
-                    {formatRupiah(results?.totalBahan || 0)}
-                  </Text>
-                </View>
-              </View>
+              )}
             </View>
 
-            {/* Sub-tabs for Result View: RAB Rincian vs Volume Geometri */}
-            <View style={styles.resultTabRow}>
-              <TouchableOpacity
-                style={[
-                  styles.resTabBtn,
-                  activeResultTab === 'rab' && styles.resTabBtnActive,
-                ]}
-                onPress={() => handleTabSwitch('rab')}
-              >
-                <Ionicons
-                  name="receipt-outline"
-                  size={14}
-                  color={activeResultTab === 'rab' ? colors.primary : colors.textMuted}
-                />
-                <Text
-                  style={[
-                    styles.resTabText,
-                    activeResultTab === 'rab' && styles.resTabTextActive,
-                  ]}
-                >
-                  Rincian RAB (Upah & Bahan) {isAnyModified ? '*' : ''}
-                </Text>
-              </TouchableOpacity>
+            <ScrollView
+              style={styles.q3ScrollArea}
+              contentContainerStyle={styles.q3ScrollContent}
+              showsVerticalScrollIndicator={true}
+            >
+              {dimensionSections.map((section, sIdx) => (
+                <View key={sIdx} style={styles.dimSectionBox}>
+                  <View style={styles.dimSectionHeader}>
+                    <Ionicons
+                      name={section.icon || 'options-outline'}
+                      size={13}
+                      color={colors.primary}
+                    />
+                    <Text style={styles.dimSectionTitle}>{section.title}</Text>
+                  </View>
 
-              <TouchableOpacity
-                style={[
-                  styles.resTabBtn,
-                  activeResultTab === 'volume' && styles.resTabBtnActive,
-                ]}
-                onPress={() => handleTabSwitch('volume')}
-              >
-                <Ionicons
-                  name="cube-outline"
-                  size={14}
-                  color={activeResultTab === 'volume' ? colors.primary : colors.textMuted}
-                />
-                <Text
-                  style={[
-                    styles.resTabText,
-                    activeResultTab === 'volume' && styles.resTabTextActive,
-                  ]}
-                >
-                  Ringkasan Volume Fisik {isAnyModified ? '*' : ''}
-                </Text>
-              </TouchableOpacity>
-            </View>
+                  {section.subtitle && (
+                    <Text style={styles.dimSectionSubtitle}>
+                      {section.subtitle}
+                    </Text>
+                  )}
 
-            {/* TAB 1: Rincian RAB (Upah & Bahan) */}
-            <View style={{ display: activeResultTab === 'rab' ? 'flex' : 'none' }}>
-              {/* Tenaga Kerja Table */}
-              <View style={[styles.tableCard, isAnyModified && styles.tableCardAffected]}>
-                <View style={styles.tableHeader}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <Text style={styles.tableHeaderText}>
-                      A. TENAGA KERJA {isAnyModified ? '*' : ''}
-                    </Text>
-                    {isAnyModified ? (
-                      <View style={styles.affectedPill}>
-                        <Text style={styles.affectedPillText}>* Terpengaruh</Text>
-                      </View>
-                    ) : null}
-                  </View>
-                  <Text style={styles.tableSubTotalText}>
-                    Subtotal: {formatRupiah(results?.totalUpah || 0)} {isAnyModified ? '*' : ''}
-                  </Text>
-                </View>
-                <View style={styles.tableColHeaderRow}>
-                  <Text style={[styles.colHeader, { flex: 2.2 }]}>Uraian Tenaga</Text>
-                  <Text
-                    style={[
-                      styles.colHeader,
-                      { flex: 1, textAlign: 'right' },
-                      isAnyModified && styles.colHeaderAffected,
-                    ]}
-                  >
-                    Vol {isAnyModified ? '*' : ''}
-                  </Text>
-                  <Text style={[styles.colHeader, { flex: 0.8, textAlign: 'center' }]}>Sat</Text>
-                  <Text
-                    style={[
-                      styles.colHeader,
-                      { flex: 1.4, textAlign: 'right' },
-                      isAnyModified && styles.colHeaderAffected,
-                    ]}
-                  >
-                    Harga (Rp) {isAnyModified ? '*' : ''}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.colHeader,
-                      { flex: 1.6, textAlign: 'right' },
-                      isAnyModified && styles.colHeaderAffected,
-                    ]}
-                  >
-                    Jumlah (Rp) {isAnyModified ? '*' : ''}
-                  </Text>
-                </View>
-                {results?.tenagaKerja?.map((t, idx) => (
-                  <View
-                    key={`tk-${idx}`}
-                    style={[styles.tableRow, idx % 2 === 1 && styles.tableRowAlt]}
-                  >
-                    <Text style={[styles.cellText, { flex: 2.2, fontWeight: '600' }]}>
-                      {t.uraian}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.cellText,
-                        { flex: 1, textAlign: 'right' },
-                        isAnyModified && styles.cellTextAffected,
-                      ]}
-                    >
-                      {formatNumber(t.volume, 2)}
-                    </Text>
-                    <Text style={[styles.cellTextMuted, { flex: 0.8, textAlign: 'center' }]}>
-                      {t.satuan}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.cellText,
-                        { flex: 1.4, textAlign: 'right' },
-                        isAnyModified && styles.cellTextAffected,
-                      ]}
-                    >
-                      {formatNumber(t.harga, 0)}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.cellTextBold,
-                        { flex: 1.6, textAlign: 'right' },
-                        isAnyModified && styles.cellTextBoldAffected,
-                      ]}
-                    >
-                      {formatRupiah(t.subtotal)}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-
-              {/* Bahan Table */}
-              <View style={[styles.tableCard, { marginTop: 12 }, isAnyModified && styles.tableCardAffected]}>
-                <View style={styles.tableHeader}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <Text style={styles.tableHeaderText}>
-                      B. BAHAN & MATERIAL {isAnyModified ? '*' : ''}
-                    </Text>
-                    {isAnyModified ? (
-                      <View style={styles.affectedPill}>
-                        <Text style={styles.affectedPillText}>* Terpengaruh</Text>
-                      </View>
-                    ) : null}
-                  </View>
-                  <Text style={styles.tableSubTotalText}>
-                    Subtotal: {formatRupiah(results?.totalBahan || 0)} {isAnyModified ? '*' : ''}
-                  </Text>
-                </View>
-                <View style={styles.tableColHeaderRow}>
-                  <Text style={[styles.colHeader, { flex: 2.2 }]}>Uraian Bahan</Text>
-                  <Text
-                    style={[
-                      styles.colHeader,
-                      { flex: 1, textAlign: 'right' },
-                      isAnyModified && styles.colHeaderAffected,
-                    ]}
-                  >
-                    Vol {isAnyModified ? '*' : ''}
-                  </Text>
-                  <Text style={[styles.colHeader, { flex: 0.8, textAlign: 'center' }]}>Sat</Text>
-                  <Text
-                    style={[
-                      styles.colHeader,
-                      { flex: 1.4, textAlign: 'right' },
-                      isAnyModified && styles.colHeaderAffected,
-                    ]}
-                  >
-                    Harga (Rp) {isAnyModified ? '*' : ''}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.colHeader,
-                      { flex: 1.6, textAlign: 'right' },
-                      isAnyModified && styles.colHeaderAffected,
-                    ]}
-                  >
-                    Jumlah (Rp) {isAnyModified ? '*' : ''}
-                  </Text>
-                </View>
-                {results?.bahan?.map((b, idx) => (
-                  <View
-                    key={`bh-${idx}`}
-                    style={[styles.tableRow, idx % 2 === 1 && styles.tableRowAlt]}
-                  >
-                    <Text style={[styles.cellText, { flex: 2.2, fontWeight: '600' }]}>
-                      {b.uraian}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.cellText,
-                        { flex: 1, textAlign: 'right' },
-                        isAnyModified && styles.cellTextAffected,
-                      ]}
-                    >
-                      {formatNumber(b.volume, 2)}
-                    </Text>
-                    <Text style={[styles.cellTextMuted, { flex: 0.8, textAlign: 'center' }]}>
-                      {b.satuan}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.cellText,
-                        { flex: 1.4, textAlign: 'right' },
-                        isAnyModified && styles.cellTextAffected,
-                      ]}
-                    >
-                      {formatNumber(b.harga, 0)}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.cellTextBold,
-                        { flex: 1.6, textAlign: 'right' },
-                        isAnyModified && styles.cellTextBoldAffected,
-                      ]}
-                    >
-                      {formatRupiah(b.subtotal)}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-
-            {/* TAB 2: Ringkasan Volume Fisik */}
-            <View style={{ display: activeResultTab === 'volume' ? 'flex' : 'none' }}>
-              <View style={[styles.tableCard, isAnyModified && styles.tableCardAffected]}>
-                <View style={styles.tableHeader}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <Text style={styles.tableHeaderText}>
-                      HASIL KALKULASI VOLUME STRUKTUR {isAnyModified ? '*' : ''}
-                    </Text>
-                    {isAnyModified ? (
-                      <View style={styles.affectedPill}>
-                        <Text style={styles.affectedPillText}>* Terpengaruh</Text>
-                      </View>
-                    ) : null}
-                  </View>
-                </View>
-                <View style={{ padding: 8 }}>
-                  {results?.volumes &&
-                    Object.entries(results.volumes).map(([k, v], idx) => {
-                      if (typeof v === 'number' && !isNaN(v)) {
-                        return (
-                          <View
-                            key={`vol-${idx}`}
+                  {/* Toggle Pilihan (e.g. Mortar 1:3 vs 1:4) */}
+                  {section.toggles && section.toggles.length > 0 && (
+                    <View style={styles.toggleGroupContainer}>
+                      {section.toggles.map((tog, tIdx) => (
+                        <TouchableOpacity
+                          key={tIdx}
+                          style={[
+                            styles.toggleOptionBtn,
+                            tog.active && styles.toggleOptionBtnActive,
+                            tog.isModified && styles.toggleOptionModified,
+                          ]}
+                          onPress={tog.onPress}
+                          activeOpacity={0.8}
+                        >
+                          <Ionicons
+                            name={tog.active ? 'radio-button-on' : 'radio-button-off'}
+                            size={14}
+                            color={tog.active ? colors.primary : '#94A3B8'}
+                          />
+                          <Text
                             style={[
-                              styles.volRow,
-                              idx % 2 === 1 && styles.tableRowAlt,
-                              isAnyModified && styles.volRowAffected,
+                              styles.toggleOptionText,
+                              tog.active && styles.toggleOptionTextActive,
                             ]}
                           >
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                              <Text style={styles.volLabel}>{k}</Text>
-                              {isAnyModified ? (
-                                <Text style={styles.modifiedAsterisk}>*</Text>
-                              ) : null}
-                            </View>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                            {tog.label}
+                            {tog.isModified ? ' *' : ''}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
+
+                  {/* Input Fields Dimensi */}
+                  {section.fields && section.fields.length > 0 && (
+                    <View style={styles.fieldsGrid}>
+                      {section.fields.map((f, fIdx) => {
+                        const isModified =
+                          f.fieldKey &&
+                          defaultInputs &&
+                          isFieldModifiedHelper(
+                            f.fieldKey,
+                            currentInputs?.[f.fieldKey],
+                            defaultInputs?.[f.fieldKey]
+                          );
+
+                        return (
+                          <View
+                            key={fIdx}
+                            style={[
+                              styles.fieldCard,
+                              isModified && styles.fieldCardModified,
+                            ]}
+                          >
+                            <View style={styles.fieldLabelRow}>
+                              {f.symbol && (
+                                <View style={styles.symbolPill}>
+                                  <Text style={styles.symbolPillText}>
+                                    {f.symbol}
+                                  </Text>
+                                </View>
+                              )}
                               <Text
                                 style={[
-                                  styles.volValue,
-                                  isAnyModified && styles.volValueAffected,
+                                  styles.fieldLabelText,
+                                  isModified && styles.fieldLabelTextModified,
                                 ]}
+                                numberOfLines={1}
                               >
-                                {formatNumber(v, 3)}
+                                {f.label}
+                                {isModified && ' *'}
                               </Text>
-                              {isAnyModified ? (
-                                <View style={styles.volAffectedBadge}>
-                                  <Text style={styles.volAffectedBadgeText}>* Dihitung</Text>
-                                </View>
-                              ) : null}
+
+                              {isModified && onResetField && f.fieldKey && (
+                                <TouchableOpacity
+                                  style={styles.fieldResetBtn}
+                                  onPress={() => onResetField(f.fieldKey)}
+                                  activeOpacity={0.7}
+                                >
+                                  <Ionicons
+                                    name="refresh-outline"
+                                    size={11}
+                                    color="#B45309"
+                                  />
+                                </TouchableOpacity>
+                              )}
+                            </View>
+
+                            <View style={styles.fieldInputContainer}>
+                              <TextInput
+                                style={[
+                                  styles.dimTextInput,
+                                  isModified && styles.dimTextInputModified,
+                                ]}
+                                keyboardType="numeric"
+                                value={String(f.value ?? '')}
+                                onChangeText={f.onChange}
+                                selectTextOnFocus={true}
+                              />
+                              <Text style={styles.dimUnitText}>{f.unit}</Text>
                             </View>
                           </View>
                         );
-                      }
-                      return null;
-                    })}
+                      })}
+                    </View>
+                  )}
                 </View>
-              </View>
-            </View>
+              ))}
+            </ScrollView>
+          </View>
 
-            {/* Catatan Kaki / Legend Pengaruh Modifikasi */}
-            {isAnyModified ? (
-              <View style={styles.affectedLegend}>
-                <Ionicons name="information-circle-outline" size={13} color="#b45309" />
-                <Text style={styles.affectedLegendText}>
-                  Tanda bintang (*) dan kolom ber-highlight menandakan nilai yang terpengaruh secara otomatis oleh penyesuaian parameter input Anda.
-                </Text>
-              </View>
-            ) : null}
-
-            {/* Action Buttons: Simpan & Bagikan */}
-            <View style={styles.actionRow}>
-              {onSave ? (
-                <TouchableOpacity style={styles.btnSave} onPress={onSave}>
-                  <Ionicons name="bookmark" size={16} color="#ffffff" />
-                  <Text style={styles.btnActionText}>Simpan ke Rekap RAB</Text>
-                </TouchableOpacity>
-              ) : null}
-
-              <TouchableOpacity style={styles.btnShare} onPress={handleShare}>
-                <Ionicons name="logo-whatsapp" size={16} color="#ffffff" />
-                <Text style={styles.btnActionText}>Bagikan Hasil</Text>
-              </TouchableOpacity>
-
-              {onReset ? (
+          {/* ======================================================== */}
+          {/* KUADRAN 4: HARGA SATUAN UPAH/BAHAN & HASIL (KANAN-BAWAH) */}
+          {/* ======================================================== */}
+          <View style={styles.quadrant4Card}>
+            {/* Header dengan Tab Switcher: Input Harga vs Tabel RAB vs Rekap Volume */}
+            <View style={styles.q4HeaderBar}>
+              <View style={styles.q4TabsRow}>
                 <TouchableOpacity
                   style={[
-                    styles.btnReset,
-                    isAnyModified && styles.btnResetModified,
+                    styles.q4TabItem,
+                    activeResultTab === 'rab' && styles.q4TabItemActive,
                   ]}
-                  onPress={onReset}
+                  onPress={() => handleTabSwitch('rab')}
+                  activeOpacity={0.8}
                 >
                   <Ionicons
-                    name="refresh"
-                    size={16}
-                    color={isAnyModified ? '#b45309' : '#475569'}
+                    name="receipt"
+                    size={12}
+                    color={activeResultTab === 'rab' ? '#FFFFFF' : '#64748B'}
                   />
                   <Text
                     style={[
-                      styles.btnResetText,
-                      isAnyModified && styles.btnResetTextModified,
+                      styles.q4TabLabel,
+                      activeResultTab === 'rab' && styles.q4TabLabelActive,
                     ]}
                   >
-                    {isAnyModified
-                      ? `Reset Default (${modifiedInfo.count})`
-                      : 'Reset Default'}
+                    Tabel RAB (Biaya)
                   </Text>
                 </TouchableOpacity>
-              ) : null}
+
+                <TouchableOpacity
+                  style={[
+                    styles.q4TabItem,
+                    activeResultTab === 'volume' && styles.q4TabItemActive,
+                  ]}
+                  onPress={() => handleTabSwitch('volume')}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons
+                    name="stats-chart"
+                    size={12}
+                    color={activeResultTab === 'volume' ? '#FFFFFF' : '#64748B'}
+                  />
+                  <Text
+                    style={[
+                      styles.q4TabLabel,
+                      activeResultTab === 'volume' && styles.q4TabLabelActive,
+                    ]}
+                  >
+                    Rekap Volume Fisik
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.q4TabItem,
+                    activeResultTab === 'prices' && styles.q4TabItemActive,
+                  ]}
+                  onPress={() => handleTabSwitch('prices')}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons
+                    name="pricetags"
+                    size={12}
+                    color={activeResultTab === 'prices' ? '#FFFFFF' : '#64748B'}
+                  />
+                  <Text
+                    style={[
+                      styles.q4TabLabel,
+                      activeResultTab === 'prices' && styles.q4TabLabelActive,
+                    ]}
+                  >
+                    Harga Satuan ({priceSections.length})
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </ScrollView>
+
+            {/* Scrollable Area Kuadran 4 */}
+            <ScrollView
+              ref={rightScrollRef}
+              style={styles.q4ScrollArea}
+              contentContainerStyle={styles.q4ScrollContent}
+              showsVerticalScrollIndicator={true}
+            >
+              {/* TAB 1: TABEL BIAYA RAB (UPAH & BAHAN) */}
+              {activeResultTab === 'rab' && results && (
+                <View style={styles.tabContentWrap}>
+                  {/* Sub-Tabel Tenaga Kerja */}
+                  <View style={styles.ahspTableCard}>
+                    <View style={styles.ahspTableCardHeader}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                        <Ionicons name="people" size={13} color={colors.primary} />
+                        <Text style={styles.ahspTableCardTitle}>
+                          A. Rincian Upah Tenaga Kerja
+                        </Text>
+                      </View>
+                      <Text style={styles.ahspTableCardTotal}>
+                        {formatRupiah(results.totalUpah)}
+                      </Text>
+                    </View>
+
+                    <View style={styles.tableHeaderRow}>
+                      <Text style={[styles.thCell, { flex: 2.5 }]}>Uraian Tenaga</Text>
+                      <Text style={[styles.thCell, { flex: 1, textAlign: 'right' }]}>Vol</Text>
+                      <Text style={[styles.thCell, { flex: 0.8, textAlign: 'center' }]}>Sat</Text>
+                      <Text style={[styles.thCell, { flex: 1.5, textAlign: 'right' }]}>Harga</Text>
+                      <Text style={[styles.thCell, { flex: 1.7, textAlign: 'right' }]}>Subtotal</Text>
+                    </View>
+
+                    {results.tenagaKerja?.map((t, idx) => (
+                      <View
+                        key={idx}
+                        style={[
+                          styles.tableRow,
+                          idx % 2 === 1 && styles.tableRowAlt,
+                        ]}
+                      >
+                        <Text style={[styles.tdCell, { flex: 2.5 }]} numberOfLines={1}>
+                          {t.uraian}
+                        </Text>
+                        <Text style={[styles.tdCell, { flex: 1, textAlign: 'right' }]}>
+                          {formatNumber(t.volume, 2)}
+                        </Text>
+                        <Text style={[styles.tdCell, { flex: 0.8, textAlign: 'center', color: '#64748B' }]}>
+                          {t.satuan}
+                        </Text>
+                        <Text style={[styles.tdCell, { flex: 1.5, textAlign: 'right' }]}>
+                          {formatNumber(t.hargaSatuan, 0)}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.tdCell,
+                            { flex: 1.7, textAlign: 'right', fontWeight: '700', color: colors.primaryDark },
+                          ]}
+                        >
+                          {formatRupiah(t.subtotal)}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+
+                  {/* Sub-Tabel Bahan Material */}
+                  <View style={styles.ahspTableCard}>
+                    <View style={styles.ahspTableCardHeader}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                        <Ionicons name="cube" size={13} color={colors.primary} />
+                        <Text style={styles.ahspTableCardTitle}>
+                          B. Rincian Bahan / Material
+                        </Text>
+                      </View>
+                      <Text style={styles.ahspTableCardTotal}>
+                        {formatRupiah(results.totalBahan)}
+                      </Text>
+                    </View>
+
+                    <View style={styles.tableHeaderRow}>
+                      <Text style={[styles.thCell, { flex: 2.5 }]}>Uraian Bahan</Text>
+                      <Text style={[styles.thCell, { flex: 1, textAlign: 'right' }]}>Vol</Text>
+                      <Text style={[styles.thCell, { flex: 0.8, textAlign: 'center' }]}>Sat</Text>
+                      <Text style={[styles.thCell, { flex: 1.5, textAlign: 'right' }]}>Harga</Text>
+                      <Text style={[styles.thCell, { flex: 1.7, textAlign: 'right' }]}>Subtotal</Text>
+                    </View>
+
+                    {results.bahan?.map((b, idx) => (
+                      <View
+                        key={idx}
+                        style={[
+                          styles.tableRow,
+                          idx % 2 === 1 && styles.tableRowAlt,
+                        ]}
+                      >
+                        <Text style={[styles.tdCell, { flex: 2.5 }]} numberOfLines={1}>
+                          {b.uraian}
+                        </Text>
+                        <Text style={[styles.tdCell, { flex: 1, textAlign: 'right' }]}>
+                          {formatNumber(b.volume, 2)}
+                        </Text>
+                        <Text style={[styles.tdCell, { flex: 0.8, textAlign: 'center', color: '#64748B' }]}>
+                          {b.satuan}
+                        </Text>
+                        <Text style={[styles.tdCell, { flex: 1.5, textAlign: 'right' }]}>
+                          {formatNumber(b.hargaSatuan, 0)}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.tdCell,
+                            { flex: 1.7, textAlign: 'right', fontWeight: '700', color: colors.primaryDark },
+                          ]}
+                        >
+                          {formatRupiah(b.subtotal)}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              )}
+
+              {/* TAB 2: REKAP VOLUME FISIK */}
+              {activeResultTab === 'volume' && results && (
+                <View style={styles.tabContentWrap}>
+                  <View style={styles.ahspTableCard}>
+                    <View style={styles.ahspTableCardHeader}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                        <Ionicons name="stats-chart" size={13} color={colors.primary} />
+                        <Text style={styles.ahspTableCardTitle}>
+                          Rekapitulasi Volume Fisik Pekerjaan
+                        </Text>
+                      </View>
+                    </View>
+
+                    <View style={styles.tableHeaderRow}>
+                      <Text style={[styles.thCell, { flex: 3.5 }]}>Item Pekerjaan Fisik</Text>
+                      <Text style={[styles.thCell, { flex: 1.5, textAlign: 'right' }]}>Volume</Text>
+                      <Text style={[styles.thCell, { flex: 1, textAlign: 'center' }]}>Satuan</Text>
+                    </View>
+
+                    {results.volumePekerjaan?.map((v, idx) => (
+                      <View
+                        key={idx}
+                        style={[
+                          styles.tableRow,
+                          idx % 2 === 1 && styles.tableRowAlt,
+                        ]}
+                      >
+                        <Text style={[styles.tdCell, { flex: 3.5 }]} numberOfLines={1}>
+                          {v.uraian}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.tdCell,
+                            { flex: 1.5, textAlign: 'right', fontWeight: '700', color: colors.primaryDark },
+                          ]}
+                        >
+                          {formatNumber(v.volume, 3)}
+                        </Text>
+                        <Text style={[styles.tdCell, { flex: 1, textAlign: 'center', color: '#64748B' }]}>
+                          {v.satuan}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              )}
+
+              {/* TAB 3: INPUT HARGA SATUAN UPAH & BAHAN */}
+              {activeResultTab === 'prices' && (
+                <View style={styles.tabContentWrap}>
+                  {priceSections.map((section, sIdx) => (
+                    <View key={sIdx} style={styles.dimSectionBox}>
+                      <View style={styles.dimSectionHeader}>
+                        <Ionicons
+                          name={section.icon || 'pricetags-outline'}
+                          size={13}
+                          color={colors.primary}
+                        />
+                        <Text style={styles.dimSectionTitle}>{section.title}</Text>
+                      </View>
+
+                      <View style={styles.fieldsGrid}>
+                        {section.fields?.map((f, fIdx) => {
+                          const isModified =
+                            f.fieldKey &&
+                            defaultInputs &&
+                            isFieldModifiedHelper(
+                              f.fieldKey,
+                              currentInputs?.[f.fieldKey],
+                              defaultInputs?.[f.fieldKey]
+                            );
+
+                          return (
+                            <View
+                              key={fIdx}
+                              style={[
+                                styles.fieldCard,
+                                isModified && styles.fieldCardModified,
+                              ]}
+                            >
+                              <View style={styles.fieldLabelRow}>
+                                <Text
+                                  style={[
+                                    styles.fieldLabelText,
+                                    isModified && styles.fieldLabelTextModified,
+                                  ]}
+                                  numberOfLines={1}
+                                >
+                                  {f.label}
+                                  {isModified && ' *'}
+                                </Text>
+
+                                {isModified && onResetField && f.fieldKey && (
+                                  <TouchableOpacity
+                                    style={styles.fieldResetBtn}
+                                    onPress={() => onResetField(f.fieldKey)}
+                                    activeOpacity={0.7}
+                                  >
+                                    <Ionicons
+                                      name="refresh-outline"
+                                      size={11}
+                                      color="#B45309"
+                                    />
+                                  </TouchableOpacity>
+                                )}
+                              </View>
+
+                              <View style={styles.fieldInputContainer}>
+                                <TextInput
+                                  style={[
+                                    styles.dimTextInput,
+                                    isModified && styles.dimTextInputModified,
+                                  ]}
+                                  keyboardType="numeric"
+                                  value={String(f.value ?? '')}
+                                  onChangeText={f.onChange}
+                                  selectTextOnFocus={true}
+                                />
+                                <Text style={styles.dimUnitText}>{f.unit}</Text>
+                              </View>
+                            </View>
+                          );
+                        })}
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </ScrollView>
+
+            {/* Bottom Bar Kuadran 4: Ringkasan Grand Total Tetap Terlihat */}
+            <View style={styles.q4BottomBar}>
+              <View style={styles.q4BottomRow}>
+                <View>
+                  <Text style={styles.q4BottomLabel}>TOTAL UPAH</Text>
+                  <Text style={styles.q4BottomSubVal}>
+                    {results ? formatRupiah(results.totalUpah) : 'Rp 0'}
+                  </Text>
+                </View>
+                <View>
+                  <Text style={styles.q4BottomLabel}>TOTAL BAHAN</Text>
+                  <Text style={styles.q4BottomSubVal}>
+                    {results ? formatRupiah(results.totalBahan) : 'Rp 0'}
+                  </Text>
+                </View>
+                <View style={styles.q4BottomTotalWrap}>
+                  <Text style={styles.q4BottomGrandLabel}>GRAND TOTAL RAB</Text>
+                  <Text style={styles.q4BottomGrandVal}>
+                    {results ? formatRupiah(results.grandTotal) : 'Rp 0'}
+                    {isAnyModified && ' *'}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
         </View>
       </View>
 
-      {/* Modal View Full Image Diagram */}
-      {hasDiagrams ? (
-        <Modal
-          visible={showImageModal}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={() => setShowImageModal(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <View style={styles.modalHeader}>
-                <View style={{ flex: 1, marginRight: 12 }}>
-                  <Text style={styles.modalTitle} numberOfLines={1}>
-                    {currentDiagram?.title || diagramTitle}
-                  </Text>
-                  {diagramList.length > 1 ? (
-                    <Text style={styles.modalSubtitle}>
-                      Gambar {activeDiagramIndex + 1} dari {diagramList.length}
-                    </Text>
-                  ) : null}
-                </View>
-                <TouchableOpacity
-                  style={styles.modalCloseBtn}
-                  onPress={() => setShowImageModal(false)}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                >
-                  <Ionicons name="close" size={24} color="#ffffff" />
-                </TouchableOpacity>
-              </View>
+      {/* MODAL ZOOM GAMBAR ILUSTRASI */}
+      <Modal
+        visible={showImageModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowImageModal(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle} numberOfLines={1}>
+                {currentDiagram?.title || diagramTitle}
+              </Text>
+              <TouchableOpacity
+                onPress={() => setShowImageModal(false)}
+                style={styles.modalCloseBtn}
+              >
+                <Ionicons name="close" size={20} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
 
-              {/* Modal Switcher jika lebih dari 1 gambar */}
-              {diagramList.length > 1 ? (
-                <View style={styles.modalTabsRow}>
-                  {diagramList.map((d, dIdx) => (
-                    <TouchableOpacity
-                      key={`modal-tab-${dIdx}`}
-                      style={[
-                        styles.modalTabBtn,
-                        activeDiagramIndex === dIdx && styles.modalTabBtnActive,
-                      ]}
-                      onPress={() => setActiveDiagramIndex(dIdx)}
-                      activeOpacity={0.8}
-                    >
-                      <Ionicons
-                        name={activeDiagramIndex === dIdx ? 'radio-button-on' : 'radio-button-off'}
-                        size={13}
-                        color={activeDiagramIndex === dIdx ? '#0284c7' : '#94a3b8'}
-                      />
-                      <Text
-                        style={[
-                          styles.modalTabText,
-                          activeDiagramIndex === dIdx && styles.modalTabTextActive,
-                        ]}
-                      >
-                        {d.tabLabel || `Gambar ${dIdx + 1}`}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              ) : null}
-
-              <Image
-                source={currentDiagram?.source}
-                style={styles.modalImage}
-                resizeMode="contain"
-              />
+            <View style={styles.modalImageWrap}>
+              {currentDiagram?.source && (
+                <Image
+                  source={currentDiagram.source}
+                  style={styles.modalFullImage}
+                  resizeMode="contain"
+                />
+              )}
             </View>
           </View>
-        </Modal>
-      ) : null}
-    </View>
+        </View>
+      </Modal>
+    </SkylineWatermarkBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f1f5f9',
   },
-  splitRow: {
+  quadrantsContainer: {
     flex: 1,
-    flexDirection: 'row',
-  },
-  leftColumn: {
-    flex: 1.15,
-    borderRightWidth: 1,
-    borderRightColor: '#cbd5e1',
-    backgroundColor: '#f8fafc',
-  },
-  rightColumn: {
-    flex: 1.35,
-    backgroundColor: '#ffffff',
-  },
-  scrollArea: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: 12,
-    paddingBottom: 40,
-  },
-  sectionHeader: {
-    marginBottom: 8,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  iconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-    backgroundColor: '#e0f2fe',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pageTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#0f172a',
-  },
-  pageSubtitle: {
-    fontSize: 11,
-    color: '#64748b',
-    marginTop: 1,
-  },
-  headerModifiedBadge: {
-    backgroundColor: '#fef3c7',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#fde68a',
-  },
-  headerModifiedBadgeText: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: '#b45309',
-  },
-  inputModifiedBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#fffbeb',
-    borderRadius: 8,
-    padding: 8,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: '#fde68a',
-    gap: 8,
-  },
-  inputModifiedBannerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    padding: 6,
     gap: 6,
-    flex: 1,
   },
-  inputModifiedBannerTitle: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#92400e',
-  },
-  inputModifiedBannerSubtitle: {
-    fontSize: 9.5,
-    color: '#b45309',
-    marginTop: 1,
-  },
-  btnBannerReset: {
+  rowTop: {
     flexDirection: 'row',
+    height: '38%',
+    gap: 6,
+  },
+  rowBottom: {
+    flexDirection: 'row',
+    height: '62%',
+    gap: 6,
+  },
+
+  // KUADRAN 1: GAMBAR ILUSTRASI
+  quadrant1Card: {
+    flex: 0.46,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: '#FED7AA',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  quadrantHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 3,
-    backgroundColor: '#ffffff',
     paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#fcd34d',
+    paddingVertical: 5,
+    backgroundColor: '#FFF7ED',
+    borderBottomWidth: 1,
+    borderBottomColor: '#FED7AA',
   },
-  btnBannerResetText: {
-    fontSize: 10,
+  quadrantTitleWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  quadrantTitleText: {
+    fontSize: 10.5,
     fontWeight: '800',
-    color: '#b45309',
-  },
-  diagramCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
-    padding: 8,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    marginBottom: 10,
-  },
-  diagramHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  diagramTitleWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    flex: 1,
-    marginRight: 8,
-  },
-  diagramTitle: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#1e293b',
-    flex: 1,
+    color: '#1E1E1E',
+    letterSpacing: 0.3,
   },
   btnZoom: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#0284c7',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    gap: 3,
+    backgroundColor: colors.primary,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
     borderRadius: 4,
-    flexShrink: 0,
   },
   btnZoomText: {
-    color: '#ffffff',
-    fontSize: 10,
+    fontSize: 9.5,
     fontWeight: '700',
-  },
-  diagramThumbnail: {
-    width: '100%',
-    height: 120,
-    backgroundColor: '#f8fafc',
-    borderRadius: 6,
+    color: '#FFFFFF',
   },
   diagramTabsRow: {
     flexDirection: 'row',
-    gap: 6,
-    marginBottom: 8,
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    gap: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
   },
   diagramTabBtn: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    paddingVertical: 5,
-    paddingHorizontal: 6,
-    borderRadius: 5,
-    backgroundColor: '#f1f5f9',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+    gap: 3,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+    backgroundColor: '#EDF2F7',
   },
   diagramTabBtnActive: {
-    backgroundColor: '#e0f2fe',
-    borderColor: '#0284c7',
+    backgroundColor: colors.primary,
   },
-  diagramTabText: {
+  diagramTabBtnText: {
     fontSize: 9.5,
     fontWeight: '600',
-    color: '#64748b',
+    color: '#64748B',
   },
-  diagramTabTextActive: {
-    color: '#0369a1',
+  diagramTabBtnTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+  },
+  diagramImageContainer: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 4,
+  },
+  diagramImage: {
+    width: '100%',
+    height: '100%',
+  },
+  diagramPlaceholder: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  diagramPlaceholderText: {
+    fontSize: 10,
+    color: '#94A3B8',
+    marginTop: 4,
+  },
+  diagramCaptionBar: {
+    position: 'absolute',
+    bottom: 2,
+    left: 4,
+    right: 4,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(30, 30, 30, 0.75)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 3,
+  },
+  diagramCaptionText: {
+    fontSize: 8.5,
+    color: '#FFFFFF',
+    fontWeight: '600',
+    flex: 1,
+  },
+  tapToZoomHint: {
+    fontSize: 8,
+    color: '#FECA38',
     fontWeight: '700',
   },
-  card: {
-    backgroundColor: '#ffffff',
+
+  // KUADRAN 2: LOGO ESTIMATOR & HEADER AKSI
+  quadrant2Card: {
+    flex: 0.54,
+    backgroundColor: '#FFFFFF',
     borderRadius: 8,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    marginBottom: 10,
+    borderWidth: 1.5,
+    borderColor: '#FED7AA',
+    padding: 8,
+    justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
   },
-  cardHeader: {
+  q2TopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  q2BrandWrap: {
+    width: 110,
+    height: 38,
+    justifyContent: 'center',
+  },
+  q2LogoImage: {
+    width: '100%',
+    height: '100%',
+  },
+  q2TitleWrap: {
+    flex: 1,
+  },
+  q2TitleBadgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginBottom: 4,
   },
-  cardHeaderTitle: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#0f172a',
+  q2PageTitle: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#1E1E1E',
   },
-  cardHeaderSubtitle: {
+  q2PageSubtitle: {
     fontSize: 10,
-    color: '#64748b',
-    marginBottom: 6,
+    color: '#64748B',
+    marginTop: 1,
   },
-  togglesRow: {
+  q2ModifiedBadge: {
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 5,
+    paddingVertical: 1.5,
+    borderRadius: 3,
+    borderWidth: 1,
+    borderColor: '#F59E0B',
+  },
+  q2ModifiedBadgeText: {
+    fontSize: 8.5,
+    fontWeight: '800',
+    color: '#B45309',
+  },
+  q2TotalCard: {
     flexDirection: 'row',
-    gap: 6,
-    marginBottom: 6,
-    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFF7ED',
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+    borderRadius: 7,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginTop: 4,
   },
-  toggleBtn: {
+  q2TotalCardLeft: {
+    flex: 1,
+  },
+  q2TotalLabel: {
+    fontSize: 8.5,
+    fontWeight: '800',
+    color: '#C66503',
+    letterSpacing: 0.4,
+  },
+  q2TotalValueRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 3,
+  },
+  q2TotalValue: {
+    fontSize: 17,
+    fontWeight: '900',
+    color: '#1E1E1E',
+  },
+  q2AsteriskMark: {
+    fontSize: 17,
+    fontWeight: '900',
+    color: colors.primary,
+  },
+  q2MiniBreakdownRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: 1,
+  },
+  q2MiniBreakdownText: {
+    fontSize: 9,
+    color: '#64748B',
+    fontWeight: '600',
+  },
+  q2MiniDot: {
+    fontSize: 9,
+    color: '#CBD5E1',
+  },
+  q2ActionButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  btnSimpan: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    borderRadius: 4,
-    backgroundColor: '#f1f5f9',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+    backgroundColor: colors.primary,
+    paddingHorizontal: 9,
+    paddingVertical: 6,
+    borderRadius: 5,
   },
-  toggleBtnActive: {
-    backgroundColor: '#e0f2fe',
+  btnSimpanText: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  btnShare: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#10B981',
+    paddingHorizontal: 9,
+    paddingVertical: 6,
+    borderRadius: 5,
+  },
+  btnShareText: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  btnResetStandar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: '#FEF3C7',
+    borderWidth: 1,
+    borderColor: '#F59E0B',
+    paddingHorizontal: 7,
+    paddingVertical: 5,
+    borderRadius: 5,
+  },
+  btnResetStandarText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: colors.primaryDark,
+  },
+
+  // KUADRAN 3: KOLOM DIMENSI & VOLUME
+  quadrant3Card: {
+    flex: 0.46,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: '#FED7AA',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  q3ModCountBadge: {
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  q3ModCountText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#B45309',
+  },
+  q3ScrollArea: {
+    flex: 1,
+  },
+  q3ScrollContent: {
+    padding: 6,
+    gap: 8,
+  },
+  dimSectionBox: {
+    backgroundColor: '#FFFDF9',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    borderRadius: 6,
+    padding: 6,
+  },
+  dimSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginBottom: 4,
+  },
+  dimSectionTitle: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#1E1E1E',
+  },
+  dimSectionSubtitle: {
+    fontSize: 9,
+    color: '#64748B',
+    marginBottom: 5,
+  },
+  toggleGroupContainer: {
+    gap: 4,
+    marginBottom: 4,
+  },
+  toggleOptionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  toggleOptionBtnActive: {
+    backgroundColor: '#FFF7ED',
     borderColor: colors.primary,
   },
-  toggleText: {
-    fontSize: 10,
-    color: '#475569',
-    fontWeight: '600',
+  toggleOptionModified: {
+    borderLeftWidth: 3,
+    borderLeftColor: '#F59E0B',
   },
-  toggleTextActive: {
+  toggleOptionText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  toggleOptionTextActive: {
     color: colors.primaryDark,
     fontWeight: '800',
   },
   fieldsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 5,
   },
-  fieldWrapper: {
-    width: '48.5%',
-    marginBottom: 4,
+  fieldCard: {
+    width: '48.8%',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 5,
+    padding: 5,
   },
-  fieldWrapperModified: {
-    backgroundColor: '#fffdf5',
-    padding: 2,
-    borderRadius: 6,
+  fieldCardModified: {
+    backgroundColor: '#FFFBEB',
+    borderColor: '#F59E0B',
+    borderLeftWidth: 3,
   },
   fieldLabelRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 4,
     marginBottom: 3,
   },
-  fieldLabelLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    flex: 1,
-  },
-  fieldLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#334155',
-  },
-  fieldLabelModified: {
-    color: '#b45309',
-    fontWeight: '800',
-  },
-  modifiedAsterisk: {
-    color: '#d97706',
-    fontSize: 12,
-    fontWeight: '900',
-  },
-  fieldSymbol: {
-    fontSize: 9.5,
-    color: '#94a3b8',
-    fontStyle: 'italic',
-  },
-  modifiedBadge: {
-    backgroundColor: '#fef3c7',
+  symbolPill: {
+    backgroundColor: '#FFF7ED',
     paddingHorizontal: 4,
     paddingVertical: 1,
     borderRadius: 3,
+    borderWidth: 0.5,
+    borderColor: colors.primary,
   },
-  modifiedBadgeText: {
-    fontSize: 8.5,
+  symbolPillText: {
+    fontSize: 8,
     fontWeight: '800',
-    color: '#b45309',
+    color: colors.primaryDark,
   },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f8fafc',
-    borderWidth: 1,
-    borderColor: '#cbd5e1',
-    borderRadius: 5,
-    paddingHorizontal: 7,
-    height: 32,
-  },
-  inputContainerModified: {
-    borderColor: '#f59e0b',
-    backgroundColor: '#fffbeb',
-    borderWidth: 1.5,
-  },
-  input: {
-    flex: 1,
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#0f172a',
-    padding: 0,
-  },
-  inputModified: {
-    color: '#92400e',
-    fontWeight: '800',
-  },
-  inputUnit: {
+  fieldLabelText: {
     fontSize: 9.5,
-    color: '#64748b',
     fontWeight: '600',
-    marginLeft: 4,
+    color: '#334155',
+    flex: 1,
   },
-  inputUnitModified: {
-    color: '#b45309',
+  fieldLabelTextModified: {
+    color: '#92400E',
     fontWeight: '700',
   },
   fieldResetBtn: {
-    padding: 3,
+    padding: 2,
+  },
+  fieldInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    paddingHorizontal: 6,
+    height: 28,
+  },
+  dimTextInput: {
+    flex: 1,
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#0F172A',
+    padding: 0,
+  },
+  dimTextInputModified: {
+    color: '#B45309',
+  },
+  dimUnitText: {
+    fontSize: 9,
+    color: '#64748B',
+    fontWeight: '600',
     marginLeft: 3,
   },
-  defaultHintText: {
-    fontSize: 8.5,
-    color: '#b45309',
-    marginTop: 2,
-    fontWeight: '600',
-  },
-  affectedNoticeBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#fffbeb',
-    borderRadius: 6,
-    padding: 7,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: '#fde68a',
-  },
-  affectedNoticeText: {
-    fontSize: 10,
-    color: '#92400e',
-    flex: 1,
-    lineHeight: 13,
-  },
-  grandTotalCard: {
-    backgroundColor: '#0f172a',
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: '#1e293b',
-  },
-  grandTotalCardModified: {
-    borderColor: '#f59e0b',
-    backgroundColor: '#111827',
-  },
-  gtTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  gtLabel: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#94a3b8',
-    letterSpacing: 0.5,
-  },
-  gtCustomBadge: {
-    backgroundColor: '#b45309',
-    paddingHorizontal: 5,
-    paddingVertical: 1,
-    borderRadius: 3,
-  },
-  gtCustomBadgeText: {
-    fontSize: 8.5,
-    fontWeight: '800',
-    color: '#ffffff',
-  },
-  gtAmount: {
-    fontSize: 18,
-    fontWeight: '900',
-    color: '#38bdf8',
-    marginTop: 1,
-  },
-  gtAmountModified: {
-    color: '#fbbf24',
-  },
-  gtBadge: {
-    width: 40,
-    height: 40,
+
+  // KUADRAN 4: HARGA SATUAN & HASIL
+  quadrant4Card: {
+    flex: 0.54,
+    backgroundColor: '#FFFFFF',
     borderRadius: 8,
-    backgroundColor: '#0284c7',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  gtBadgeModified: {
-    backgroundColor: '#d97706',
-  },
-  gtSubRow: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 6,
-    padding: 6,
-  },
-  gtSubItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  gtSubLabel: {
-    fontSize: 9,
-    color: '#94a3b8',
-    fontWeight: '700',
-  },
-  gtSubValue: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#ffffff',
-    marginTop: 1,
-  },
-  gtDivider: {
-    width: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  resultTabRow: {
-    flexDirection: 'row',
-    gap: 6,
-    marginBottom: 10,
-  },
-  resTabBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    backgroundColor: '#f1f5f9',
-    paddingVertical: 7,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  resTabBtnActive: {
-    backgroundColor: '#e0f2fe',
-    borderColor: colors.primary,
-  },
-  resTabText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#64748b',
-  },
-  resTabTextActive: {
-    color: colors.primaryDark,
-    fontWeight: '800',
-  },
-  tableCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderWidth: 1.5,
+    borderColor: '#FED7AA',
     overflow: 'hidden',
-  },
-  tableCardAffected: {
-    borderColor: '#fed7aa',
-  },
-  tableHeader: {
-    flexDirection: 'row',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
     justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#f8fafc',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+  },
+  q4HeaderBar: {
+    backgroundColor: '#FFF7ED',
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: '#FED7AA',
+    paddingHorizontal: 6,
+    paddingVertical: 4,
   },
-  tableHeaderText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#0f172a',
-  },
-  tableSubTotalText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#0284c7',
-  },
-  affectedPill: {
-    backgroundColor: '#fef3c7',
-    paddingHorizontal: 4,
-    paddingVertical: 1,
-    borderRadius: 3,
-  },
-  affectedPillText: {
-    fontSize: 8.5,
-    fontWeight: '800',
-    color: '#b45309',
-  },
-  tableColHeaderRow: {
+  q4TabsRow: {
     flexDirection: 'row',
-    backgroundColor: '#f1f5f9',
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    gap: 4,
   },
-  colHeader: {
+  q4TabItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    backgroundColor: '#F1F5F9',
+  },
+  q4TabItemActive: {
+    backgroundColor: colors.primary,
+  },
+  q4TabLabel: {
     fontSize: 9.5,
-    fontWeight: '800',
+    fontWeight: '700',
     color: '#475569',
   },
-  colHeaderAffected: {
-    color: '#b45309',
+  q4TabLabelActive: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+  },
+  q4ScrollArea: {
+    flex: 1,
+  },
+  q4ScrollContent: {
+    padding: 6,
+    gap: 6,
+  },
+  tabContentWrap: {
+    gap: 6,
+  },
+  ahspTableCard: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 6,
+    overflow: 'hidden',
+  },
+  ahspTableCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#FFFDF9',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: '#FDE68A',
+  },
+  ahspTableCardTitle: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#1E1E1E',
+  },
+  ahspTableCardTotal: {
+    fontSize: 10.5,
     fontWeight: '900',
+    color: colors.primaryDark,
+  },
+  tableHeaderRow: {
+    flexDirection: 'row',
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+  thCell: {
+    fontSize: 8.5,
+    fontWeight: '800',
+    color: '#64748B',
   },
   tableRow: {
     flexDirection: 'row',
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#f1f5f9',
     alignItems: 'center',
+    paddingHorizontal: 6,
+    paddingVertical: 3.5,
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#F1F5F9',
   },
   tableRowAlt: {
-    backgroundColor: '#fafbfc',
+    backgroundColor: '#FFFDF9',
   },
-  cellText: {
-    fontSize: 10,
-    color: '#334155',
-  },
-  cellTextAffected: {
-    color: '#b45309',
-    fontWeight: '700',
-  },
-  cellTextMuted: {
+  tdCell: {
     fontSize: 9.5,
-    color: '#64748b',
+    color: '#1E1E1E',
   },
-  cellTextBold: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#0f172a',
-  },
-  cellTextBoldAffected: {
-    color: '#b45309',
-    fontWeight: '800',
-  },
-  volRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  q4BottomBar: {
+    backgroundColor: '#FFF7ED',
+    borderTopWidth: 1.5,
+    borderTopColor: colors.primary,
+    paddingHorizontal: 8,
     paddingVertical: 4,
-    paddingHorizontal: 6,
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#f1f5f9',
+  },
+  q4BottomRow: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  volRowAffected: {
-    backgroundColor: '#fffdf5',
-  },
-  volLabel: {
-    fontSize: 11,
-    color: '#334155',
-    fontWeight: '600',
-  },
-  volAsterisk: {
-    color: '#d97706',
-    fontWeight: '900',
-    fontSize: 12,
-  },
-  volValue: {
-    fontSize: 11,
+  q4BottomLabel: {
+    fontSize: 8,
     fontWeight: '700',
-    color: colors.primaryDark,
+    color: '#64748B',
   },
-  volValueAffected: {
-    color: '#b45309',
+  q4BottomSubVal: {
+    fontSize: 10.5,
     fontWeight: '800',
+    color: '#1E1E1E',
   },
-  volAffectedBadge: {
-    backgroundColor: '#fef3c7',
-    paddingHorizontal: 4,
-    paddingVertical: 1,
-    borderRadius: 3,
+  q4BottomTotalWrap: {
+    alignItems: 'flex-end',
   },
-  volAffectedBadgeText: {
+  q4BottomGrandLabel: {
     fontSize: 8,
     fontWeight: '800',
-    color: '#b45309',
+    color: colors.primaryDark,
+    letterSpacing: 0.3,
   },
-  affectedLegend: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 8,
-    paddingHorizontal: 4,
+  q4BottomGrandVal: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: colors.primary,
   },
-  affectedLegendText: {
-    fontSize: 9,
-    color: '#b45309',
-    fontStyle: 'italic',
+
+  // MODAL ZOOM
+  modalBackdrop: {
     flex: 1,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 12,
-  },
-  btnSave: {
-    flex: 1.2,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    backgroundColor: '#0284c7',
-    paddingVertical: 8,
-    borderRadius: 6,
-  },
-  btnShare: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    backgroundColor: '#10b981',
-    paddingVertical: 8,
-    borderRadius: 6,
-  },
-  btnReset: {
-    flex: 0.9,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    backgroundColor: '#e2e8f0',
-    paddingVertical: 8,
-    borderRadius: 6,
-  },
-  btnResetModified: {
-    backgroundColor: '#fef3c7',
-    borderWidth: 1,
-    borderColor: '#f59e0b',
-  },
-  btnActionText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  btnResetText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#475569',
-  },
-  btnResetTextModified: {
-    color: '#b45309',
-    fontWeight: '800',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    backgroundColor: 'rgba(0,0,0,0.85)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
   },
   modalContent: {
-    width: '95%',
-    height: '92%',
-    backgroundColor: '#ffffff',
+    width: '90%',
+    height: '90%',
+    backgroundColor: '#FFFFFF',
     borderRadius: 10,
     overflow: 'hidden',
   },
@@ -1537,60 +1490,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#0f172a',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    backgroundColor: '#1E1E1E',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   modalTitle: {
-    color: '#ffffff',
     fontSize: 13,
-    fontWeight: '700',
-  },
-  modalSubtitle: {
-    color: '#94a3b8',
-    fontSize: 10,
-    marginTop: 2,
-  },
-  modalTabsRow: {
-    flexDirection: 'row',
-    gap: 8,
-    backgroundColor: '#1e293b',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#334155',
-  },
-  modalTabBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingVertical: 5,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    backgroundColor: '#0f172a',
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-  modalTabBtnActive: {
-    backgroundColor: '#e0f2fe',
-    borderColor: '#38bdf8',
-  },
-  modalTabText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#94a3b8',
-  },
-  modalTabTextActive: {
-    color: '#0369a1',
-    fontWeight: '700',
+    fontWeight: '800',
+    color: '#FFFFFF',
+    flex: 1,
   },
   modalCloseBtn: {
     padding: 4,
   },
-  modalImage: {
+  modalImageWrap: {
     flex: 1,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+  },
+  modalFullImage: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#ffffff',
   },
 });

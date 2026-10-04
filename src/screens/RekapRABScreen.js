@@ -17,7 +17,7 @@ import {
   saveRoofChoice,
   resetAllToDefault,
 } from '../utils/rabStorage';
-import RABProLogo from '../components/RABProLogo';
+import SkylineWatermarkBackground from '../components/SkylineWatermarkBackground';
 
 export default function RekapRABScreen({ navigation }) {
   const [rekapData, setRekapData] = useState(null);
@@ -75,7 +75,7 @@ export default function RekapRABScreen({ navigation }) {
   const handleShare = async () => {
     if (!rekapData) return;
     let msg = `*REKAP RENCANA ANGGARAN BIAYA (RAB)*\n`;
-    msg += `Aplikasi RABPro\n`;
+    msg += `Aplikasi ESTIMATOR\n`;
     if (rekapData.isAnySheetModified) {
       msg += `[Status: Memuat Nilai Kustom/Disesuaikan *]\n`;
     }
@@ -97,7 +97,7 @@ export default function RekapRABScreen({ navigation }) {
     if (rekapData.isAnySheetModified) {
       msg += `_*) Tanda bintang (*) menandakan modul dengan parameter yang telah disesuaikan._\n`;
     }
-    msg += `_Dihasilkan oleh Aplikasi Estimator RABPro_`;
+    msg += `_Dihasilkan oleh Aplikasi Estimator RAB Konstruksi_`;
 
     try {
       await Share.share({ message: msg });
@@ -126,7 +126,7 @@ export default function RekapRABScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
+    <SkylineWatermarkBackground style={styles.container}>
       <ScrollView
         style={styles.scrollArea}
         contentContainerStyle={styles.scrollContent}
@@ -135,10 +135,14 @@ export default function RekapRABScreen({ navigation }) {
         {/* Top Header */}
         <View style={styles.headerCard}>
           <View style={styles.headerLeft}>
-            <RABProLogo size={36} showText={false} />
+            <Image
+              source={require('../../assets/brand/logo_with_text.png')}
+              style={styles.headerLogo}
+              resizeMode="contain"
+            />
             <View>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Text style={styles.headerMainTitle}>REKAP</Text>
+                <Text style={styles.headerMainTitle}>REKAPITULASI RAB</Text>
                 {rekapData?.isAnySheetModified ? (
                   <View style={styles.kustomActiveBadge}>
                     <Text style={styles.kustomActiveBadgeText}>* Kustom Aktif</Text>
@@ -146,15 +150,15 @@ export default function RekapRABScreen({ navigation }) {
                 ) : null}
               </View>
               <Text style={styles.headerSubTitle}>
-                RENCANA ANGGARAN BIAYA (RAB)
+                Akumulasi Total Biaya 7 Modul Struktur Konstruksi
               </Text>
             </View>
           </View>
 
           <View style={styles.headerActions}>
-            <TouchableOpacity style={styles.btnShare} onPress={handleShare}>
-              <Ionicons name="share-social-outline" size={16} color="#ffffff" />
-              <Text style={styles.btnActionText}>Bagikan Rekap</Text>
+            <TouchableOpacity style={styles.btnShare} onPress={handleShare} activeOpacity={0.8}>
+              <Ionicons name="logo-whatsapp" size={15} color="#FFFFFF" />
+              <Text style={styles.btnActionText}>Bagikan WA</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -163,11 +167,12 @@ export default function RekapRABScreen({ navigation }) {
                 rekapData?.isAnySheetModified && styles.btnResetModified,
               ]}
               onPress={handleReset}
+              activeOpacity={0.8}
             >
               <Ionicons
                 name="refresh"
-                size={16}
-                color={rekapData?.isAnySheetModified ? '#b45309' : '#475569'}
+                size={14}
+                color={rekapData?.isAnySheetModified ? '#B45309' : '#475569'}
               />
               <Text
                 style={[
@@ -184,7 +189,7 @@ export default function RekapRABScreen({ navigation }) {
         {/* Notice Banner jika ada nilai yang disesuaikan */}
         {rekapData?.isAnySheetModified ? (
           <View style={styles.rekapModifiedBanner}>
-            <Ionicons name="information-circle" size={16} color="#b45309" />
+            <Ionicons name="information-circle" size={16} color="#B45309" />
             <Text style={styles.rekapModifiedBannerText}>
               Beberapa modul pekerjaan memiliki parameter yang disesuaikan (*). Nilai pada kolom jumlah dan total biaya proyek dihitung berdasarkan input kustom.
             </Text>
@@ -194,7 +199,7 @@ export default function RekapRABScreen({ navigation }) {
         {/* Roof Selector Banner */}
         <View style={styles.roofChoiceCard}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="home-outline" size={18} color="#0284c7" />
+            <Ionicons name="home" size={16} color={colors.primary} />
             <Text style={styles.roofChoiceTitle}>
               Pilihan Konstruksi Atap Proyek:
             </Text>
@@ -215,7 +220,7 @@ export default function RekapRABScreen({ navigation }) {
                 }
                 size={16}
                 color={
-                  rekapData?.roofChoice === 'pelana' ? '#16a34a' : '#64748b'
+                  rekapData?.roofChoice === 'pelana' ? colors.primary : '#64748B'
                 }
               />
               <Text
@@ -224,7 +229,7 @@ export default function RekapRABScreen({ navigation }) {
                   rekapData?.roofChoice === 'pelana' && styles.roofToggleTextActive,
                 ]}
               >
-                11. Atap Pelana Baja Ringan
+                11. Atap Pelana C75
               </Text>
             </TouchableOpacity>
 
@@ -243,7 +248,7 @@ export default function RekapRABScreen({ navigation }) {
                 }
                 size={16}
                 color={
-                  rekapData?.roofChoice === 'limas' ? '#16a34a' : '#64748b'
+                  rekapData?.roofChoice === 'limas' ? colors.primary : '#64748B'
                 }
               />
               <Text
@@ -252,7 +257,7 @@ export default function RekapRABScreen({ navigation }) {
                   rekapData?.roofChoice === 'limas' && styles.roofToggleTextActive,
                 ]}
               >
-                11.A. Atap Limas Baja Ringan
+                11.A. Atap Limas
               </Text>
             </TouchableOpacity>
           </View>
@@ -309,8 +314,8 @@ export default function RekapRABScreen({ navigation }) {
                   {isRoofRow ? (
                     <Ionicons
                       name={isRoofActive ? 'checkmark-circle' : 'close-circle'}
-                      size={16}
-                      color={isRoofActive ? '#16a34a' : '#ef4444'}
+                      size={15}
+                      color={isRoofActive ? colors.primary : '#EF4444'}
                     />
                   ) : null}
                   <Text
@@ -318,16 +323,17 @@ export default function RekapRABScreen({ navigation }) {
                       styles.tdUraian,
                       isClickable && styles.clickableText,
                       isRoofRow && !isRoofActive && styles.textDisabled,
-                      isRowModified && styles.textModified,
+                      isRowModified && styles.tdUraianModified,
                     ]}
+                    numberOfLines={1}
                   >
                     {row.uraian}
+                    {isRowModified ? ' *' : ''}
                   </Text>
                   {isRowModified ? (
-                    <Text style={styles.asteriskMark}>*</Text>
-                  ) : null}
-                  {isClickable ? (
-                    <Ionicons name="create-outline" size={13} color={colors.primary} />
+                    <View style={styles.inlineAsteriskBadge}>
+                      <Text style={styles.inlineAsteriskBadgeText}>* Disesuaikan</Text>
+                    </View>
                   ) : null}
                 </View>
 
@@ -336,187 +342,182 @@ export default function RekapRABScreen({ navigation }) {
                     styles.tdJumlah,
                     { width: 190, textAlign: 'right' },
                     isRoofRow && !isRoofActive && styles.textDisabled,
-                    isRowModified && styles.amountModified,
+                    isRowModified && styles.tdJumlahModified,
                   ]}
                 >
-                  {row.jumlah > 0 ? `${formatRupiah(row.jumlah)}${isRowModified ? ' *' : ''}` : '-'}
+                  {formatRupiah(row.jumlah)}
+                  {isRowModified ? ' *' : ''}
                 </Text>
 
                 <View style={{ width: 95, alignItems: 'center' }}>
-                  {isRowModified ? (
-                    <View style={styles.badgeKustom}>
-                      <Text style={styles.badgeKustomText}>* Kustom</Text>
+                  {isClickable ? (
+                    <View style={[styles.badgeHitung, isRowModified && styles.badgeHitungModified]}>
+                      <Text style={[styles.badgeHitungText, isRowModified && styles.badgeHitungTextModified]}>
+                        {isRowModified ? 'Kustom *' : 'Otomatis'}
+                      </Text>
                     </View>
-                  ) : isClickable ? (
-                    <View style={styles.badgeKalkulator}>
-                      <Text style={styles.badgeKalkulatorText}>Kalkulator</Text>
+                  ) : isRoofRow && !isRoofActive ? (
+                    <View style={styles.badgeNonAktif}>
+                      <Text style={styles.badgeNonAktifText}>Non-Aktif</Text>
                     </View>
                   ) : (
-                    <Text style={styles.badgeStandarText}>Standar</Text>
+                    <Text style={styles.textStrip}>-</Text>
                   )}
                 </View>
               </TouchableOpacity>
             );
           })}
 
-          {/* Grand Total Footer Row */}
-          <View style={[styles.tableFooterRow, rekapData?.isAnySheetModified && styles.tableFooterRowModified]}>
-            <Text style={[styles.tfLabel, { width: 50 + 10 }]}></Text>
-            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Text style={styles.tfLabel}>
-                JUMLAH TOTAL PROYEK (Rp) {rekapData?.isAnySheetModified ? '*' : ''}
+          {/* Grand Total Row */}
+          <View style={styles.grandTotalRow}>
+            <Text style={[styles.grandTotalLabel, { flex: 1 }]}>
+              TOTAL ESTIMASI BIAYA PROYEK
+            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4 }}>
+              <Text style={styles.grandTotalValue}>
+                {rekapData ? formatRupiah(rekapData.totalProyek) : 'Rp 0'}
               </Text>
               {rekapData?.isAnySheetModified ? (
-                <View style={styles.footerKustomBadge}>
-                  <Text style={styles.footerKustomBadgeText}>* Kustom</Text>
-                </View>
+                <Text style={styles.grandTotalAsterisk}>*</Text>
               ) : null}
             </View>
-            <Text style={[styles.tfAmount, { width: 190, textAlign: 'right' }, rekapData?.isAnySheetModified && styles.tfAmountModified]}>
-              {formatRupiah(rekapData?.totalProyek || 0)}
-            </Text>
-            <View style={{ width: 95 }} />
           </View>
         </View>
-
-        {rekapData?.isAnySheetModified ? (
-          <View style={styles.rekapLegend}>
-            <Ionicons name="information-circle-outline" size={13} color="#b45309" />
-            <Text style={styles.rekapLegendText}>
-              *) Tanda bintang (*) menandakan pekerjaan atau jumlah biaya yang terpengaruh oleh parameter yang telah diedit/disesuaikan dari nilai standar Excel.
-            </Text>
-          </View>
-        ) : null}
       </ScrollView>
-    </View>
+    </SkylineWatermarkBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f1f5f9',
   },
   scrollArea: {
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
-    paddingBottom: 40,
+    padding: 10,
+    gap: 8,
+    paddingBottom: 25,
   },
   headerCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
-    padding: 14,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    padding: 10,
+    borderWidth: 1.5,
+    borderColor: '#FED7AA',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
-  headerMainTitle: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: '#0f172a',
-    letterSpacing: 0.5,
+  headerLogo: {
+    width: 120,
+    height: 38,
   },
-  headerSubTitle: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#0284c7',
+  headerMainTitle: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#1E1E1E',
   },
   kustomActiveBadge: {
-    backgroundColor: '#fef3c7',
+    backgroundColor: '#FEF3C7',
     paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
+    paddingVertical: 1.5,
+    borderRadius: 3,
     borderWidth: 1,
-    borderColor: '#fde68a',
+    borderColor: '#F59E0B',
   },
   kustomActiveBadgeText: {
-    fontSize: 9,
+    fontSize: 8.5,
     fontWeight: '800',
-    color: '#b45309',
+    color: '#B45309',
   },
-  rekapModifiedBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#fffbeb',
-    borderRadius: 8,
-    padding: 9,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: '#fde68a',
-  },
-  rekapModifiedBannerText: {
-    fontSize: 10.5,
-    color: '#92400e',
-    flex: 1,
-    lineHeight: 14,
+  headerSubTitle: {
+    fontSize: 9.5,
+    color: '#64748B',
+    marginTop: 1,
   },
   headerActions: {
     flexDirection: 'row',
-    gap: 8,
+    alignItems: 'center',
+    gap: 6,
   },
   btnShare: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    backgroundColor: '#10b981',
-    paddingHorizontal: 12,
-    paddingVertical: 7,
+    gap: 4,
+    backgroundColor: '#10B981',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: 6,
+  },
+  btnActionText: {
+    color: '#FFFFFF',
+    fontSize: 10.5,
+    fontWeight: '800',
   },
   btnReset: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    backgroundColor: '#e2e8f0',
-    paddingHorizontal: 12,
-    paddingVertical: 7,
+    gap: 4,
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 8,
+    paddingVertical: 6,
     borderRadius: 6,
   },
   btnResetModified: {
-    backgroundColor: '#fef3c7',
+    backgroundColor: '#FEF3C7',
     borderWidth: 1,
-    borderColor: '#f59e0b',
-  },
-  btnActionText: {
-    color: '#ffffff',
-    fontSize: 11,
-    fontWeight: '700',
+    borderColor: '#F59E0B',
   },
   btnResetText: {
-    color: '#475569',
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
+    color: '#475569',
   },
   btnResetTextModified: {
-    color: '#b45309',
-    fontWeight: '800',
+    color: '#B45309',
   },
-  roofChoiceCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+  rekapModifiedBanner: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#FFFBEB',
+    padding: 8,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+  },
+  rekapModifiedBannerText: {
+    fontSize: 10,
+    color: '#92400E',
+    flex: 1,
+  },
+  roofChoiceCard: {
+    flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 7,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: '#FED7AA',
   },
   roofChoiceTitle: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '800',
-    color: '#1e293b',
+    color: '#1E1E1E',
   },
   roofToggleRow: {
     flexDirection: 'row',
@@ -525,192 +526,174 @@ const styles = StyleSheet.create({
   roofToggleBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 6,
-    backgroundColor: '#f1f5f9',
+    gap: 5,
+    backgroundColor: '#F8FAFC',
     borderWidth: 1,
-    borderColor: '#cbd5e1',
+    borderColor: '#CBD5E1',
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 5,
   },
   roofToggleBtnActive: {
-    backgroundColor: '#dcfce7',
-    borderColor: '#86efac',
+    backgroundColor: '#FFF7ED',
+    borderColor: colors.primary,
   },
   roofToggleText: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#475569',
     fontWeight: '600',
   },
   roofToggleTextActive: {
-    color: '#15803d',
+    color: colors.primaryDark,
     fontWeight: '800',
   },
   tableCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: '#FED7AA',
     overflow: 'hidden',
   },
   tableHeadRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#0f172a',
-    paddingVertical: 8,
-    paddingHorizontal: 10,
+    backgroundColor: '#1E1E1E',
+    paddingHorizontal: 8,
+    paddingVertical: 6,
   },
   thCell: {
-    color: '#ffffff',
-    fontSize: 11,
+    fontSize: 9.5,
     fontWeight: '800',
-    letterSpacing: 0.3,
+    color: '#FECA38',
   },
   subThRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#334155',
+    backgroundColor: '#2A2A2A',
+    paddingHorizontal: 8,
     paddingVertical: 3,
-    paddingHorizontal: 10,
   },
   subThCell: {
-    color: '#cbd5e1',
-    fontSize: 10,
-    fontWeight: '700',
+    fontSize: 8,
+    color: '#94A3B8',
+    fontWeight: '600',
   },
   tableDataRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 7,
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: '#F1F5F9',
   },
   tableRowAlt: {
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#FFFDF9',
   },
   clickableRow: {
-    backgroundColor: '#f0f9ff',
-  },
-  modifiedRow: {
-    backgroundColor: '#fffdf5',
+    backgroundColor: '#FFFFFF',
   },
   inactiveRoofRow: {
-    opacity: 0.5,
+    opacity: 0.45,
+    backgroundColor: '#F8FAFC',
+  },
+  modifiedRow: {
+    backgroundColor: '#FFFBEB',
   },
   tdNo: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: '700',
-    color: '#475569',
+    color: '#64748B',
   },
   tdUraian: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#1e293b',
-  },
-  textModified: {
-    color: '#92400e',
-    fontWeight: '800',
-  },
-  asteriskMark: {
-    color: '#d97706',
-    fontWeight: '900',
-    fontSize: 13,
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: '#1E1E1E',
   },
   clickableText: {
-    color: '#0369a1',
-    fontWeight: '700',
+    color: colors.primaryDark,
+  },
+  tdUraianModified: {
+    color: '#92400E',
+  },
+  inlineAsteriskBadge: {
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 2,
+  },
+  inlineAsteriskBadgeText: {
+    fontSize: 7.5,
+    fontWeight: '800',
+    color: '#B45309',
   },
   tdJumlah: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#0f172a',
-  },
-  amountModified: {
-    color: '#b45309',
+    fontSize: 11,
     fontWeight: '800',
+    color: '#1E1E1E',
+  },
+  tdJumlahModified: {
+    color: '#B45309',
   },
   textDisabled: {
-    color: '#94a3b8',
+    color: '#94A3B8',
   },
-  badgeKalkulator: {
-    backgroundColor: '#dbeafe',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
+  badgeHitung: {
+    backgroundColor: '#FFF7ED',
     borderWidth: 1,
-    borderColor: '#93c5fd',
-  },
-  badgeKalkulatorText: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: '#1d4ed8',
-  },
-  badgeKustom: {
-    backgroundColor: '#fef3c7',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#f59e0b',
-  },
-  badgeKustomText: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: '#b45309',
-  },
-  badgeStandarText: {
-    fontSize: 9,
-    fontWeight: '600',
-    color: '#94a3b8',
-  },
-  tableFooterRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#0369a1',
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-  },
-  tableFooterRowModified: {
-    backgroundColor: '#0f172a',
-    borderTopWidth: 2,
-    borderTopColor: '#f59e0b',
-  },
-  tfLabel: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '900',
-  },
-  footerKustomBadge: {
-    backgroundColor: '#b45309',
+    borderColor: '#FED7AA',
     paddingHorizontal: 6,
-    paddingVertical: 1,
+    paddingVertical: 1.5,
     borderRadius: 4,
   },
-  footerKustomBadgeText: {
+  badgeHitungModified: {
+    backgroundColor: '#FEF3C7',
+    borderColor: '#F59E0B',
+  },
+  badgeHitungText: {
     fontSize: 8.5,
     fontWeight: '800',
-    color: '#ffffff',
+    color: colors.primaryDark,
   },
-  tfAmount: {
-    color: '#ffffff',
+  badgeHitungTextModified: {
+    color: '#B45309',
+  },
+  badgeNonAktif: {
+    backgroundColor: '#FEE2E2',
+    paddingHorizontal: 5,
+    paddingVertical: 1.5,
+    borderRadius: 3,
+  },
+  badgeNonAktifText: {
+    fontSize: 8,
+    fontWeight: '700',
+    color: '#DC2626',
+  },
+  textStrip: {
+    color: '#CBD5E1',
+    fontSize: 11,
+  },
+  grandTotalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#1E1E1E',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderTopWidth: 2,
+    borderTopColor: colors.primary,
+  },
+  grandTotalLabel: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#FECA38',
+    letterSpacing: 0.5,
+  },
+  grandTotalValue: {
     fontSize: 15,
     fontWeight: '900',
+    color: '#FFFFFF',
   },
-  tfAmountModified: {
-    color: '#fbbf24',
-  },
-  rekapLegend: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 8,
-    paddingHorizontal: 6,
-  },
-  rekapLegendText: {
-    fontSize: 9.5,
-    color: '#b45309',
-    fontStyle: 'italic',
-    flex: 1,
+  grandTotalAsterisk: {
+    fontSize: 15,
+    fontWeight: '900',
+    color: '#FECA38',
   },
 });

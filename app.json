@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "RABPro",
-    "slug": "rabpro",
+    "name": "Estimator",
+    "slug": "estimator",
     "version": "1.0.0",
     "orientation": "landscape",
     "icon": "./assets/icon.png",
@@ -36,6 +36,11 @@
       "expo-sharing",
       "expo-font",
       "expo-screen-orientation"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "23570220-92f9-40aa-ac52-acf1abcae4d8"
+      }
+    }
   }
 }

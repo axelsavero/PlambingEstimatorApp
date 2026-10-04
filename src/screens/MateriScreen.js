@@ -6,17 +6,19 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  Platform,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
 import { MATERI_CATEGORIES, MATERI_LIST } from '../data/materiData';
 import MathEquation from '../components/MathEquation';
+import SkylineWatermarkBackground from '../components/SkylineWatermarkBackground';
 
 export default function MateriScreen({ navigation }) {
   const [selectedCategory, setSelectedCategory] = useState('Semua');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItemId, setSelectedItemId] = useState(MATERI_LIST[0]?.id || '');
+  const [isPlayingVideo, setIsPlayingVideo] = useState(false);
 
   // Filter list by category and search
   const filteredList = MATERI_LIST.filter((item) => {
@@ -48,17 +50,24 @@ export default function MateriScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Top Bar / Breadcrumb */}
+    <SkylineWatermarkBackground style={styles.container}>
+      {/* Top Header Bar: Panduan Teknis */}
       <View style={styles.topBar}>
         <View style={styles.topBarLeft}>
-          <View style={styles.logoBadge}>
-            <Ionicons name="school" size={16} color="#0284c7" />
-          </View>
+          <Image
+            source={require('../../assets/brand/logo_icon.png')}
+            style={styles.logoBadge}
+            resizeMode="contain"
+          />
           <View>
-            <Text style={styles.topBarTitle}>Materi & Rumus Estimasi RABPro</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={styles.topBarTitle}>Panduan Teknis & Rumus</Text>
+              <View style={styles.topBarBadge}>
+                <Text style={styles.topBarBadgeText}>ESTIMATOR</Text>
+              </View>
+            </View>
             <Text style={styles.topBarSubtitle}>
-              Buku Referensi Teori Perhitungan Volume, Rumus Geometri, AHSP & Time Schedule
+              Buku Referensi Teori Perhitungan Volume, Rumus KaTeX, AHSP PUPR & Kurva S
             </Text>
           </View>
         </View>
@@ -68,7 +77,7 @@ export default function MateriScreen({ navigation }) {
           onPress={() => navigation.navigate('HomeTab')}
           activeOpacity={0.8}
         >
-          <Ionicons name="home-outline" size={14} color="#0284c7" />
+          <Ionicons name="home-outline" size={13} color={colors.primaryDark} />
           <Text style={styles.btnHomeText}>Kembali ke Beranda</Text>
         </TouchableOpacity>
       </View>
@@ -80,17 +89,17 @@ export default function MateriScreen({ navigation }) {
           {/* Search Box */}
           <View style={styles.searchBoxWrap}>
             <View style={styles.searchBox}>
-              <Ionicons name="search" size={15} color="#64748b" />
+              <Ionicons name="search" size={14} color="#64748B" />
               <TextInput
                 style={styles.searchInput}
                 placeholder="Cari materi, rumus, langkah..."
-                placeholderTextColor="#94a3b8"
+                placeholderTextColor="#94A3B8"
                 value={searchQuery}
                 onChangeText={setSearchQuery}
               />
               {searchQuery.length > 0 ? (
                 <TouchableOpacity onPress={() => setSearchQuery('')}>
-                  <Ionicons name="close-circle" size={16} color="#94a3b8" />
+                  <Ionicons name="close-circle" size={15} color="#94A3B8" />
                 </TouchableOpacity>
               ) : null}
             </View>
@@ -134,8 +143,8 @@ export default function MateriScreen({ navigation }) {
           >
             {filteredList.length === 0 ? (
               <View style={styles.emptyWrap}>
-                <Ionicons name="document-text-outline" size={36} color="#94a3b8" />
-                <Text style={styles.emptyText}>Tidak ada materi yang sesuai</Text>
+                <Ionicons name="document-text-outline" size={32} color="#94A3B8" />
+                <Text style={styles.emptyText}>Tidak ada materi yang cocok</Text>
               </View>
             ) : (
               filteredList.map((item) => {
@@ -155,7 +164,7 @@ export default function MateriScreen({ navigation }) {
                         <Text style={styles.catBadgeText}>{item.kategori}</Text>
                       </View>
                       <View style={styles.stepBadge}>
-                        <Ionicons name="list" size={10} color="#b45309" />
+                        <Ionicons name="list" size={10} color="#B45309" />
                         <Text style={styles.stepBadgeText}>
                           {item.steps?.length || 0} Langkah
                         </Text>
@@ -178,8 +187,8 @@ export default function MateriScreen({ navigation }) {
 
                     <View style={styles.topicCardFooter}>
                       <View style={styles.videoBadge}>
-                        <Ionicons name="videocam-outline" size={11} color="#6366f1" />
-                        <Text style={styles.videoBadgeText}>Video Materi</Text>
+                        <Ionicons name="play-circle" size={12} color="#ED7E08" />
+                        <Text style={styles.videoBadgeText}>Video Panduan</Text>
                       </View>
                       <View style={styles.readMoreWrap}>
                         <Text
@@ -193,7 +202,7 @@ export default function MateriScreen({ navigation }) {
                         <Ionicons
                           name="chevron-forward"
                           size={13}
-                          color={isSelected ? colors.primaryDark : '#64748b'}
+                          color={isSelected ? colors.primary : '#64748B'}
                         />
                       </View>
                     </View>
@@ -218,85 +227,102 @@ export default function MateriScreen({ navigation }) {
               <View style={styles.detailBanner}>
                 <View style={styles.bannerTopRow}>
                   <View style={styles.bannerCatBadge}>
-                    <Text style={styles.bannerCatBadgeText}>
-                      {activeItem.kategori}
-                    </Text>
+                    <Text style={styles.bannerCatBadgeText}>{activeItem.kategori}</Text>
                   </View>
-                  <View style={styles.stepCountBadge}>
-                    <Ionicons name="sparkles" size={12} color="#0284c7" />
-                    <Text style={styles.stepCountBadgeText}>
-                      {activeItem.steps?.length || 0} Tahapan Perhitungan
-                    </Text>
-                  </View>
+                  {activeItem.terkaitKalkulator && (
+                    <TouchableOpacity
+                      style={styles.btnLaunchCalc}
+                      onPress={() => handleOpenCalculator(activeItem.terkaitKalkulator)}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons name="calculator" size={13} color="#FFFFFF" />
+                      <Text style={styles.btnLaunchCalcText}>Buka Kalkulator Sheet</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
 
                 <Text style={styles.detailTitle}>{activeItem.judul}</Text>
                 <Text style={styles.detailSummary}>{activeItem.ringkasan}</Text>
+              </View>
 
-                {activeItem.calcRoute ? (
+              {/* VIDEO PLAYER CARD (Sesuai Mockup Klien 5b03a4c5...) */}
+              <View style={styles.videoPlayerCard}>
+                <View style={styles.videoCardTop}>
+                  <View style={styles.videoCardTopLeft}>
+                    <View style={styles.videoIconCircle}>
+                      <Ionicons name="videocam" size={14} color="#ED7E08" />
+                    </View>
+                    <View>
+                      <Text style={styles.videoCardTitle}>
+                        Video Tutorial: {activeItem.judul}
+                      </Text>
+                      <Text style={styles.videoCardDuration}>
+                        Durasi Panduan Teknis: 05:42 Menit • HD 1080p
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.videoReadyBadge}>
+                    <Text style={styles.videoReadyBadgeText}>Materi Siap</Text>
+                  </View>
+                </View>
+
+                {/* Simulated Screen / Canvas */}
+                <View style={styles.videoScreen}>
                   <TouchableOpacity
-                    style={styles.btnLaunchCalc}
-                    onPress={() => handleOpenCalculator(activeItem.calcRoute)}
+                    style={styles.bigPlayButton}
                     activeOpacity={0.8}
+                    onPress={() => setIsPlayingVideo(!isPlayingVideo)}
                   >
-                    <Ionicons name="calculator" size={16} color="#ffffff" />
-                    <Text style={styles.btnLaunchCalcText}>
-                      {activeItem.calcTitle || 'Buka Kalkulator Terkait'}
-                    </Text>
-                    <Ionicons name="arrow-forward" size={14} color="#ffffff" />
+                    <Ionicons
+                      name={isPlayingVideo ? 'pause' : 'play'}
+                      size={28}
+                      color="#FFFFFF"
+                      style={{ marginLeft: isPlayingVideo ? 0 : 3 }}
+                    />
                   </TouchableOpacity>
-                ) : null}
-              </View>
 
-              {/* Video Tutorial Placeholder Card */}
-              <View style={styles.videoCard}>
-                <View style={styles.videoCardHeader}>
-                  <View style={styles.videoHeaderLeft}>
-                    <Ionicons name="play-circle" size={18} color="#38bdf8" />
-                    <Text style={styles.videoHeaderTitle}>
-                      Video Pembahasan & Tutorial
-                    </Text>
-                  </View>
-                  <View style={styles.videoStatusPill}>
-                    <Text style={styles.videoStatusPillText}>
-                      Menunggu Materi Klien
-                    </Text>
-                  </View>
-                </View>
-
-                <View style={styles.videoPlaceholderFrame}>
-                  <View style={styles.playButtonCircle}>
-                    <Ionicons name="play" size={28} color="#0284c7" style={{ marginLeft: 3 }} />
-                  </View>
-                  <Text style={styles.videoPlaceholderTitle}>
-                    {activeItem.videoPlaceholder}
-                  </Text>
-                  <Text style={styles.videoPlaceholderSub}>
-                    Area pemutar video materi pembelajaran. Video resmi dari Klien akan otomatis disematkan pada komponen ini setelah diserahkan.
-                  </Text>
-                  <View style={styles.videoSpecRow}>
-                    <View style={styles.videoSpecItem}>
-                      <Ionicons name="time-outline" size={13} color="#94a3b8" />
-                      <Text style={styles.videoSpecText}>Durasi ~10 - 15 Menit</Text>
+                  <View style={styles.videoScreenOverlayBottom}>
+                    <View style={styles.videoProgressBarWrap}>
+                      <View
+                        style={[
+                          styles.videoProgressBarFill,
+                          { width: isPlayingVideo ? '45%' : '20%' },
+                        ]}
+                      />
                     </View>
-                    <View style={styles.videoSpecItem}>
-                      <Ionicons name="videocam" size={13} color="#94a3b8" />
-                      <Text style={styles.videoSpecText}>Format MP4 / Web Stream</Text>
+                    <View style={styles.videoControlsRow}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <TouchableOpacity onPress={() => setIsPlayingVideo(!isPlayingVideo)}>
+                          <Ionicons
+                            name={isPlayingVideo ? 'pause' : 'play'}
+                            size={16}
+                            color="#FFFFFF"
+                          />
+                        </TouchableOpacity>
+                        <Text style={styles.videoTimerText}>
+                          {isPlayingVideo ? '02:34 / 05:42' : '01:08 / 05:42'}
+                        </Text>
+                      </View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                        <Ionicons name="volume-medium" size={15} color="#CBD5E1" />
+                        <Ionicons name="scan-outline" size={14} color="#CBD5E1" />
+                      </View>
                     </View>
                   </View>
                 </View>
               </View>
 
-              {/* Step-by-Step Walkthrough with KaTeX Formulas */}
-              <View style={styles.sectionStepsHeader}>
-                <Ionicons name="layers-outline" size={18} color={colors.primary} />
-                <Text style={styles.sectionStepsTitle}>
-                  Langkah-Langkah & Persamaan Matematis
+              {/* Rincian Langkah & Formula KaTeX */}
+              <View style={styles.stepsSectionHeader}>
+                <Ionicons name="calculator-outline" size={16} color={colors.primary} />
+                <Text style={styles.stepsSectionTitle}>
+                  Langkah Perhitungan & Notasi Matematis (KaTeX)
                 </Text>
               </View>
 
-              {activeItem.steps?.map((stepItem) => (
-                <View key={`step-${stepItem.step}`} style={styles.stepCard}>
+              {activeItem.steps?.map((stepItem, sIdx) => (
+                <View key={sIdx} style={styles.stepCard}>
                   <View style={styles.stepCardHeader}>
                     <View style={styles.stepNumberCircle}>
                       <Text style={styles.stepNumberText}>{stepItem.step}</Text>
@@ -320,7 +346,7 @@ export default function MateriScreen({ navigation }) {
               {activeItem.tips ? (
                 <View style={styles.tipCard}>
                   <View style={styles.tipHeader}>
-                    <Ionicons name="alert-circle" size={18} color="#b45309" />
+                    <Ionicons name="alert-circle" size={16} color="#B45309" />
                     <Text style={styles.tipTitle}>
                       Catatan Praktis & Standar Lapangan
                     </Text>
@@ -331,72 +357,78 @@ export default function MateriScreen({ navigation }) {
             </ScrollView>
           ) : (
             <View style={styles.emptyDetailWrap}>
-              <Ionicons name="book-outline" size={48} color="#94a3b8" />
+              <Ionicons name="book-outline" size={44} color="#94A3B8" />
               <Text style={styles.emptyDetailText}>
-                Pilih salah satu materi di sebelah kiri untuk melihat rincian rumus
+                Pilih salah satu topik di sebelah kiri untuk melihat materi dan rumus
               </Text>
             </View>
           )}
         </View>
       </View>
-    </View>
+    </SkylineWatermarkBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f1f5f9',
   },
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#cbd5e1',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderBottomWidth: 1.5,
+    borderBottomColor: '#FED7AA',
   },
   topBarLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
   logoBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    backgroundColor: '#e0f2fe',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#bae6fd',
+    width: 28,
+    height: 28,
   },
   topBarTitle: {
-    fontSize: 14,
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#1E1E1E',
+  },
+  topBarBadge: {
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 3,
+    borderWidth: 0.5,
+    borderColor: '#F59E0B',
+  },
+  topBarBadgeText: {
+    fontSize: 8,
     fontWeight: '800',
-    color: '#0f172a',
+    color: '#B45309',
   },
   topBarSubtitle: {
-    fontSize: 10.5,
-    color: '#64748b',
+    fontSize: 9.5,
+    color: '#64748B',
   },
   btnHome: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    backgroundColor: '#f0f9ff',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 6,
+    gap: 4,
+    backgroundColor: '#FFF7ED',
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 5,
     borderWidth: 1,
-    borderColor: '#bae6fd',
+    borderColor: '#FED7AA',
   },
   btnHomeText: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: '700',
-    color: '#0284c7',
+    color: colors.primaryDark,
   },
   splitRow: {
     flex: 1,
@@ -405,162 +437,159 @@ const styles = StyleSheet.create({
   leftColumn: {
     flex: 1,
     borderRightWidth: 1,
-    borderRightColor: '#cbd5e1',
-    backgroundColor: '#f8fafc',
+    borderRightColor: '#FED7AA',
+    backgroundColor: '#FFFFFF',
   },
   rightColumn: {
-    flex: 1.6,
-    backgroundColor: '#ffffff',
+    flex: 1.7,
+    backgroundColor: '#FFFDF9',
   },
   searchBoxWrap: {
-    padding: 10,
-    backgroundColor: '#ffffff',
+    padding: 8,
+    backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: '#F1F5F9',
   },
   searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f1f5f9',
+    backgroundColor: '#F8FAFC',
     borderRadius: 6,
-    paddingHorizontal: 10,
-    height: 36,
+    paddingHorizontal: 8,
+    height: 32,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   searchInput: {
     flex: 1,
     marginLeft: 6,
-    fontSize: 12,
-    color: '#0f172a',
+    fontSize: 11,
+    color: '#1E1E1E',
   },
   categoryScrollWrap: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: '#F1F5F9',
   },
   categoryScroll: {
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    gap: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    gap: 5,
   },
   categoryChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 16,
-    backgroundColor: '#f1f5f9',
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: '#F1F5F9',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: '#E2E8F0',
   },
   categoryChipActive: {
-    backgroundColor: '#e0f2fe',
-    borderColor: '#0284c7',
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   categoryChipText: {
-    fontSize: 10.5,
-    fontWeight: '600',
+    fontSize: 9.5,
     color: '#475569',
+    fontWeight: '600',
   },
   categoryChipTextActive: {
-    color: '#0369a1',
+    color: '#FFFFFF',
     fontWeight: '800',
   },
   topicListScroll: {
     flex: 1,
   },
   topicListContent: {
-    padding: 10,
-    gap: 8,
-    paddingBottom: 30,
+    padding: 8,
+    gap: 6,
+  },
+  emptyWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  emptyText: {
+    fontSize: 11,
+    color: '#94A3B8',
+    marginTop: 6,
   },
   topicCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
-    padding: 10,
+    backgroundColor: '#FFFDF9',
+    borderRadius: 6,
+    padding: 8,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: '#FDE68A',
     position: 'relative',
     overflow: 'hidden',
   },
   topicCardActive: {
-    borderColor: '#0284c7',
-    backgroundColor: '#f0f9ff',
-  },
-  activeTopicBar: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 4,
-    backgroundColor: '#0284c7',
+    backgroundColor: '#FFF7ED',
+    borderColor: colors.primary,
   },
   topicCardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 5,
+    marginBottom: 4,
   },
   catBadge: {
-    backgroundColor: '#e0f2fe',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 3,
   },
   catBadgeText: {
-    fontSize: 9.5,
-    fontWeight: '700',
-    color: '#0369a1',
+    fontSize: 8,
+    fontWeight: '800',
+    color: '#B45309',
   },
   stepBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    backgroundColor: '#fef3c7',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
+    backgroundColor: '#FFFBEB',
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 3,
   },
   stepBadgeText: {
-    fontSize: 9.5,
+    fontSize: 8,
     fontWeight: '700',
-    color: '#b45309',
+    color: '#B45309',
   },
   topicCardTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#1e293b',
-    marginBottom: 4,
-    lineHeight: 16,
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#1E1E1E',
+    marginBottom: 2,
   },
   topicCardTitleActive: {
-    color: '#0369a1',
-    fontWeight: '800',
+    color: colors.primaryDark,
   },
   topicCardSummary: {
-    fontSize: 10.5,
-    color: '#64748b',
-    lineHeight: 14,
-    marginBottom: 8,
+    fontSize: 9.5,
+    color: '#64748B',
+    lineHeight: 13,
   },
   topicCardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
-    paddingTop: 6,
+    marginTop: 6,
+    paddingTop: 5,
+    borderTopWidth: 0.5,
+    borderTopColor: '#FDE68A',
   },
   videoBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    backgroundColor: '#eef2ff',
-    paddingHorizontal: 5,
-    paddingVertical: 2,
-    borderRadius: 4,
   },
   videoBadgeText: {
-    fontSize: 9,
+    fontSize: 8.5,
     fontWeight: '700',
-    color: '#4f46e5',
+    color: colors.primary,
   },
   readMoreWrap: {
     flexDirection: 'row',
@@ -568,267 +597,264 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   readMoreText: {
-    fontSize: 10.5,
+    fontSize: 9,
     fontWeight: '700',
-    color: '#64748b',
+    color: '#64748B',
   },
   readMoreTextActive: {
-    color: '#0284c7',
+    color: colors.primary,
   },
-  emptyWrap: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 40,
-    gap: 8,
+  activeTopicBar: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 3,
+    backgroundColor: colors.primary,
   },
-  emptyText: {
-    fontSize: 12,
-    color: '#94a3b8',
-  },
+
+  // RIGHT DETAIL PANE
   detailScroll: {
     flex: 1,
   },
   detailContent: {
-    padding: 16,
-    paddingBottom: 40,
-    gap: 14,
+    padding: 10,
+    gap: 8,
+    paddingBottom: 25,
   },
   detailBanner: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 10,
-    padding: 14,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    padding: 10,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: '#FED7AA',
   },
   bannerTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
-  },
-  bannerCatBadge: {
-    backgroundColor: '#e0f2fe',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  bannerCatBadgeText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#0369a1',
-  },
-  stepCountBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  stepCountBadgeText: {
-    fontSize: 10.5,
-    fontWeight: '700',
-    color: '#0284c7',
-  },
-  detailTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#0f172a',
-    lineHeight: 22,
     marginBottom: 6,
   },
-  detailSummary: {
-    fontSize: 12,
-    color: '#475569',
-    lineHeight: 18,
-    marginBottom: 12,
+  bannerCatBadge: {
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  bannerCatBadgeText: {
+    fontSize: 8.5,
+    fontWeight: '800',
+    color: '#B45309',
   },
   btnLaunchCalc: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: '#0284c7',
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 6,
-    alignSelf: 'flex-start',
+    gap: 4,
+    backgroundColor: colors.primary,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
   },
   btnLaunchCalcText: {
-    color: '#ffffff',
-    fontSize: 11.5,
-    fontWeight: '700',
+    fontSize: 9.5,
+    fontWeight: '800',
+    color: '#FFFFFF',
   },
-  videoCard: {
-    backgroundColor: '#0f172a',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#1e293b',
+  detailTitle: {
+    fontSize: 13.5,
+    fontWeight: '900',
+    color: '#1E1E1E',
+    marginBottom: 3,
+  },
+  detailSummary: {
+    fontSize: 10.5,
+    color: '#475569',
+    lineHeight: 15,
+  },
+
+  // VIDEO PLAYER CARD
+  videoPlayerCard: {
+    backgroundColor: '#1E1E1E',
+    borderRadius: 8,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.primary,
   },
-  videoCardHeader: {
+  videoCardTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: '#1e293b',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: '#2A2A2A',
+    borderBottomWidth: 1,
+    borderBottomColor: '#3D3D3D',
   },
-  videoHeaderLeft: {
+  videoCardTopLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
-  videoHeaderTitle: {
-    fontSize: 11.5,
-    fontWeight: '700',
-    color: '#f8fafc',
+  videoIconCircle: {
+    width: 22,
+    height: 22,
+    borderRadius: 5,
+    backgroundColor: '#FFF7ED',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  videoStatusPill: {
-    backgroundColor: '#334155',
-    paddingHorizontal: 7,
+  videoCardTitle: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  videoCardDuration: {
+    fontSize: 8.5,
+    color: '#94A3B8',
+  },
+  videoReadyBadge: {
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 10,
+    borderRadius: 3,
   },
-  videoStatusPillText: {
-    fontSize: 9.5,
-    color: '#38bdf8',
+  videoReadyBadgeText: {
+    fontSize: 8.5,
+    fontWeight: '800',
+    color: '#B45309',
+  },
+  videoScreen: {
+    height: 140,
+    backgroundColor: '#121212',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  bigPlayButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  videoScreenOverlayBottom: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  videoProgressBarWrap: {
+    height: 3,
+    backgroundColor: '#475569',
+    borderRadius: 2,
+    marginBottom: 4,
+    overflow: 'hidden',
+  },
+  videoProgressBarFill: {
+    height: '100%',
+    backgroundColor: colors.primary,
+  },
+  videoControlsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  videoTimerText: {
+    fontSize: 9,
+    color: '#FFFFFF',
     fontWeight: '600',
   },
-  videoPlaceholderFrame: {
-    padding: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#090d16',
-  },
-  playButtonCircle: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    backgroundColor: '#e0f2fe',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#38bdf8',
-    marginBottom: 10,
-  },
-  videoPlaceholderTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#ffffff',
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-  videoPlaceholderSub: {
-    fontSize: 10.5,
-    color: '#94a3b8',
-    textAlign: 'center',
-    maxWidth: 480,
-    lineHeight: 15,
-    marginBottom: 12,
-  },
-  videoSpecRow: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  videoSpecItem: {
+
+  // Steps & KaTeX
+  stepsSectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
+    marginTop: 4,
   },
-  videoSpecText: {
-    fontSize: 10,
-    color: '#64748b',
-  },
-  sectionStepsHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 6,
-  },
-  sectionStepsTitle: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: '#0f172a',
+  stepsSectionTitle: {
+    fontSize: 11.5,
+    fontWeight: '900',
+    color: '#1E1E1E',
   },
   stepCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
-    padding: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 7,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    shadowColor: '#000',
-    shadowOpacity: 0.02,
-    shadowRadius: 4,
-    elevation: 1,
+    borderColor: '#FED7AA',
+    padding: 8,
+    gap: 4,
   },
   stepCardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 6,
+    gap: 6,
   },
   stepNumberCircle: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: '#0284c7',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   stepNumberText: {
-    color: '#ffffff',
-    fontSize: 11,
-    fontWeight: '800',
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#FFFFFF',
   },
   stepTitleText: {
-    fontSize: 12.5,
-    fontWeight: '700',
-    color: '#0f172a',
-    flex: 1,
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#1E1E1E',
   },
   stepDescText: {
-    fontSize: 11.5,
-    color: '#334155',
-    lineHeight: 17,
-    marginBottom: 4,
+    fontSize: 9.5,
+    color: '#475569',
+    lineHeight: 14,
   },
   tipCard: {
-    backgroundColor: '#fef3c7',
-    borderRadius: 8,
-    padding: 12,
+    backgroundColor: '#FFFBEB',
+    borderRadius: 7,
     borderWidth: 1,
-    borderColor: '#fde68a',
+    borderColor: '#FDE68A',
+    padding: 8,
+    gap: 3,
   },
   tipHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginBottom: 4,
+    gap: 5,
   },
   tipTitle: {
-    fontSize: 11.5,
-    fontWeight: '700',
-    color: '#92400e',
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#B45309',
   },
   tipText: {
-    fontSize: 11,
-    color: '#78350f',
-    lineHeight: 16,
+    fontSize: 9.5,
+    color: '#92400E',
+    lineHeight: 14,
   },
   emptyDetailWrap: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 40,
-    gap: 12,
+    padding: 30,
   },
   emptyDetailText: {
-    fontSize: 13,
-    color: '#94a3b8',
+    fontSize: 12,
+    color: '#94A3B8',
     textAlign: 'center',
+    marginTop: 8,
   },
 });

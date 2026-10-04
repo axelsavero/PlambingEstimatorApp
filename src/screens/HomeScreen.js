@@ -5,22 +5,23 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
 import { formatRupiah } from '../utils/constructionCalculations';
 import { generateCurrentRekapRAB } from '../utils/rabStorage';
-import RABProLogo from '../components/RABProLogo';
+import SkylineWatermarkBackground from '../components/SkylineWatermarkBackground';
 
-// 3 Kategori Besar Sesuai Konsep PPTX Slide 3
+// 3 Kategori Besar Sesuai Konsep Klien
 const WORK_CATEGORIES = [
   {
     id: 'pondasi',
     categoryName: 'PEKERJAAN PONDASI',
     subtitle: 'Pondasi Dangkal & Pondasi Tapak Beton Bertulang',
     icon: 'layers',
-    themeColor: '#d97706',
-    bgColor: '#fef3c7',
+    themeColor: '#ED7E08',
+    bgColor: '#FFF7ED',
     badgeText: '2 Sub-Pekerjaan',
     cardWidthPercent: '49%',
     items: [
@@ -31,8 +32,8 @@ const WORK_CATEGORIES = [
         title: 'Pondasi Batu Belah',
         subtitle: 'Galian tanah, aanstamping, pasangan batu belah & urukan kembali',
         icon: 'layers-outline',
-        color: '#d97706',
-        bgColor: '#fef3c7',
+        color: '#ED7E08',
+        bgColor: '#FFF7ED',
         highlight: 'Galian Tanah, Batu Kali, Pasir Urug',
       },
       {
@@ -42,8 +43,8 @@ const WORK_CATEGORIES = [
         title: 'Pondasi Tapak (Foot Plate)',
         subtitle: '6 tipe foot plate, penulangan D13/D16, pedestal & cor beton K-300',
         icon: 'grid-outline',
-        color: '#b45309',
-        bgColor: '#ffedd5',
+        color: '#C66503',
+        bgColor: '#FEF3C7',
         highlight: '6 Tipe FP, Pembesian & Bekisting',
       },
     ],
@@ -53,8 +54,8 @@ const WORK_CATEGORIES = [
     categoryName: 'PEKERJAAN BETON',
     subtitle: 'Struktur Beton Bertulang (Sloof, Kolom, & Balok)',
     icon: 'business',
-    themeColor: '#2563eb',
-    bgColor: '#dbeafe',
+    themeColor: '#ED7E08',
+    bgColor: '#FFF7ED',
     badgeText: '3 Sub-Pekerjaan',
     cardWidthPercent: '32.2%',
     items: [
@@ -65,8 +66,8 @@ const WORK_CATEGORIES = [
         title: 'Struktur Sloof Beton',
         subtitle: 'Tulangan utama & support, sengkang tumpuan/lapangan & cor K-275',
         icon: 'remove-outline',
-        color: '#16a34a',
-        bgColor: '#dcfce7',
+        color: '#ED7E08',
+        bgColor: '#FFF7ED',
         highlight: 'Dimensi b x h, Begel, Cor K-275',
       },
       {
@@ -76,8 +77,8 @@ const WORK_CATEGORIES = [
         title: 'Struktur Kolom Beton',
         subtitle: 'Dimensi kolom, pembesian utama & support, sengkang & cor K-275',
         icon: 'business-outline',
-        color: '#9333ea',
-        bgColor: '#f3e8ff',
+        color: '#C66503',
+        bgColor: '#FEF3C7',
         highlight: 'Tinggi Kolom, Tulangan Pokok & Begel',
       },
       {
@@ -87,8 +88,8 @@ const WORK_CATEGORIES = [
         title: 'Struktur Balok Beton',
         subtitle: 'Penulangan lentur balok, sengkang tumpuan/lapangan & cor K-275',
         icon: 'cube-outline',
-        color: '#0891b2',
-        bgColor: '#cffafe',
+        color: '#ED7E08',
+        bgColor: '#FFF7ED',
         highlight: 'Bentang Balok, Tulangan Tarik/Tekan',
       },
     ],
@@ -98,8 +99,8 @@ const WORK_CATEGORIES = [
     categoryName: 'PEKERJAAN ATAP',
     subtitle: 'Rangka Kuda-Kuda Baja Ringan & Penutup Atap',
     icon: 'triangle',
-    themeColor: '#dc2626',
-    bgColor: '#fee2e2',
+    themeColor: '#ED7E08',
+    bgColor: '#FFF7ED',
     badgeText: '2 Sub-Pekerjaan',
     cardWidthPercent: '49%',
     items: [
@@ -110,8 +111,8 @@ const WORK_CATEGORIES = [
         title: 'Atap Pelana Baja Ringan',
         subtitle: 'Kuda-kuda C75, reng, genteng metal pasir & rabung nok',
         icon: 'triangle-outline',
-        color: '#dc2626',
-        bgColor: '#fee2e2',
+        color: '#ED7E08',
+        bgColor: '#FFF7ED',
         highlight: 'Model Pelana: C75, Reng, Genteng Metal',
       },
       {
@@ -121,8 +122,8 @@ const WORK_CATEGORIES = [
         title: 'Atap Limas Baja Ringan',
         subtitle: 'Geometri limas trapesium & segitiga, jurai luar, nok & reng',
         icon: 'diamond-outline',
-        color: '#ea580c',
-        bgColor: '#ffedd5',
+        color: '#C66503',
+        bgColor: '#FEF3C7',
         highlight: 'Model Limas: Jurai, Nok, Reng, Genteng',
       },
     ],
@@ -153,46 +154,103 @@ export default function HomeScreen({ navigation }) {
     : WORK_CATEGORIES.filter(cat => cat.id === activeFilter);
 
   return (
-    <View style={styles.container}>
+    <SkylineWatermarkBackground style={styles.container}>
       <ScrollView
         style={styles.scrollArea}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={true}
       >
-        {/* Landscape Top Header */}
+        {/* Landscape Top Header with Official Logo & Greeting */}
         <View style={styles.topBanner}>
           <View style={styles.brandRow}>
-            <RABProLogo size={42} showText={false} />
-            <View>
-              <View style={styles.titleRow}>
-                <Text style={styles.brandName}>RABPro</Text>
+            <Image
+              source={require('../../assets/brand/logo_with_text.png')}
+              style={styles.brandLogo}
+              resizeMode="contain"
+            />
+            <View style={styles.brandTextWrap}>
+              <View style={styles.greetingRow}>
+                <Text style={styles.greetingTitle}>Hai, Rekan Konstruksi!</Text>
                 <View style={styles.ahspBadge}>
                   <Text style={styles.ahspBadgeText}>AHSP PUPR 2025/2026</Text>
                 </View>
               </View>
               <Text style={styles.brandDesc}>
-                Aplikasi Estimator Konstruksi & Perhitungan Rencana Anggaran Biaya Otomatis
+                Aplikasi Estimator Rencana Anggaran Biaya & Perhitungan Volume Konstruksi Otomatis
               </Text>
             </View>
           </View>
 
-          {/* Quick Summary Pill */}
+          {/* Quick Summary Pill: Rekapitulasi RAB */}
           <TouchableOpacity
             style={styles.summaryPill}
             onPress={() => navigation.navigate('RekapRABScreen')}
+            activeOpacity={0.85}
           >
-            <Text style={styles.summaryLabel}>TOTAL ESTIMASI RAB</Text>
+            <View style={styles.summaryPillHeader}>
+              <Ionicons name="receipt" size={13} color="#FECA38" />
+              <Text style={styles.summaryLabel}>TOTAL ESTIMASI RAB</Text>
+            </View>
             <Text style={styles.summaryValue}>{formatRupiah(totalRAB)}</Text>
             <View style={styles.summaryAction}>
               <Text style={styles.summaryActionText}>Buka Rekapitulasi</Text>
-              <Ionicons name="arrow-forward" size={12} color="#ffffff" />
+              <Ionicons name="arrow-forward" size={11} color="#FECA38" />
             </View>
           </TouchableOpacity>
         </View>
 
-        {/* Category Navigation Filter Tabs */}
+        {/* 2 Big Action Launchers: Panduan Teknis & Estimator */}
+        <View style={styles.launchersRow}>
+          {/* Launcher 1: Panduan Teknis (Materi & Rumus) */}
+          <TouchableOpacity
+            style={styles.launcherCard}
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate('MateriScreen')}
+          >
+            <View style={[styles.launcherIconWrap, { backgroundColor: '#FEF3C7' }]}>
+              <Ionicons name="school" size={20} color="#ED7E08" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={styles.launcherTitle}>Panduan Teknis & Rumus</Text>
+                <View style={styles.launcherBadge}>
+                  <Text style={styles.launcherBadgeText}>9 Topik</Text>
+                </View>
+              </View>
+              <Text style={styles.launcherDesc}>
+                Video panduan, konsep perhitungan, notasi teknis & rumus KaTeX
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#CBD5E1" />
+          </TouchableOpacity>
+
+          {/* Launcher 2: Rekapitulasi & Ekspor Excel */}
+          <TouchableOpacity
+            style={styles.launcherCard}
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate('RekapRABScreen')}
+          >
+            <View style={[styles.launcherIconWrap, { backgroundColor: '#FFF7ED' }]}>
+              <Ionicons name="stats-chart" size={20} color="#ED7E08" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={styles.launcherTitle}>Rekapitulasi RAB Proyek</Text>
+                <View style={[styles.launcherBadge, { backgroundColor: '#DCFCE7' }]}>
+                  <Text style={[styles.launcherBadgeText, { color: '#166534' }]}>Total Proyek</Text>
+                </View>
+              </View>
+              <Text style={styles.launcherDesc}>
+                Total akumulasi biaya 7 pekerjaan struktur & bagikan via WhatsApp
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#CBD5E1" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Category Filter Pills */}
         <View style={styles.filterRow}>
-          <Text style={styles.filterTitle}>Kategori Pekerjaan (PPTX):</Text>
+          <Text style={styles.filterTitle}>Kategori Pekerjaan Konstruksi:</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
             <TouchableOpacity
               style={[styles.filterPill, activeFilter === 'all' && styles.filterPillActive]}
@@ -201,7 +259,7 @@ export default function HomeScreen({ navigation }) {
               <Ionicons
                 name="apps"
                 size={13}
-                color={activeFilter === 'all' ? '#ffffff' : '#64748b'}
+                color={activeFilter === 'all' ? '#FFFFFF' : '#64748B'}
               />
               <Text style={[styles.filterPillText, activeFilter === 'all' && styles.filterPillTextActive]}>
                 Semua Kategori (7)
@@ -209,13 +267,13 @@ export default function HomeScreen({ navigation }) {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.filterPill, activeFilter === 'pondasi' && styles.filterPillActivePondasi]}
+              style={[styles.filterPill, activeFilter === 'pondasi' && styles.filterPillActive]}
               onPress={() => setActiveFilter('pondasi')}
             >
               <Ionicons
                 name="layers"
                 size={13}
-                color={activeFilter === 'pondasi' ? '#ffffff' : '#d97706'}
+                color={activeFilter === 'pondasi' ? '#FFFFFF' : '#ED7E08'}
               />
               <Text style={[styles.filterPillText, activeFilter === 'pondasi' && styles.filterPillTextActive]}>
                 1. Pekerjaan Pondasi
@@ -223,13 +281,13 @@ export default function HomeScreen({ navigation }) {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.filterPill, activeFilter === 'beton' && styles.filterPillActiveBeton]}
+              style={[styles.filterPill, activeFilter === 'beton' && styles.filterPillActive]}
               onPress={() => setActiveFilter('beton')}
             >
               <Ionicons
                 name="business"
                 size={13}
-                color={activeFilter === 'beton' ? '#ffffff' : '#2563eb'}
+                color={activeFilter === 'beton' ? '#FFFFFF' : '#ED7E08'}
               />
               <Text style={[styles.filterPillText, activeFilter === 'beton' && styles.filterPillTextActive]}>
                 2. Pekerjaan Beton
@@ -237,26 +295,16 @@ export default function HomeScreen({ navigation }) {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.filterPill, activeFilter === 'atap' && styles.filterPillActiveAtap]}
+              style={[styles.filterPill, activeFilter === 'atap' && styles.filterPillActive]}
               onPress={() => setActiveFilter('atap')}
             >
               <Ionicons
                 name="triangle"
                 size={13}
-                color={activeFilter === 'atap' ? '#ffffff' : '#dc2626'}
+                color={activeFilter === 'atap' ? '#FFFFFF' : '#ED7E08'}
               />
               <Text style={[styles.filterPillText, activeFilter === 'atap' && styles.filterPillTextActive]}>
                 3. Pekerjaan Atap
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.filterPill, styles.filterPillRekap]}
-              onPress={() => navigation.navigate('RekapRABScreen')}
-            >
-              <Ionicons name="receipt" size={13} color="#0369a1" />
-              <Text style={styles.filterPillTextRekap}>
-                Rekapitulasi RAB
               </Text>
             </TouchableOpacity>
           </ScrollView>
@@ -269,7 +317,7 @@ export default function HomeScreen({ navigation }) {
             <View style={styles.categoryHeader}>
               <View style={styles.categoryHeaderLeft}>
                 <View style={[styles.categoryIconWrap, { backgroundColor: category.bgColor }]}>
-                  <Ionicons name={category.icon} size={18} color={category.themeColor} />
+                  <Ionicons name={category.icon} size={16} color={category.themeColor} />
                 </View>
                 <View>
                   <View style={styles.categoryTitleRow}>
@@ -298,145 +346,66 @@ export default function HomeScreen({ navigation }) {
                   onPress={() => navigation.navigate(item.screen)}
                 >
                   <View style={styles.cardTopRow}>
-                    <View style={[styles.codeBadge, { backgroundColor: item.color }]}>
-                      <Text style={styles.codeBadgeText}>{item.code}</Text>
+                    <View style={styles.codeBadge}>
+                      <Text style={styles.codeText}>Sheet {item.code}</Text>
                     </View>
-                    <View style={[styles.cardIconWrap, { backgroundColor: item.bgColor }]}>
-                      <Ionicons name={item.icon} size={18} color={item.color} />
+                    <View style={[styles.itemIconWrap, { backgroundColor: item.bgColor }]}>
+                      <Ionicons name={item.icon} size={15} color={item.color} />
                     </View>
                   </View>
 
-                  <Text style={styles.cardTitle} numberOfLines={1}>
+                  <Text style={styles.cardItemTitle} numberOfLines={1}>
                     {item.title}
                   </Text>
-                  <Text style={styles.cardSubtitle} numberOfLines={2}>
+                  <Text style={styles.cardItemSubtitle} numberOfLines={2}>
                     {item.subtitle}
                   </Text>
 
-                  <View style={styles.highlightBadge}>
-                    <Text style={styles.highlightText} numberOfLines={1}>
+                  <View style={styles.cardBottomRow}>
+                    <Text style={styles.cardHighlightText} numberOfLines={1}>
                       {item.highlight}
                     </Text>
-                  </View>
-
-                  <View style={styles.cardBottomRow}>
-                    <Text style={[styles.btnOpenText, { color: item.color }]}>
-                      Buka Kalkulator
-                    </Text>
-                    <Ionicons name="chevron-forward" size={14} color={item.color} />
+                    <View style={styles.cardOpenAction}>
+                      <Text style={styles.cardOpenActionText}>Buka Kalkulator</Text>
+                      <Ionicons name="arrow-forward-circle" size={15} color={colors.primary} />
+                    </View>
                   </View>
                 </TouchableOpacity>
               ))}
             </View>
           </View>
         ))}
-
-        {/* Banner Materi & Teori Estimator Konstruksi */}
-        <View style={styles.materiSection}>
-          <TouchableOpacity
-            style={styles.materiCard}
-            activeOpacity={0.85}
-            onPress={() => navigation.navigate('MateriScreen')}
-          >
-            <View style={styles.materiLeft}>
-              <View style={styles.materiIconWrap}>
-                <Ionicons name="school" size={24} color="#ffffff" />
-              </View>
-              <View style={{ flex: 1 }}>
-                <View style={styles.materiTitleRow}>
-                  <Text style={styles.materiTitle}>MATERI & RUMUS ESTIMASI KONSTRUKSI</Text>
-                  <View style={styles.materiCodeBadge}>
-                    <Text style={styles.materiCodeBadgeText}>PERSAMAAN & RUMUS</Text>
-                  </View>
-                  <View style={styles.materiVideoBadge}>
-                    <Ionicons name="videocam" size={10} color="#4338ca" />
-                    <Text style={styles.materiVideoBadgeText}>VIDEO MATERI</Text>
-                  </View>
-                </View>
-                <Text style={styles.materiDesc}>
-                  Panduan langkah perhitungan volume (Foot Plate, Pondasi Batu Kali, Balok, Kolom, Tangga, Atap), rumus trigonometri, AHSP SNI, dan pembuatan Kurva S proyek.
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.materiRight}>
-              <View style={styles.materiPillsRow}>
-                <View style={styles.materiPillSmall}>
-                  <Text style={styles.materiPillSmallText}>7 Divisi Teori</Text>
-                </View>
-                <View style={styles.materiPillSmall}>
-                  <Text style={styles.materiPillSmallText}>Font KaTeX</Text>
-                </View>
-              </View>
-              <View style={styles.materiBtn}>
-                <Text style={styles.materiBtnText}>Buka Materi & Rumus</Text>
-                <Ionicons name="arrow-forward" size={13} color="#ffffff" />
-              </View>
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        {/* Master Rekapitulasi RAB Proyek Banner */}
-        <View style={styles.rekapSection}>
-          <TouchableOpacity
-            style={styles.rekapCard}
-            activeOpacity={0.85}
-            onPress={() => navigation.navigate('RekapRABScreen')}
-          >
-            <View style={styles.rekapLeft}>
-              <View style={styles.rekapIconWrap}>
-                <Ionicons name="receipt" size={24} color="#ffffff" />
-              </View>
-              <View style={{ flex: 1 }}>
-                <View style={styles.rekapTitleRow}>
-                  <Text style={styles.rekapTitle}>REKAPITULASI RENCANA ANGGARAN BIAYA (RAB)</Text>
-                  <View style={styles.rekapCodeBadge}>
-                    <Text style={styles.rekapCodeBadgeText}>BOM 19 PEKERJAAN</Text>
-                  </View>
-                </View>
-                <Text style={styles.rekapDesc}>
-                  Ringkasan seluruh divisi pekerjaan: pondasi, struktur beton, rangka atap, dinding, plesteran, lantai, hingga sanitair & kelistrikan.
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.rekapRight}>
-              <Text style={styles.rekapTotalLabel}>ESTIMASI TOTAL ANGGARAN</Text>
-              <Text style={styles.rekapTotalAmount}>{formatRupiah(totalRAB)}</Text>
-              <View style={styles.rekapBtn}>
-                <Text style={styles.rekapBtnText}>Buka Rekap RAB Lengkap</Text>
-                <Ionicons name="arrow-forward" size={14} color="#0284c7" />
-              </View>
-            </View>
-          </TouchableOpacity>
-        </View>
       </ScrollView>
-    </View>
+    </SkylineWatermarkBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f1f5f9',
   },
   scrollArea: {
     flex: 1,
   },
   scrollContent: {
-    padding: 14,
-    paddingBottom: 36,
+    padding: 10,
+    gap: 10,
+    paddingBottom: 25,
   },
   topBanner: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 9,
+    padding: 10,
+    borderWidth: 1.5,
+    borderColor: '#FED7AA',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
   },
   brandRow: {
     flexDirection: 'row',
@@ -444,447 +413,292 @@ const styles = StyleSheet.create({
     gap: 12,
     flex: 1,
   },
-  titleRow: {
+  brandLogo: {
+    width: 130,
+    height: 44,
+  },
+  brandTextWrap: {
+    flex: 1,
+  },
+  greetingRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  brandName: {
-    fontSize: 22,
+  greetingTitle: {
+    fontSize: 14,
     fontWeight: '900',
-    color: '#0f172a',
-    letterSpacing: -0.5,
+    color: '#1E1E1E',
   },
   ahspBadge: {
-    backgroundColor: '#fef3c7',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
     borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#fde68a',
+    borderWidth: 0.5,
+    borderColor: '#F59E0B',
   },
   ahspBadgeText: {
-    fontSize: 10,
+    fontSize: 8.5,
     fontWeight: '800',
-    color: '#b45309',
+    color: '#B45309',
   },
   brandDesc: {
-    fontSize: 11,
-    color: '#64748b',
+    fontSize: 10,
+    color: '#64748B',
     marginTop: 2,
   },
   summaryPill: {
-    backgroundColor: '#0369a1',
-    borderRadius: 10,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
+    backgroundColor: '#1E1E1E',
+    borderRadius: 7,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
     alignItems: 'flex-end',
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+  summaryPillHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   summaryLabel: {
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: '800',
-    color: '#bae6fd',
-    letterSpacing: 0.5,
+    color: '#FECA38',
+    letterSpacing: 0.4,
   },
   summaryValue: {
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: '900',
-    color: '#ffffff',
+    color: '#FFFFFF',
     marginTop: 1,
   },
   summaryAction: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 3,
     marginTop: 2,
   },
   summaryActionText: {
-    fontSize: 10,
-    color: '#e0f2fe',
-    fontWeight: '700',
+    fontSize: 8.5,
+    color: '#CBD5E1',
+    fontWeight: '600',
   },
+
+  // Launchers Row
+  launchersRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  launcherCard: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#FED7AA',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  launcherIconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  launcherTitle: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#1E1E1E',
+  },
+  launcherBadge: {
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 3,
+  },
+  launcherBadgeText: {
+    fontSize: 8.5,
+    fontWeight: '800',
+    color: '#B45309',
+  },
+  launcherDesc: {
+    fontSize: 9.5,
+    color: '#64748B',
+    marginTop: 2,
+  },
+
+  // Category Filter
   filterRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 12,
   },
   filterTitle: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: '800',
-    color: '#475569',
+    color: '#1E1E1E',
   },
   filterScroll: {
     flexDirection: 'row',
-    alignItems: 'center',
     gap: 6,
   },
   filterPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 6,
+    gap: 4,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#cbd5e1',
+    borderColor: '#E2E8F0',
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 5,
   },
   filterPillActive: {
-    backgroundColor: '#0f172a',
-    borderColor: '#0f172a',
-  },
-  filterPillActivePondasi: {
-    backgroundColor: '#d97706',
-    borderColor: '#d97706',
-  },
-  filterPillActiveBeton: {
-    backgroundColor: '#2563eb',
-    borderColor: '#2563eb',
-  },
-  filterPillActiveAtap: {
-    backgroundColor: '#dc2626',
-    borderColor: '#dc2626',
-  },
-  filterPillRekap: {
-    backgroundColor: '#e0f2fe',
-    borderColor: '#bae6fd',
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   filterPillText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
     color: '#475569',
   },
   filterPillTextActive: {
-    color: '#ffffff',
+    color: '#FFFFFF',
   },
-  filterPillTextRekap: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#0369a1',
-  },
+
+  // Categories Section & Cards
   categorySection: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: '#FED7AA',
+    padding: 8,
+    gap: 8,
   },
   categoryHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
-    paddingBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: '#FFF7ED',
+    paddingBottom: 6,
   },
   categoryHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-  },
-  categoryIconWrap: {
-    width: 34,
-    height: 34,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  categoryTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
     gap: 8,
   },
-  categoryTitleText: {
-    fontSize: 13,
-    fontWeight: '900',
-    color: '#0f172a',
-    letterSpacing: 0.3,
-  },
-  categoryBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  categoryBadgeText: {
-    fontSize: 10,
-    fontWeight: '800',
-  },
-  categorySubtitleText: {
-    fontSize: 11,
-    color: '#64748b',
-    marginTop: 1,
-  },
-  cardsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    justifyContent: 'flex-start',
-  },
-  gridCard: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 8,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    justifyContent: 'space-between',
-    minHeight: 132,
-  },
-  cardTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  codeBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  codeBadgeText: {
-    color: '#ffffff',
-    fontSize: 10,
-    fontWeight: '800',
-  },
-  cardIconWrap: {
+  categoryIconWrap: {
     width: 28,
     height: 28,
     borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cardTitle: {
-    fontSize: 12,
+  categoryTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  categoryTitleText: {
+    fontSize: 11.5,
+    fontWeight: '900',
+    color: '#1E1E1E',
+  },
+  categoryBadge: {
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 3,
+  },
+  categoryBadgeText: {
+    fontSize: 8,
     fontWeight: '800',
-    color: '#0f172a',
-    marginBottom: 2,
   },
-  cardSubtitle: {
-    fontSize: 10,
-    color: '#64748b',
-    lineHeight: 13,
-    marginBottom: 6,
-  },
-  highlightBadge: {
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    marginBottom: 6,
-  },
-  highlightText: {
+  categorySubtitleText: {
     fontSize: 9,
-    fontWeight: '700',
-    color: '#475569',
+    color: '#64748B',
+  },
+  cardsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  gridCard: {
+    backgroundColor: '#FFFDF9',
+    borderRadius: 7,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    padding: 8,
+    justifyContent: 'space-between',
+    minHeight: 90,
+  },
+  cardTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  codeBadge: {
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 5,
+    paddingVertical: 1.5,
+    borderRadius: 3,
+  },
+  codeText: {
+    fontSize: 8.5,
+    fontWeight: '800',
+    color: '#B45309',
+  },
+  itemIconWrap: {
+    width: 24,
+    height: 24,
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardItemTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#1E1E1E',
+    marginTop: 4,
+  },
+  cardItemSubtitle: {
+    fontSize: 9,
+    color: '#64748B',
+    marginTop: 1,
+    lineHeight: 12,
   },
   cardBottomRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 6,
+    alignItems: 'center',
     borderTopWidth: 0.5,
-    borderTopColor: '#e2e8f0',
+    borderTopColor: '#FDE68A',
+    paddingTop: 5,
+    marginTop: 5,
   },
-  btnOpenText: {
-    fontSize: 10,
-    fontWeight: '800',
-  },
-  materiSection: {
-    marginTop: 4,
-    marginBottom: 8,
-  },
-  materiCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#1e1b4b',
-    borderRadius: 12,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#4338ca',
-  },
-  materiLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+  cardHighlightText: {
+    fontSize: 8,
+    fontWeight: '700',
+    color: colors.primaryDark,
     flex: 1,
-    paddingRight: 16,
   },
-  materiIconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
-    backgroundColor: '#4338ca',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  materiTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 3,
-  },
-  materiTitle: {
-    fontSize: 13,
-    fontWeight: '900',
-    color: '#ffffff',
-    letterSpacing: 0.3,
-  },
-  materiCodeBadge: {
-    backgroundColor: '#312e81',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#4338ca',
-  },
-  materiCodeBadgeText: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: '#c7d2fe',
-  },
-  materiVideoBadge: {
+  cardOpenAction: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    backgroundColor: '#e0e7ff',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
   },
-  materiVideoBadgeText: {
-    fontSize: 9,
+  cardOpenActionText: {
+    fontSize: 8.5,
     fontWeight: '800',
-    color: '#3730a3',
-  },
-  materiDesc: {
-    fontSize: 11,
-    color: '#cbd5e1',
-    lineHeight: 14,
-  },
-  materiRight: {
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-    gap: 6,
-  },
-  materiPillsRow: {
-    flexDirection: 'row',
-    gap: 4,
-  },
-  materiPillSmall: {
-    backgroundColor: '#312e81',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  materiPillSmallText: {
-    fontSize: 9,
-    fontWeight: '700',
-    color: '#a5b4fc',
-  },
-  materiBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    backgroundColor: '#4f46e5',
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 6,
-  },
-  materiBtnText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#ffffff',
-  },
-  rekapSection: {
-    marginTop: 4,
-  },
-  rekapCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#0f172a',
-    borderRadius: 12,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#0284c7',
-  },
-  rekapLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    flex: 1,
-    paddingRight: 16,
-  },
-  rekapIconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
-    backgroundColor: '#0284c7',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  rekapTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 3,
-  },
-  rekapTitle: {
-    fontSize: 13,
-    fontWeight: '900',
-    color: '#ffffff',
-    letterSpacing: 0.3,
-  },
-  rekapCodeBadge: {
-    backgroundColor: '#0369a1',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  rekapCodeBadgeText: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: '#bae6fd',
-  },
-  rekapDesc: {
-    fontSize: 11,
-    color: '#94a3b8',
-    lineHeight: 14,
-  },
-  rekapRight: {
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-  },
-  rekapTotalLabel: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: '#94a3b8',
-    letterSpacing: 0.5,
-  },
-  rekapTotalAmount: {
-    fontSize: 18,
-    fontWeight: '900',
-    color: '#38bdf8',
-    marginVertical: 2,
-  },
-  rekapBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 6,
-    marginTop: 4,
-  },
-  rekapBtnText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#0284c7',
+    color: colors.primary,
   },
 });

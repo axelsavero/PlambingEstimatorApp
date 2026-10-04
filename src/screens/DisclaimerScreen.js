@@ -5,11 +5,12 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
 import { startSession } from '../utils/sessionManager';
-import RABProLogo from '../components/RABProLogo';
+import SkylineWatermarkBackground from '../components/SkylineWatermarkBackground';
 
 export default function DisclaimerScreen({ onContinue }) {
   const handleProceed = () => {
@@ -20,7 +21,7 @@ export default function DisclaimerScreen({ onContinue }) {
   };
 
   return (
-    <View style={styles.container}>
+    <SkylineWatermarkBackground style={styles.container}>
       <ScrollView
         style={styles.scrollArea}
         contentContainerStyle={styles.scrollContent}
@@ -30,34 +31,39 @@ export default function DisclaimerScreen({ onContinue }) {
           {/* Header Banner */}
           <View style={styles.bannerRow}>
             <View style={styles.titleBadge}>
+              <Ionicons name="information-circle" size={14} color="#B45309" />
               <Text style={styles.titleBadgeText}>Disclaimer untuk Pengguna</Text>
             </View>
             <View style={styles.appBrandRow}>
-              <RABProLogo size={32} textSize={20} textColor={colors.primaryDark} />
+              <Image
+                source={require('../../assets/brand/logo_with_text.png')}
+                style={styles.brandLogo}
+                resizeMode="contain"
+              />
             </View>
           </View>
 
-          {/* Paragraph 1 */}
+          {/* Paragraph 1 - Panduan & Engineering Judgment */}
           <View style={styles.paragraphBox}>
             <View style={styles.iconBullet}>
-              <Ionicons name="alert-circle-outline" size={20} color="#b45309" />
+              <Ionicons name="alert-circle" size={20} color="#ED7E08" />
             </View>
             <Text style={styles.bodyText}>
-              Aplikasi RABPro dirancang khusus sebagai alat bantu hitung volume
+              Aplikasi <Text style={styles.boldText}>ESTIMATOR</Text> dirancang khusus sebagai alat bantu hitung volume
               pekerjaan konstruksi, dengan pendekatan matematis, ilmiah dan
               pengalaman empiris/uji coba. Tingkat akurasi ataupun perbedaan
               data dapat mungkin terjadi di lapangan, kebijakan pengguna
-              diperlukan. Khususnya dalam penyesuaian fleksibilitas ataupun{' '}
+              diperlukan, khususnya dalam penyesuaian fleksibilitas ataupun{' '}
               <Text style={styles.boldText}>Engineering Judgment</Text>.
-              Pengembang tools tidak bertanggung jawab atas segala yang
-              merugikan dari aplikasi ini.
+              Pengembang tools tidak bertanggung jawab atas segala hal yang
+              merugikan dari penggunaan aplikasi ini.
             </Text>
           </View>
 
           {/* Paragraph 2 - Hak Cipta */}
           <View style={[styles.paragraphBox, styles.copyrightBox]}>
             <View style={styles.iconBullet}>
-              <Ionicons name="shield-checkmark-outline" size={20} color="#0369a1" />
+              <Ionicons name="shield-checkmark" size={20} color="#C66503" />
             </View>
             <Text style={styles.bodyText}>
               <Text style={styles.boldText}>Tentang HAK CIPTA & KARYA:</Text>{' '}
@@ -65,7 +71,7 @@ export default function DisclaimerScreen({ onContinue }) {
               Hak Cipta). Dilarang keras mengubah, memodifikasi,
               memperjualbelikan, mencuri data atau segala tindakan yang melanggar
               hak karya, tanpa izin dari pihak pengembang{' '}
-              <Text style={styles.boldText}>RABPro</Text>.
+              <Text style={styles.boldText}>ESTIMATOR</Text>.
             </Text>
           </View>
 
@@ -77,9 +83,9 @@ export default function DisclaimerScreen({ onContinue }) {
               onPress={handleProceed}
             >
               <Ionicons
-                name="checkmark-done"
-                size={20}
-                color="#ffffff"
+                name="checkmark-circle"
+                size={18}
+                color="#FFFFFF"
               />
               <Text style={styles.btnProceedText}>
                 Saya Mengerti & Setuju — Buka Aplikasi
@@ -88,14 +94,13 @@ export default function DisclaimerScreen({ onContinue }) {
           </View>
         </View>
       </ScrollView>
-    </View>
+    </SkylineWatermarkBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f1f5f9',
     justifyContent: 'center',
   },
   scrollArea: {
@@ -107,90 +112,96 @@ const styles = StyleSheet.create({
     minHeight: '100%',
   },
   card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    maxWidth: 820,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    padding: 18,
+    borderWidth: 1.5,
+    borderColor: '#FED7AA',
+    maxWidth: 780,
     width: '100%',
     alignSelf: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
     elevation: 3,
   },
   bannerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 14,
+    marginBottom: 12,
     paddingBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: '#FED7AA',
   },
   titleBadge: {
-    backgroundColor: '#fef3c7',
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 5,
     borderWidth: 1,
-    borderColor: '#fde68a',
+    borderColor: '#FDE68A',
   },
   titleBadgeText: {
-    color: '#b45309',
-    fontSize: 12,
+    color: '#B45309',
+    fontSize: 11,
     fontWeight: '800',
     letterSpacing: 0.2,
   },
   appBrandRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+  },
+  brandLogo: {
+    width: 120,
+    height: 36,
   },
   paragraphBox: {
     flexDirection: 'row',
-    backgroundColor: '#fffdf5',
+    backgroundColor: '#FFFDF9',
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 7,
     borderWidth: 1,
-    borderColor: '#fed7aa',
-    marginBottom: 12,
+    borderColor: '#FDE68A',
+    marginBottom: 10,
     gap: 10,
     alignItems: 'flex-start',
   },
   copyrightBox: {
-    backgroundColor: '#f0f9ff',
-    borderColor: '#bae6fd',
+    backgroundColor: '#FFF7ED',
+    borderColor: '#FED7AA',
   },
   iconBullet: {
     marginTop: 2,
   },
   bodyText: {
     flex: 1,
-    fontSize: 12,
-    lineHeight: 18,
+    fontSize: 11.5,
+    lineHeight: 17,
     color: '#334155',
   },
   boldText: {
     fontWeight: '800',
-    color: '#0f172a',
+    color: '#1E1E1E',
   },
   actionRow: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 8,
   },
   btnProceed: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
     backgroundColor: colors.primary,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
+    paddingVertical: 9,
+    paddingHorizontal: 18,
+    borderRadius: 7,
     shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
@@ -198,8 +209,8 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   btnProceedText: {
-    color: '#ffffff',
-    fontSize: 13,
+    color: '#FFFFFF',
+    fontSize: 12,
     fontWeight: '800',
     letterSpacing: 0.3,
   },
