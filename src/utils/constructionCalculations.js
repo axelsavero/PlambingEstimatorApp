@@ -86,7 +86,12 @@ export const hitungPondasi = (inputs = DEFAULT_PONDASI) => {
   // I16: Urukan di samping pondasi
   const volUrukSamping = (persSamping * volGalian) / 100;
   // I17: Urukan tanah kembali
-  const volUrukKembali = volGalian;
+  // Koreksi: Excel memakai =I9 (seluruh galian). Yang dikembalikan hanya sisa lubang
+  // galian setelah terisi pasir uruk, aanstamping & bagian pondasi yang tertanam.
+  const hTertanam = Math.min(c2, Math.max(0, c1 - d - e));
+  const lebarDiTertanam = c2 > 0 ? b2 + (a2 - b2) * (hTertanam / c2) : b2;
+  const volPondasiTertanam = ((b2 + lebarDiTertanam) / 2) * hTertanam * P;
+  const volUrukKembali = Math.max(0, volGalian - volPasirUruk - volAanstamping - volPondasiTertanam);
 
   // AHSP Koefisien & Quantities
   const H65 = volGalian * 0.75; // Pekerja galian
@@ -344,7 +349,12 @@ export const hitungFootPlate = (inputs = DEFAULT_FOOTPLATE) => {
   const bekistingKolom = (a1 + a2) * 2 * h1 * nUnit;
   const volBekisting = bekistingTapak + bekistingKolom;
   // I20: Pekerjaan Cor K-300
-  const volCor = (a1 * a2 * h1 + b1 * b2 * h3 + b1 * b2 * h2 * 0.5) * nUnit;
+  // Koreksi: bagian miring tapak memakai rumus limas terpancung
+  // h/3 × (A1 + A2 + √(A1·A2)), bukan pendekatan ½ × A1 × h seperti di Excel.
+  const luasTapak = b1 * b2;
+  const luasKolom = a1 * a2;
+  const volLimas = (h2 / 3) * (luasTapak + luasKolom + Math.sqrt(luasTapak * luasKolom));
+  const volCor = (luasKolom * h1 + luasTapak * h3 + volLimas) * nUnit;
 
   // Berat Besi Total (I18)
   const beratPembesianTotal = (0.785 * rho / 1000000) * (
@@ -1025,7 +1035,8 @@ export const hitungBalok = (inputs = DEFAULT_BALOK) => {
   const beratPembesianTotal = beratTul1 + beratTul2 + beratSengkang;
   const beratKawatTotal = areaKawat * totPjgKawat * rho;
 
-  const volBekisting = (P * h * 2) * nUnit;
+  // Koreksi: balok menggantung butuh bekisting 2 sisi + dasar selebar b
+  const volBekisting = (2 * h + b) * P * nUnit;
   const volCor = (P * b * h) * nUnit;
 
   // AHSP Tenaga Kerja (Balok)
@@ -1177,6 +1188,60 @@ export const DEFAULT_ATAP_PELANA = {
   hargaPaku2: '18000',         // per kg
 };
 
+// Analisa panjang profil C75, baut & dynabolt dalam 1 set kuda-kuda pelana
+// (port dari sheet "Atap Pelana" Excel klien, baris 56–120).
+// Kuda-kuda dibagi segmen horizontal (H) sejarak jarakH; tiap segmen punya
+// batang tegak (V), diagonal (Da, Db) dan kaki kuda-kuda (Dc).
+const analisaKudaKudaC75 = ({ L, T, jarakH, ovL, kemiringanRad }) => {
+  const h = jarakH > 0 ? jarakH : 1;
+  const tanA = Math.tan(kemiringanRad);
+  const setengahSegmen = (L / h) / 2; // O58
+  const jmlH = Math.floor(setengahSegmen); // P58 / P59
+  const sisaH = (setengahSegmen - jmlH) * h; // P60
+  const adaSisa = sisaH > 0 ? 1 : 0; // P61
+  const jmlDa = Math.floor((jmlH + adaSisa) / 2); // S58
+  const jmlDb = Math.max(0, Math.ceil((jmlH + adaSisa) / 2 - 1)); // S59
+
+  // Panjang segmen H ke-n & tinggi batang V ke-n (n mulai 1)
+  const segH = (n) => (jmlH >= n ? h : jmlH + adaSisa >= n ? sisaH : 0);
+  const tinggiV = (n) => (jmlH + adaSisa - n < 0 ? 0 : ((jmlH + 1 - n) * h + sisaH) * tanA);
+
+  let totalH = 0;
+  let totalDa = 0;
+  let totalDb = 0;
+  for (let n = 1; n <= 18; n++) totalH += segH(n);
+  for (let n = 1; n <= jmlDa; n++) totalDa += Math.hypot(segH(2 * n - 1), tinggiV(2 * n - 1));
+  for (let n = 1; n <= jmlDb; n++) totalDb += Math.hypot(segH(2 * n), tinggiV(2 * n + 1));
+  totalH *= 2; // S80
+  totalDa *= 2; // O94
+  totalDb *= 2; // S95
+
+  // Kaki kuda-kuda (Dc) + overstek (Z87..Z90)
+  const pjgDc = Math.hypot(2 * h, tinggiV(1) - tinggiV(3)); // W84
+  const pjgDc1 = sisaH / Math.cos(kemiringanRad); // W85
+  const rasioDc = (L / 2) / (h * 2); // Y86
+  const bulatDc = Math.floor(rasioDc); // Z86
+  const jmlDc = rasioDc - bulatDc >= 0.5 ? bulatDc + 0.5 : bulatDc; // X87
+  const kakiDc = pjgDc * jmlDc + ovL; // Z87
+  const kakiDc1 = pjgDc1 * (L / 2 === jmlDc ? 0 : 1); // Z88
+  const totalDc = (kakiDc + kakiDc1) * 2; // Z90
+
+  const batangDa = jmlDa * 2; // P64
+  const batangDb = jmlDb * 2; // P65
+  const sambunganDc = kakiDc + kakiDc1 > 6 ? (Math.ceil(kakiDc / 6) + 1) * 2 : 4; // O108
+  const pjgBracket = 4 * 0.2; // O101
+  const pjgSambungan = 0.5 + 0.1 * batangDa * 2 + 0.1 * batangDb * 2 + 0.1 * sambunganDc; // S109
+
+  const bautH = totalH > 6 ? Math.floor(totalH / 6) : 0; // O113
+  const baut = 3 * (bautH + batangDa * 2 + batangDb * 2 + sambunganDc + 4); // S118
+
+  return {
+    pjgC75: totalH + totalDa + totalDb + totalDc + pjgBracket + pjgSambungan, // Y111
+    baut,
+    dynabolt: 4, // S120
+  };
+};
+
 export const hitungAtapPelana = (inputs = DEFAULT_ATAP_PELANA) => {
   const L = parseFloat(inputs.lebarBangunan) || 0;
   const P = parseFloat(inputs.panjangBangunan) || 0;
@@ -1187,6 +1252,7 @@ export const hitungAtapPelana = (inputs = DEFAULT_ATAP_PELANA) => {
 
   const luasEfektif = parseFloat(inputs.luasEfektifGenteng) || 0.75;
   const jrkReng = parseFloat(inputs.jarakReng) || 0.39;
+  const jarakH = parseFloat(inputs.jarakH) || 1;
 
   const L28 = inputs.toggleLisplank30 ? 1 : 0;
   const L29 = inputs.toggleLisplank20 ? 1 : 0;
@@ -1210,37 +1276,32 @@ export const hitungAtapPelana = (inputs = DEFAULT_ATAP_PELANA) => {
   const pjgNok = P + 2 * ovP;
 
   // Panjang Listplank (I20)
-  const pjgLisplank = 2 * (P + 2 * ovP) + 4 * Math.sqrt((L / 2 + ovL) ** 2 + T ** 2);
+  // Koreksi: sisi miring lisplank = (½L + overstek) / cos α. Excel memakai tinggi T
+  // untuk jarak datar ½L + overstek sehingga sedikit terlalu pendek.
+  const pjgLisplank = 2 * (P + 2 * ovP) + 4 * (pjgMiring + pjgMiringOverstek);
 
-  // Tenaga Kerja dari AHSP Atap (I13..I16)
-  // Berdasarkan luasAtap dan jenis penutup:
-  // AHSP Atap I13..I16
-  // I13 = ROUNDUP(H13 + G39 + G79 + G115, 0)
-  // G13 = 0.2347, H13 = G13 * luasAtap (43.439), G39=1.4, G79=4.2, G115=10.96 => 60.0
-  // AHSP Atap I13..I16
-  // Pekerja = ROUNDUP(H13 + G39 + G79 + G115, 0)
-  const gNokPekerja = pjgNok * 0.25;
-  const gLisPekerja = pjgLisplank * 0.10;
-  const gKudaPekerja = jmlKudaKuda * 0.529897;
-  const volPekerja = Math.ceil((0.2347 * luasAtap) + gNokPekerja + gLisPekerja + gKudaPekerja);
+  // Analisa profil reng (Excel I75..I80): reng atap + X bracing + bottom chord bracing + waste 7%
+  const jmlRengSet = Math.ceil((pjgMiring + pjgMiringOverstek) / jrkReng + 1) * 2; // I18
+  const pjgRengAtap = jmlRengSet * (P + 2 * ovP); // I75
+  const kudaPerBracing = Math.max(1, Math.floor((0.25 * (L / 2) * (L / T)) / jrkKuda)); // G58
+  const jmlSetBracing = Math.ceil((jmlKudaKuda - 1) / kudaPerBracing); // G64
+  const jarakBracing = jmlSetBracing > 0 ? ((jmlKudaKuda - 1) * jrkKuda) / jmlSetBracing : 0; // G61
+  const pjg1Bracing = Math.sqrt(jrkKuda ** 2 + jarakBracing ** 2 + (T / 2) ** 2); // G63
+  const pjgXBracing = pjg1Bracing * 2 * jmlSetBracing; // G66
+  const pjgBottomChord = P * 4; // G72 (4 jalur)
+  const pjgRengTotal = (pjgRengAtap + pjgXBracing + pjgBottomChord) * 1.07; // I80
 
-  // Tukang
-  const gNokTukang = pjgNok * 0.15;
-  const gLisTukang = pjgLisplank * 0.20;
-  const gKudaTukang = jmlKudaKuda * 0.529897;
-  const volTukang = Math.ceil((0.0836 * luasAtap) + gNokTukang + gLisTukang + gKudaTukang);
+  // Screw reng (Excel I81..I84) + waste 7%
+  const screwBaris = Math.ceil((P + 2 * ovP) / jrkKuda + 1) * 2 * jmlRengSet; // D90
+  const screwReng = Math.ceil((jmlSetBracing * 9 + jmlKudaKuda * 2 * 4 + screwBaris) * 1.07); // I84
 
-  // Kepala Tukang
-  const gNokKepala = pjgNok * 0.015;
-  const gLisKepala = pjgLisplank * 0.02;
-  const gKudaKepala = jmlKudaKuda * 0.052512;
-  const volKepalaTukang = Math.ceil((0.0084 * luasAtap) + gNokKepala + gLisKepala + gKudaKepala);
-
-  // Mandor
-  const gNokMandor = pjgNok * 0.005;
-  const gLisMandor = pjgLisplank * 0.0067;
-  const gKudaMandor = jmlKudaKuda * 0.019095;
-  const volMandor = Math.ceil((0.0028 * luasAtap) + gNokMandor + gLisMandor + gKudaMandor);
+  // Tenaga kerja (AHSP Atap I13..I16): rangka + penutup metal per m², nok, lisplank, reng
+  const upahAtap = (koefM2, koefNok, koefLis, koefReng) =>
+    Math.ceil(koefM2 * luasAtap + koefNok * pjgNok + koefLis * pjgLisplank + koefReng * pjgRengTotal);
+  const volPekerja = upahAtap(0.1014 + 0.1333, 0.25, 0.1, 0.0111);
+  const volTukang = upahAtap(0.0169 + 0.0667, 0.15, 0.2, 0.0111);
+  const volKepalaTukang = upahAtap(0.0017 + 0.0067, 0.015, 0.02, 0.0011);
+  const volMandor = upahAtap(0.0006 + 0.0022, 0.005, 0.0067, 0.0004);
 
   const hPekerja = parseFloat(inputs.hargaPekerja) || 0;
   const hTukang = parseFloat(inputs.hargaTukang) || 0;
@@ -1253,25 +1314,18 @@ export const hitungAtapPelana = (inputs = DEFAULT_ATAP_PELANA) => {
   const costMandor = volMandor * hMandor;
   const totalUpah = costPekerja + costTukang + costKepTukang + costMandor;
 
-  // Bahan
-  // Profil C75: (Y111 = 41.34 m per kuda-kuda, total = 41.34 * 13 = 537.42 m -> 90 btg)
-  const pjgC75Total = 41.34 * jmlKudaKuda;
+  // Bahan rangka dari analisa 1 set kuda-kuda (Excel Y111, Y113, Y114)
+  const kudaKuda = analisaKudaKudaC75({ L, T, jarakH, ovL, kemiringanRad });
+  const pjgC75Total = kudaKuda.pjgC75 * jmlKudaKuda; // I17
   const btgC75 = Math.ceil(pjgC75Total / 6);
-
-  // Baut screw: (Y113 * 13 + screw reng 780 = 1501 + 780 = 2281)
-  const volBaut = Math.round(115.46 * jmlKudaKuda + 780);
-
-  // Dynabolt: 4 per kuda-kuda = 52 bh
-  const volDynabolt = 4 * jmlKudaKuda;
-
-  // Reng: 104 batang
-  const pjgRengTotal = 624;
-  const btgReng = Math.ceil(pjgRengTotal / 6);
+  const volBaut = kudaKuda.baut * jmlKudaKuda + screwReng; // O19
+  const volDynabolt = kudaKuda.dynabolt * jmlKudaKuda; // O20
+  const btgReng = Math.ceil(pjgRengTotal / 6); // O21
 
   // Penutup atap: Luas atap / luasEfektif
   const volPenutup = Math.ceil(luasAtap / luasEfektif);
 
-  // Nok: pjgNok * 1.1 = 16 bh
+  // Nok (AHSP Atap G45): ROUNDUP(1,1 × panjang nok)
   const volNok = Math.ceil(pjgNok * 1.1);
 
   // Paku 1": 0.05 * luasAtap
@@ -1423,7 +1477,9 @@ export const hitungAtapLimas = (inputs = DEFAULT_ATAP_LIMAS) => {
   const pjgLisplank = (P + ovP + ovP) * nTrap + (L + ovL + ovL) * nSeg;
 
   // Panjang Nok / Jurai (D48, D50, D51)
-  const pjg1Jurai = Math.sqrt((totalMiring ** 2) + (totalMiring ** 2));
+  // Koreksi: jurai = diagonal bidang atap = √(sisi miring² + jarak datar²).
+  // Excel memakai √(miring² + miring²) sehingga terlalu panjang.
+  const pjg1Jurai = Math.sqrt((totalMiring ** 2) + ((L / 2 + ovL) ** 2));
   const totalPjgJurai = pjg1Jurai * nJurai;
   const totalPjgNok = Math.ceil(totalPjgJurai + P1);
 
@@ -1435,11 +1491,14 @@ export const hitungAtapLimas = (inputs = DEFAULT_ATAP_LIMAS) => {
   const totalPjgReng = (pjgRengP1 * jmlRengSet * 2) + ((pjgRengP2 * jmlRengSet * 4) / 2) + ((pjgRengL1 * jmlRengSet * 4) / 2);
   const totalScrewReng = totalPjgReng * 4;
 
-  // Tenaga Kerja (dari AHSP Atap)
-  const volPekerja = 188; // AHSP Atap I105
-  const volTukang = 176;   // AHSP Atap I106
-  const volKepalaTukang = 18; // AHSP Atap I107
-  const volMandor = 6;     // AHSP Atap I108
+  // Tenaga kerja (AHSP Atap I105..I108): rangka jurai + penutup metal per m², nok, reng, lisplank.
+  // Sebelumnya dikunci pada hasil ukuran default (188/176/18/6 OH).
+  const upahAtap = (koefM2, koefNok, koefReng, koefLis) =>
+    Math.ceil(koefM2 * totalLuasAtap + koefNok * totalPjgNok + koefReng * totalPjgReng + koefLis * pjgLisplank);
+  const volPekerja = upahAtap(0.7604 + 0.1333, 0.25, 0.0111, 0.1);
+  const volTukang = upahAtap(0.7604 + 0.0667, 0.15, 0.0111, 0.2);
+  const volKepalaTukang = upahAtap(0.076 + 0.0067, 0.015, 0.0011, 0.02);
+  const volMandor = upahAtap(0.0253 + 0.0022, 0.005, 0.0004, 0.0067);
 
   const hPekerja = parseFloat(inputs.hargaPekerja) || 0;
   const hTukang = parseFloat(inputs.hargaTukang) || 0;
@@ -1453,13 +1512,16 @@ export const hitungAtapLimas = (inputs = DEFAULT_ATAP_LIMAS) => {
   const totalUpah = costPekerja + costTukang + costKepTukang + costMandor;
 
   // Bahan
-  const btgC75 = Math.ceil(1086 / 6); // 181 btg
-  const volBaut = 5504; // AHSP Atap I124
-  const volDynabolt = Math.ceil(119.58); // 120 bh
+  // Koefisien rangka jurai baja ringan per m² luas atap (AHSP Atap I110..I124).
+  // Sebelumnya dikunci pada hasil ukuran default (181 btg / 5504 bh / 120 bh).
+  const btgC75 = Math.ceil((0.9603 + 0.0113) * totalLuasAtap); // J110 (C75 + L bracket)
+  const volBaut = Math.ceil((15.75 + 3) * totalLuasAtap + totalScrewReng); // I124
+  const volDynabolt = Math.ceil(0.6429 * totalLuasAtap); // I121
   const btgReng = Math.ceil(totalPjgReng / 6); // 84 btg
   const volPenutup = Math.ceil(totalLuasAtap / luasEfektif); // 248 lembar
-  const volNok = 46; // AHSP Atap I45
-  const volPaku1 = 10; // AHSP Atap I100 (10 kg)
+  // Excel I45: ROUNDUP(koef 1,1 × panjang nok total); sebelumnya dikunci 46
+  const volNok = Math.ceil(totalPjgNok * 1.1);
+  const volPaku1 = Math.ceil(0.05 * totalLuasAtap); // AHSP Atap I100
   const volLisplank30 = Math.ceil(pjgLisplank * 1.05); // 53 m'
   const volLisplank20 = Math.ceil(pjgLisplank * 1.05); // 53 m'
   const volPaku2 = pjgLisplank * 0.05; // 2.5 kg
@@ -1551,3 +1613,56 @@ export const REKAP_RAB_BASELINE = [
   { no: '18', uraian: 'PEKERJAAN INSTALASI AIR BERSIH', jumlah: 7146929, isCalculated: false },
   { no: '19', uraian: 'PEKERJAAN SANITASI & AIR LIMBAH', jumlah: 11051613, isCalculated: false },
 ];
+
+// Label & satuan untuk setiap nilai di `hasil.volumes` (ditampilkan di tab Volume kalkulator)
+export const VOLUME_LABELS = {
+  // Pondasi & foot plate
+  volGalian: { label: 'Galian tanah', satuan: 'm³' },
+  volPondasi: { label: 'Pasangan pondasi', satuan: 'm³' },
+  volAanstamping: { label: 'Aanstamping', satuan: 'm³' },
+  volPasirUruk: { label: 'Urugan pasir', satuan: 'm³' },
+  volUrukLantai: { label: 'Urugan bawah lantai', satuan: 'm³' },
+  volUrukSamping: { label: 'Urugan samping pondasi', satuan: 'm³' },
+  volUrukKembali: { label: 'Urugan tanah kembali', satuan: 'm³' },
+  volLantaiKerja: { label: 'Lantai kerja', satuan: 'm³' },
+  // Beton
+  volCor: { label: 'Volume beton (cor)', satuan: 'm³' },
+  volBekisting: { label: 'Bekisting', satuan: 'm²' },
+  beratPembesianTotal: { label: 'Berat pembesian', satuan: 'kg' },
+  beratKawatTotal: { label: 'Berat kawat beton', satuan: 'kg' },
+  totPjgD1: { label: 'Panjang besi utama', satuan: 'm' },
+  totPjgD2: { label: 'Panjang besi support', satuan: 'm' },
+  totPjgD3: { label: 'Panjang besi sengkang', satuan: 'm' },
+  totPjgD4: { label: 'Panjang besi alas', satuan: 'm' },
+  totPjgD5: { label: 'Panjang besi pembentuk', satuan: 'm' },
+  totPjgD6: { label: 'Panjang besi kait', satuan: 'm' },
+  totPjgTul1: { label: 'Panjang tulangan 1', satuan: 'm' },
+  totPjgTul2: { label: 'Panjang tulangan 2', satuan: 'm' },
+  totPjgUtama: { label: 'Panjang besi utama', satuan: 'm' },
+  totPjgSupport: { label: 'Panjang besi support', satuan: 'm' },
+  totPjgSengkang: { label: 'Panjang besi sengkang', satuan: 'm' },
+  totPjgKawat: { label: 'Panjang kawat beton', satuan: 'm' },
+  // Atap
+  kemiringanDeg: { label: 'Sudut kemiringan atap', satuan: '°' },
+  pjgMiring: { label: 'Panjang sisi miring', satuan: 'm' },
+  pjgMiringOverstek: { label: 'Panjang miring overstek', satuan: 'm' },
+  totalMiring: { label: 'Total panjang miring', satuan: 'm' },
+  jmlKudaKuda: { label: 'Jumlah kuda-kuda', satuan: 'set' },
+  luasAtap: { label: 'Luas atap', satuan: 'm²' },
+  P1: { label: 'Panjang nok tengah (P1)', satuan: 'm' },
+  luas1Trap: { label: 'Luas 1 bidang trapesium', satuan: 'm²' },
+  luas1Seg: { label: 'Luas 1 bidang segitiga', satuan: 'm²' },
+  totalLuasAtap: { label: 'Luas total atap', satuan: 'm²' },
+  pjgNok: { label: 'Panjang nok', satuan: 'm' },
+  totalPjgNok: { label: 'Panjang total nok', satuan: 'm' },
+  pjg1Jurai: { label: 'Panjang 1 jurai', satuan: 'm' },
+  totalPjgJurai: { label: 'Panjang total jurai', satuan: 'm' },
+  pjgLisplank: { label: 'Panjang lisplank', satuan: 'm' },
+  totalPjgReng: { label: 'Panjang total reng', satuan: 'm' },
+  totalScrewReng: { label: 'Screw reng', satuan: 'bh' },
+  btgC75: { label: 'Baja ringan C75', satuan: 'btg' },
+  btgReng: { label: 'Reng baja ringan', satuan: 'btg' },
+  volBaut: { label: 'Baut (screw)', satuan: 'bh' },
+  volDynabolt: { label: 'Dynabolt', satuan: 'bh' },
+  volPenutup: { label: 'Penutup atap', satuan: 'lembar' },
+};

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { LogBox, View, ActivityIndicator } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import {
@@ -50,10 +50,13 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <NavigationContainer>
-        <StatusBar style="dark" hidden={false} />
-        <AppNavigator />
-      </NavigationContainer>
+      {/* Jaga konten di luar status bar & area kamera (landscape) */}
+      <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.background }}>
+        <NavigationContainer>
+          <StatusBar style="dark" hidden={false} />
+          <AppNavigator />
+        </NavigationContainer>
+      </SafeAreaView>
     </SafeAreaProvider>
   );
 }

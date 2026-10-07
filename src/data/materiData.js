@@ -1,538 +1,888 @@
-export const MATERI_CATEGORIES = [
-  'Semua',
-  'Pekerjaan Pondasi',
-  'Pekerjaan Beton',
-  'Pekerjaan Tangga',
-  'Pekerjaan Atap',
-  'AHSP & RAB',
-  'Time Schedule',
+// Materi Panduan Teknis — disusun mengikuti MATERI.docx dari klien.
+// Struktur: 4 materi utama -> bagian -> topik -> langkah & rumus.
+//
+// Topik:
+//   judul      : nama topik
+//   grup       : (opsional) sub-kelompok di dalam bagian, mis. "Pondasi Foot Plate"
+//   langkah    : urutan langkah pengerjaan (dari dokumen klien)
+//   rumus      : daftar persamaan { label, latex, teks }
+//   catatan    : (opsional) catatan tambahan
+//   kalkulator : (opsional) { route, label } untuk membuka kalkulator terkait
+
+export const MATERI = [
+  // ===========================================================================
+  // 1. PERHITUNGAN VOLUME PEKERJAAN
+  // ===========================================================================
+  {
+    id: 'volume',
+    judul: 'Perhitungan Volume Pekerjaan',
+    singkat: 'Volume',
+    icon: 'cube-outline',
+    deskripsi: 'Pondasi, beton, tangga & atap',
+    bagian: [
+      {
+        id: 'pondasi',
+        judul: 'Pekerjaan Pondasi',
+        topik: [
+          // --- Pondasi Foot Plate ---
+          {
+            id: 'fp-galian',
+            grup: 'Pondasi Foot Plate',
+            judul: 'Galian Tanah Foot Plate',
+            langkah: [
+              'Ukur panjang, lebar, dan kedalaman galian, serta banyaknya titik rencana pondasi foot plate.',
+              'Hitung volume galian satu titik dengan rumus panjang × lebar × kedalaman.',
+              'Kalikan hasilnya dengan jumlah titik rencana pondasi foot plate (contoh: 20 titik).',
+              'Volume galian tanah pondasi foot plate telah terhitung.',
+            ],
+            rumus: [
+              {
+                label: 'Volume galian',
+                latex: String.raw`V_{galian} = P \times L \times D \times n`,
+                teks: 'Panjang × Lebar × Kedalaman × Jumlah titik',
+              },
+            ],
+            kalkulator: { route: 'FootPlateScreen', label: 'Kalkulator Foot Plate' },
+          },
+          {
+            id: 'fp-urugan-pasir',
+            grup: 'Pondasi Foot Plate',
+            judul: 'Urugan Pasir Bawah Foot Plate',
+            langkah: [
+              'Ukur panjang, lebar, dan ketebalan urugan pasir, serta banyaknya titik rencana pondasi foot plate.',
+              'Hitung volume urugan pasir satu titik dengan rumus panjang × lebar × ketebalan.',
+              'Kalikan hasilnya dengan jumlah titik rencana pondasi foot plate (contoh: 20 titik).',
+              'Volume urugan pasir bawah pondasi foot plate telah terhitung.',
+            ],
+            rumus: [
+              {
+                label: 'Volume urugan pasir',
+                latex: String.raw`V_{pasir} = P \times L \times t \times n`,
+                teks: 'Panjang × Lebar × Tebal × Jumlah titik',
+              },
+            ],
+            kalkulator: { route: 'FootPlateScreen', label: 'Kalkulator Foot Plate' },
+          },
+          {
+            id: 'fp-lantai-kerja',
+            grup: 'Pondasi Foot Plate',
+            judul: 'Lantai Kerja Foot Plate',
+            langkah: [
+              'Termasuk pekerjaan beton non struktur.',
+              'Ukur panjang, lebar, dan ketebalan lantai kerja, serta banyaknya titik rencana pondasi foot plate.',
+              'Hitung volume lantai kerja satu titik dengan rumus panjang × lebar × ketebalan.',
+              'Kalikan hasilnya dengan jumlah titik rencana pondasi foot plate (contoh: 20 titik).',
+              'Volume lantai kerja pondasi foot plate telah terhitung.',
+            ],
+            rumus: [
+              {
+                label: 'Volume lantai kerja',
+                latex: String.raw`V_{lk} = P \times L \times t \times n`,
+                teks: 'Panjang × Lebar × Tebal × Jumlah titik',
+              },
+            ],
+            kalkulator: { route: 'FootPlateScreen', label: 'Kalkulator Foot Plate' },
+          },
+          {
+            id: 'fp-footplate',
+            grup: 'Pondasi Foot Plate',
+            judul: 'Struktur Foot Plate',
+            langkah: [
+              'Termasuk pekerjaan beton struktur. Ukur kebutuhan data: jumlah foot plate, lebar penampang bawah, lebar penampang atas, kedalaman balok, dan kedalaman limas terpancung.',
+              'Hitung volume balok foot plate dengan rumus panjang × lebar × tebal, lalu kalikan dengan jumlah foot plate (contoh: 20).',
+              'Hitung volume limas terpancung dengan rumus ⅓ × tinggi × (luas alas + luas atas + √(luas alas × luas atas)), lalu kalikan dengan jumlah foot plate.',
+              'Jumlahkan volume balok foot plate dan volume limas terpancung.',
+              'Volume foot plate telah ditemukan.',
+            ],
+            rumus: [
+              {
+                label: 'Volume balok foot plate',
+                latex: String.raw`V_{balok} = P \times L \times t \times n`,
+                teks: 'Panjang × Lebar × Tebal × Jumlah foot plate',
+              },
+              {
+                label: 'Volume limas terpancung',
+                latex: String.raw`V_{limas} = \frac{1}{3}\, h \left(A_1 + A_2 + \sqrt{A_1 A_2}\right) \times n`,
+                teks: '⅓ × Tinggi × (Luas alas + Luas atas + √(Luas alas × Luas atas)) × Jumlah foot plate',
+              },
+              {
+                label: 'Volume foot plate',
+                latex: String.raw`V_{FP} = V_{balok} + V_{limas}`,
+                teks: 'Volume balok + Volume limas terpancung',
+              },
+            ],
+            kalkulator: { route: 'FootPlateScreen', label: 'Kalkulator Foot Plate' },
+          },
+          {
+            id: 'fp-bekisting',
+            grup: 'Pondasi Foot Plate',
+            judul: 'Bekisting Foot Plate',
+            langkah: [
+              'Ukur kebutuhan bekisting foot plate: jumlah foot plate, panjang, lebar, dan tebal (tinggi) balok foot plate.',
+              'Bekisting dipasang di keempat sisi tegak foot plate, jadi yang dihitung adalah keliling × tebal.',
+              'Hitung dengan rumus 2 × (panjang + lebar) × tebal × banyak foot plate.',
+              'Luas kebutuhan bekisting foot plate telah ditemukan.',
+            ],
+            rumus: [
+              {
+                label: 'Luas bekisting',
+                latex: String.raw`A_{bek} = 2 \times (P + L) \times t \times n`,
+                teks: '2 × (Panjang + Lebar) × Tebal × Jumlah foot plate',
+              },
+            ],
+            catatan: 'Koreksi dari dokumen awal: rumus 2 × (panjang × tebal) hanya menghitung 2 sisi. Foot plate memiliki 4 sisi tegak, sehingga yang benar adalah keliling 2 × (P + L) dikali tebal.',
+            kalkulator: { route: 'FootPlateScreen', label: 'Kalkulator Foot Plate' },
+          },
+          {
+            id: 'fp-kolom-pendek',
+            grup: 'Pondasi Foot Plate',
+            judul: 'Kolom Pendek Foot Plate',
+            langkah: [
+              'Ukur kebutuhan kolom pendek: kedalaman, lebar kolom, panjang kolom, dan jumlah foot plate.',
+              'Hitung dengan rumus banyak foot plate × (kedalaman × panjang kolom × lebar kolom).',
+              'Volume kolom pendek foot plate telah ditemukan.',
+            ],
+            rumus: [
+              {
+                label: 'Volume kolom pendek',
+                latex: String.raw`V_{kp} = n \times (D \times P_k \times L_k)`,
+                teks: 'Jumlah foot plate × (Kedalaman × Panjang kolom × Lebar kolom)',
+              },
+            ],
+            kalkulator: { route: 'FootPlateScreen', label: 'Kalkulator Foot Plate' },
+          },
+          {
+            id: 'fp-urugan-kembali',
+            grup: 'Pondasi Foot Plate',
+            judul: 'Urugan Tanah Kembali Foot Plate',
+            langkah: [
+              'Kumpulkan data volume galian tanah, urugan pasir, lantai kerja, foot plate, dan kolom pendek yang tertanam di dalam galian.',
+              'Kurangi volume galian dengan seluruh volume yang mengisi lubang galian tersebut.',
+              'Volume urugan tanah kembali pondasi foot plate telah ditemukan.',
+            ],
+            rumus: [
+              {
+                label: 'Volume urugan kembali',
+                latex: String.raw`V_{urug} = V_{galian} - (V_{pasir} + V_{lk} + V_{FP} + V_{kp})`,
+                teks: 'Volume galian − (Urugan pasir + Lantai kerja + Foot plate + Kolom pendek)',
+              },
+            ],
+            catatan: 'Koreksi dari dokumen awal: urugan pasir dan lantai kerja juga mengisi lubang galian sehingga ikut dikurangkan. Faktor 1,2 bukan bagian dari volume pekerjaan; volume urugan diukur dalam kondisi terpasang (padat), sedangkan faktor pemadatan sudah tercakup dalam koefisien bahan AHSP. Faktor ±1,2 hanya dipakai bila tanah urug didatangkan dari luar.',
+            kalkulator: { route: 'FootPlateScreen', label: 'Kalkulator Foot Plate' },
+          },
+
+          // --- Pondasi Batu Kali ---
+          {
+            id: 'bk-galian',
+            grup: 'Pondasi Batu Kali',
+            judul: 'Galian Tanah Batu Kali',
+            langkah: [
+              'Ukur panjang pondasi batu kali, lebar atas dan lebar bawah galian, serta kedalaman rencana galian.',
+              'Jika dinding galian dibuat miring, penampangnya berbentuk trapesium sehingga lebar yang dipakai adalah rata-rata lebar atas dan bawah. Jika tegak, lebar atas = lebar bawah.',
+              'Hitung dengan rumus ½ × (lebar atas + lebar bawah) × dalam galian × panjang pondasi batu kali.',
+              'Volume galian tanah pondasi batu kali telah terhitung.',
+            ],
+            rumus: [
+              {
+                label: 'Volume galian',
+                latex: String.raw`V_{galian} = \tfrac{1}{2}(L_{atas} + L_{bawah}) \times D_{galian} \times P_{pondasi}`,
+                teks: '½ × (Lebar atas + Lebar bawah) × Dalam galian × Panjang pondasi',
+              },
+            ],
+            kalkulator: { route: 'PondasiScreen', label: 'Kalkulator Pondasi Batu Kali' },
+          },
+          {
+            id: 'bk-urugan-pasir',
+            grup: 'Pondasi Batu Kali',
+            judul: 'Urugan Pasir Bawah Batu Kali',
+            langkah: [
+              'Ukur panjang pondasi batu kali, lebar, dan ketebalan rencana urugan pasir.',
+              'Hitung dengan rumus lebar × ketebalan × panjang pondasi batu kali.',
+              'Volume urugan pasir bawah pondasi batu kali telah terhitung.',
+            ],
+            rumus: [
+              {
+                label: 'Volume urugan pasir',
+                latex: String.raw`V_{pasir} = L \times t \times P_{pondasi}`,
+                teks: 'Lebar × Tebal × Panjang pondasi',
+              },
+            ],
+            kalkulator: { route: 'PondasiScreen', label: 'Kalkulator Pondasi Batu Kali' },
+          },
+          {
+            id: 'bk-aanstamping',
+            grup: 'Pondasi Batu Kali',
+            judul: 'Aanstamping Batu Kali',
+            langkah: [
+              'Ukur panjang pondasi batu kali, lebar, dan kedalaman aanstamping.',
+              'Hitung dengan rumus lebar × kedalaman × panjang pondasi batu kali.',
+              'Volume aanstamping pondasi batu kali telah terhitung.',
+            ],
+            rumus: [
+              {
+                label: 'Volume aanstamping',
+                latex: String.raw`V_{aan} = L \times D \times P_{pondasi}`,
+                teks: 'Lebar × Kedalaman × Panjang pondasi',
+              },
+            ],
+            kalkulator: { route: 'PondasiScreen', label: 'Kalkulator Pondasi Batu Kali' },
+          },
+          {
+            id: 'bk-pasangan',
+            grup: 'Pondasi Batu Kali',
+            judul: 'Pasangan Pondasi Batu Kali',
+            langkah: [
+              'Ukur lebar penampang bawah, lebar penampang atas, kedalaman pondasi, panjang pondasi, dan volume kolom pendek.',
+              'Hitung luas penampang trapesium: ½ × (lebar bawah + lebar atas) × kedalaman pondasi.',
+              'Kalikan luas penampang dengan panjang pondasi batu kali, lalu kurangi dengan volume kolom pendek.',
+              'Volume pasangan pondasi batu kali telah ditemukan.',
+            ],
+            rumus: [
+              {
+                label: 'Volume pasangan',
+                latex: String.raw`V_{psg} = \left[\tfrac{1}{2}(L_{bawah} + L_{atas}) \times D\right] \times P - V_{kp}`,
+                teks: '(½ × (Lebar bawah + Lebar atas) × Kedalaman) × Panjang − Volume kolom pendek',
+              },
+            ],
+            kalkulator: { route: 'PondasiScreen', label: 'Kalkulator Pondasi Batu Kali' },
+          },
+          {
+            id: 'bk-sloof',
+            grup: 'Pondasi Batu Kali',
+            judul: 'Balok Sloof',
+            langkah: [
+              'Ukur lebar, tebal, dan panjang balok sloof.',
+              'Hitung dengan rumus panjang sloof × (lebar × tebal).',
+              'Volume balok sloof pondasi batu kali telah ditemukan.',
+            ],
+            rumus: [
+              {
+                label: 'Volume sloof',
+                latex: String.raw`V_{sloof} = P_{sloof} \times (b \times h)`,
+                teks: 'Panjang sloof × (Lebar × Tebal)',
+              },
+            ],
+            kalkulator: { route: 'SloofScreen', label: 'Kalkulator Sloof' },
+          },
+          {
+            id: 'bk-bekisting-sloof',
+            grup: 'Pondasi Batu Kali',
+            judul: 'Bekisting Balok Sloof',
+            langkah: [
+              'Kumpulkan data panjang sloof dan tinggi sloof (tinggi bidang bekisting).',
+              'Bekisting sloof hanya dipasang di kedua sisi samping, karena bagian bawah sloof bertumpu pada pondasi.',
+              'Hitung dengan rumus 2 × (panjang sloof × tinggi sloof).',
+              'Luas bekisting balok sloof pondasi batu kali telah ditemukan.',
+            ],
+            rumus: [
+              {
+                label: 'Luas bekisting sloof',
+                latex: String.raw`A_{bek} = 2 \times (P_{sloof} \times h_{sloof})`,
+                teks: '2 × (Panjang sloof × Tinggi sloof)',
+              },
+            ],
+            kalkulator: { route: 'SloofScreen', label: 'Kalkulator Sloof' },
+          },
+        ],
+      },
+
+      {
+        id: 'beton',
+        judul: 'Pekerjaan Beton',
+        topik: [
+          {
+            id: 'kolom-induk',
+            judul: 'Kolom Induk',
+            langkah: [
+              'Kumpulkan data jumlah kolom, panjang kolom, lebar kolom, dan tinggi kolom.',
+              'Hitung dengan rumus jumlah kolom × (panjang × lebar × tinggi kolom).',
+              'Volume kolom telah ditemukan.',
+            ],
+            rumus: [
+              {
+                label: 'Volume kolom',
+                latex: String.raw`V_{kolom} = n \times (P \times L \times T)`,
+                teks: 'Jumlah kolom × (Panjang × Lebar × Tinggi)',
+              },
+            ],
+            kalkulator: { route: 'KolomScreen', label: 'Kalkulator Kolom' },
+          },
+          {
+            id: 'bekisting-kolom',
+            judul: 'Bekisting Kolom Induk',
+            langkah: [
+              'Kumpulkan data jumlah kolom, tinggi kolom, panjang dan lebar penampang kolom.',
+              'Bekisting kolom menutup keempat sisi kolom, jadi yang dihitung adalah keliling penampang × tinggi.',
+              'Hitung dengan rumus 2 × (panjang + lebar) × tinggi kolom × jumlah kolom.',
+              'Luas bekisting kolom telah ditemukan.',
+            ],
+            rumus: [
+              {
+                label: 'Luas bekisting kolom',
+                latex: String.raw`A_{bek} = 2 \times (P + L) \times T \times n`,
+                teks: '2 × (Panjang + Lebar) × Tinggi × Jumlah kolom',
+              },
+            ],
+            catatan: 'Koreksi dari dokumen awal: rumus 2 × (tinggi × lebar) hanya menghitung 2 sisi kolom. Kolom berdiri bebas dicetak di keempat sisinya.',
+            kalkulator: { route: 'KolomScreen', label: 'Kalkulator Kolom' },
+          },
+          {
+            id: 'balok',
+            judul: 'Balok',
+            langkah: [
+              'Kumpulkan data jumlah kolom induk, panjang balok, lebar balok, tinggi balok, lebar kolom induk, dan tebal plat.',
+              'Hitung dahulu volume kolom tertabrak: jumlah kolom induk × (lebar balok × (tinggi balok − tebal plat) × lebar kolom induk).',
+              'Hitung volume balok induk: panjang balok × lebar balok × (tinggi balok − tebal plat).',
+              'Kurangi volume balok induk dengan volume kolom tertabrak.',
+              'Volume balok telah ditemukan.',
+            ],
+            rumus: [
+              {
+                label: 'Volume kolom tertabrak',
+                latex: String.raw`V_{kt} = n_k \times b \times (h - t_p) \times L_k`,
+                teks: 'Jumlah kolom × (Lebar balok × (Tinggi balok − Tebal plat) × Lebar kolom)',
+              },
+              {
+                label: 'Volume balok induk',
+                latex: String.raw`V_{bi} = P \times b \times (h - t_p)`,
+                teks: 'Panjang × Lebar balok × (Tinggi balok − Tebal plat)',
+              },
+              {
+                label: 'Volume balok',
+                latex: String.raw`V_{balok} = V_{bi} - V_{kt}`,
+                teks: 'Volume balok induk − Volume kolom tertabrak',
+              },
+            ],
+            kalkulator: { route: 'BalokScreen', label: 'Kalkulator Balok' },
+          },
+          {
+            id: 'bekisting-balok',
+            judul: 'Bekisting Balok',
+            langkah: [
+              'Kumpulkan data panjang balok, lebar balok, tinggi balok, dan tebal plat.',
+              'Bekisting balok terdiri dari dua sisi samping setinggi (tinggi balok − tebal plat) ditambah bekisting dasar selebar balok.',
+              'Hitung dengan rumus (2 × (tinggi balok − tebal plat) + lebar balok) × panjang balok.',
+              'Luas bekisting balok telah ditemukan.',
+            ],
+            rumus: [
+              {
+                label: 'Luas bekisting balok',
+                latex: String.raw`A_{bek} = \left[2 (h - t_p) + b\right] \times P`,
+                teks: '(2 × (Tinggi balok − Tebal plat) + Lebar balok) × Panjang balok',
+              },
+            ],
+            catatan: 'Koreksi dari dokumen awal: rumus 2 × (panjang × lebar) memakai lebar balok untuk sisi samping. Sisi samping balok setinggi (h − tebal plat), dan balok yang menggantung juga membutuhkan bekisting dasar selebar b.',
+            kalkulator: { route: 'BalokScreen', label: 'Kalkulator Balok' },
+          },
+          {
+            id: 'plat-lantai',
+            judul: 'Plat Lantai',
+            langkah: [
+              'Kumpulkan data tebal plat lantai, panjang, lebar, dan luas lubang tangga.',
+              'Kurangi luas plat dengan luas lubang tangga, lalu kalikan dengan tebal plat.',
+              'Volume plat lantai telah ditemukan.',
+            ],
+            rumus: [
+              {
+                label: 'Volume plat lantai',
+                latex: String.raw`V_{plat} = (P \times L - A_{lubang}) \times t`,
+                teks: '(Panjang × Lebar − Luas lubang tangga) × Tebal plat',
+              },
+            ],
+            catatan: 'Koreksi dari dokumen awal: volume (m³) tidak bisa dikurangi luas (m²). Luas lubang tangga harus dikalikan tebal plat terlebih dahulu.',
+          },
+          {
+            id: 'bekisting-plat',
+            judul: 'Bekisting Plat Lantai',
+            langkah: [
+              'Kumpulkan data tebal plat lantai, panjang, lebar, dan luas lubang tangga.',
+              'Hitung bekisting dasar (bagian bawah plat): panjang × lebar − luas lubang tangga.',
+              'Hitung bekisting tepi (sekeliling plat): 2 × ((panjang × tebal) + (lebar × tebal)).',
+              'Jumlahkan bekisting dasar dan bekisting tepi.',
+            ],
+            rumus: [
+              {
+                label: 'Bekisting dasar',
+                latex: String.raw`A_{dasar} = P \times L - A_{lubang}`,
+                teks: 'Panjang × Lebar − Luas lubang tangga',
+              },
+              {
+                label: 'Bekisting tepi',
+                latex: String.raw`A_{tepi} = 2 \times \left[(P \times t) + (L \times t)\right]`,
+                teks: '2 × ((Panjang × Tebal) + (Lebar × Tebal))',
+              },
+              {
+                label: 'Luas bekisting plat',
+                latex: String.raw`A_{bek} = A_{dasar} + A_{tepi}`,
+                teks: 'Bekisting dasar + Bekisting tepi',
+              },
+            ],
+            catatan: 'Koreksi dari dokumen awal: rumus lama hanya menghitung bekisting tepi plat. Bagian terbesar bekisting plat justru bidang bawahnya (panjang × lebar dikurangi lubang tangga).',
+          },
+        ],
+      },
+
+      {
+        id: 'tangga',
+        judul: 'Pekerjaan Tangga',
+        topik: [
+          {
+            id: 'plat-tangga',
+            judul: 'Plat Tangga',
+            langkah: [
+              'Kumpulkan data tebal plat tangga, panjang sisi samping, sudut tangga bawah, tinggi tangga atas, lebar tangga, serta ukuran bordes.',
+              'Hitung panjang plat tangga bawah: panjang sisi samping ÷ cos (sudut tangga bawah).',
+              'Hitung panjang plat tangga atas: √(tinggi tangga atas² + panjang sisi samping²). Pada contoh, tinggi tangga atas = 2 m.',
+              'Hitung volume plat tangga bawah dan atas: panjang plat × lebar tangga × tebal plat tangga.',
+              'Hitung volume plat bordes: tebal bordes × lebar bordes × panjang bordes.',
+              'Jumlahkan volume plat tangga bawah, plat tangga atas, dan plat bordes.',
+            ],
+            rumus: [
+              {
+                label: 'Panjang plat bawah',
+                latex: String.raw`P_{bawah} = \frac{P_{samping}}{\cos \theta}`,
+                teks: 'Panjang sisi samping ÷ cos(sudut tangga bawah)',
+              },
+              {
+                label: 'Panjang plat atas',
+                latex: String.raw`P_{atas} = \sqrt{H^2 + P_{samping}^2}`,
+                teks: '√(Tinggi tangga atas² + Panjang sisi samping²)',
+              },
+              {
+                label: 'Volume plat tangga',
+                latex: String.raw`V = (P_{bawah} + P_{atas}) \times L \times t + (t_b \times L_b \times P_b)`,
+                teks: '(P bawah + P atas) × Lebar tangga × Tebal + Volume bordes',
+              },
+            ],
+          },
+          {
+            id: 'bekisting-tangga',
+            judul: 'Bekisting Plat Tangga',
+            langkah: [
+              'Kumpulkan data panjang plat tangga, lebar tangga, panjang dan lebar bordes, tebal plat, serta jumlah dan tinggi anak tangga.',
+              'Hitung bekisting bawah: panjang plat × lebar tangga + panjang bordes × lebar bordes.',
+              'Hitung bekisting tepi samping: 2 × (panjang plat + panjang bordes) × tebal plat.',
+              'Hitung bekisting tegak anak tangga: jumlah anak tangga × tinggi anak tangga × lebar tangga.',
+              'Jumlahkan ketiganya.',
+            ],
+            rumus: [
+              {
+                label: 'Bekisting bawah',
+                latex: String.raw`A_{bawah} = P_{plat} \times L + P_b \times L_b`,
+                teks: 'Panjang plat × Lebar tangga + Panjang bordes × Lebar bordes',
+              },
+              {
+                label: 'Bekisting tepi',
+                latex: String.raw`A_{tepi} = 2 \times (P_{plat} + P_b) \times t`,
+                teks: '2 × (Panjang plat + Panjang bordes) × Tebal plat',
+              },
+              {
+                label: 'Bekisting anak tangga',
+                latex: String.raw`A_{anak} = n \times t_{anak} \times L`,
+                teks: 'Jumlah anak tangga × Tinggi anak tangga × Lebar tangga',
+              },
+              {
+                label: 'Luas bekisting tangga',
+                latex: String.raw`A_{bek} = A_{bawah} + A_{tepi} + A_{anak}`,
+                teks: 'Bekisting bawah + tepi + anak tangga',
+              },
+            ],
+            catatan: 'Koreksi dari dokumen awal: rumus lama hanya menghitung bekisting tepi samping. Plat tangga dan bordes juga membutuhkan bekisting di bawahnya, dan setiap anak tangga membutuhkan papan tegak.',
+          },
+          {
+            id: 'anak-tangga',
+            judul: 'Anak Tangga',
+            langkah: [
+              'Kumpulkan data jumlah anak tangga, serta lebar, panjang, dan tinggi anak tangga.',
+              'Hitung dengan rumus jumlah anak tangga × (½ × lebar × panjang × tinggi anak tangga).',
+              'Jumlahkan volume anak tangga dengan volume plat tangga.',
+              'Volume tangga total telah diketahui.',
+            ],
+            rumus: [
+              {
+                label: 'Volume anak tangga',
+                latex: String.raw`V_{anak} = n \times \left(\tfrac{1}{2} \times a \times p \times t\right)`,
+                teks: 'Jumlah anak tangga × (½ × Lebar × Panjang × Tinggi)',
+              },
+              {
+                label: 'Volume tangga total',
+                latex: String.raw`V_{total} = V_{plat} + V_{anak}`,
+                teks: 'Volume plat tangga + Volume anak tangga',
+              },
+            ],
+          },
+        ],
+      },
+
+      {
+        id: 'atap',
+        judul: 'Pekerjaan Atap',
+        topik: [
+          {
+            id: 'kuda-kuda',
+            judul: 'Rangka Kuda-Kuda Kayu',
+            langkah: [
+              'Kumpulkan data balok tarik, balok pengunci, balok gapit, tiang kuda-kuda, balok sokong, dan kaki kuda-kuda.',
+              'Hitung kaki kuda-kuda: (tinggi ÷ sin(sudut kemiringan)) × 2. Pada contoh, tinggi = 2 m.',
+              'Hitung balok sokong: (bentang sokong ÷ cos(sudut kemiringan)) × 2. Pada contoh, bentang sokong = 1,25 m.',
+              'Jumlahkan seluruh batang untuk mendapatkan panjang total rangka kuda-kuda.',
+              'Hitung volume: panjang total × luas penampang balok kayu yang digunakan.',
+            ],
+            rumus: [
+              {
+                label: 'Kaki kuda-kuda',
+                latex: String.raw`L_{kaki} = \frac{H}{\sin \alpha} \times 2`,
+                teks: '(Tinggi ÷ sin(sudut)) × 2',
+              },
+              {
+                label: 'Balok sokong',
+                latex: String.raw`L_{sokong} = \frac{B}{\cos \alpha} \times 2`,
+                teks: '(Bentang sokong ÷ cos(sudut)) × 2',
+              },
+              {
+                label: 'Volume kuda-kuda',
+                latex: String.raw`V = \textstyle\sum L_{batang} \times A_{kayu}`,
+                teks: 'Panjang total × Luas penampang kayu',
+              },
+            ],
+            kalkulator: { route: 'AtapPelanaScreen', label: 'Kalkulator Atap Pelana' },
+          },
+          {
+            id: 'balok-rangkai',
+            judul: 'Balok Rangkai Kuda-Kuda',
+            langkah: [
+              'Kumpulkan data balok tembok, balok gording, nok, papan ruiter, jurai luar, jurai dalam, dan balok penyangga.',
+              'Tentukan jarak datar r = ½ × lebar bentang dan tinggi atap H = r × tan(sudut). Pada contoh, lebar = 3,5 m.',
+              'Jurai berjalan diagonal di denah, sehingga panjangnya: √(2 × r² + H²). Untuk atap dengan kemiringan sama, rumus ini berlaku untuk jurai luar maupun jurai dalam.',
+              'Kalikan panjang satu jurai dengan jumlah jurai.',
+              'Jumlahkan semua data untuk mendapatkan panjang total balok rangkai kuda-kuda.',
+              'Hitung volume: panjang total × luas penampang balok kayu.',
+            ],
+            rumus: [
+              {
+                label: 'Panjang satu jurai',
+                latex: String.raw`L_{jurai} = \sqrt{2r^2 + H^2}, \quad r = \tfrac{1}{2}B,\; H = r \tan \alpha`,
+                teks: '√(2 × (½ × Lebar)² + (½ × Lebar × tan(sudut))²)',
+              },
+              {
+                label: 'Volume balok rangkai',
+                latex: String.raw`V = \textstyle\sum L_{rangkai} \times A_{kayu}`,
+                teks: 'Panjang total × Luas penampang kayu',
+              },
+            ],
+            catatan: 'Koreksi dari dokumen awal: rumus √((½B tan α)² + (½B)²) menghasilkan panjang sisi miring (usuk), bukan jurai. Jurai berada di diagonal denah sehingga jarak datarnya r√2, dan panjangnya √(2r² + H²). Panjang satu jurai luar sama dengan jurai dalam, jadi tidak dikali 2.',
+            kalkulator: { route: 'AtapLimasScreen', label: 'Kalkulator Atap Limas' },
+          },
+          {
+            id: 'usuk',
+            judul: 'Usuk',
+            langkah: [
+              'Kumpulkan data panjang atap, jarak usuk, dan jumlah sisi.',
+              'Hitung dengan rumus ((panjang atap ÷ jarak usuk) + 1) × jumlah sisi.',
+              'Volume pekerjaan usuk telah ditemukan.',
+            ],
+            rumus: [
+              {
+                label: 'Jumlah usuk',
+                latex: String.raw`N_{usuk} = \left(\frac{P_{atap}}{j_{usuk}} + 1\right) \times S`,
+                teks: '((Panjang atap ÷ Jarak usuk) + 1) × Jumlah sisi',
+              },
+            ],
+            kalkulator: { route: 'AtapPelanaScreen', label: 'Kalkulator Atap Pelana' },
+          },
+          {
+            id: 'reng',
+            judul: 'Reng',
+            langkah: [
+              'Kumpulkan data panjang usuk, jarak reng, panjang atap, dan jumlah sisi.',
+              'Hitung dengan rumus ((panjang usuk ÷ jarak reng) + 1) × panjang atap × jumlah sisi.',
+              'Volume pekerjaan reng telah ditemukan.',
+            ],
+            rumus: [
+              {
+                label: 'Panjang reng',
+                latex: String.raw`L_{reng} = \left(\frac{P_{usuk}}{j_{reng}} + 1\right) \times P_{atap} \times S`,
+                teks: '((Panjang usuk ÷ Jarak reng) + 1) × Panjang atap × Jumlah sisi',
+              },
+            ],
+            kalkulator: { route: 'AtapPelanaScreen', label: 'Kalkulator Atap Pelana' },
+          },
+          {
+            id: 'luas-atap',
+            judul: 'Luas Atap',
+            langkah: [
+              'Atap model hip and valley memiliki banyak bentuk, sehingga rumus luasnya pun beragam: trapesium, jajargenjang, dan segitiga.',
+              'Bagi tampak atas atap menjadi beberapa bagian agar mudah dihitung.',
+              'Hitung luas bagian trapesium: ½ × (alas atas + alas bawah) × tinggi.',
+              'Hitung luas bagian jajargenjang: panjang alas × tinggi.',
+              'Hitung luas bagian segitiga: ½ × alas × tinggi.',
+              'Jumlahkan seluruh bagian untuk mendapatkan luas total atap.',
+            ],
+            rumus: [
+              {
+                label: 'Trapesium',
+                latex: String.raw`A_1 = \tfrac{1}{2}(a + b) \times t`,
+                teks: '½ × (Alas atas + Alas bawah) × Tinggi',
+              },
+              {
+                label: 'Jajargenjang',
+                latex: String.raw`A_2 = a \times t`,
+                teks: 'Panjang alas × Tinggi',
+              },
+              {
+                label: 'Segitiga',
+                latex: String.raw`A_3 = \tfrac{1}{2} \times a \times t`,
+                teks: '½ × Alas × Tinggi',
+              },
+              {
+                label: 'Luas total atap',
+                latex: String.raw`A_{atap} = \textstyle\sum (A_1 + A_2 + A_3)`,
+                teks: 'Jumlah seluruh bagian atap',
+              },
+            ],
+            kalkulator: { route: 'AtapLimasScreen', label: 'Kalkulator Atap Limas' },
+          },
+          {
+            id: 'genteng',
+            judul: 'Genteng',
+            langkah: [
+              'Volume penutup atap berupa genteng diambil dari luas total atap.',
+              'Luas total atap = kebutuhan total genteng (dalam m²).',
+              'Untuk jumlah buah/lembar, kalikan luas atap dengan kebutuhan genteng per m² sesuai jenis genteng.',
+            ],
+            rumus: [
+              {
+                label: 'Kebutuhan genteng',
+                latex: String.raw`V_{genteng} = A_{atap}`,
+                teks: 'Luas total atap',
+              },
+            ],
+            kalkulator: { route: 'AtapLimasScreen', label: 'Kalkulator Atap Limas' },
+          },
+          {
+            id: 'wuwung',
+            judul: 'Genteng Penutup Wuwung',
+            langkah: [
+              'Genteng wuwung menutup seluruh garis puncak atap, yaitu nok (bubungan datar) dan semua jurai luar.',
+              'Panjang kebutuhan wuwung = panjang nok + total panjang jurai luar.',
+              'Untuk jumlah buah, bagi dengan panjang efektif satu genteng wuwung.',
+            ],
+            rumus: [
+              {
+                label: 'Panjang wuwung',
+                latex: String.raw`L_{wuwung} = L_{nok} + \textstyle\sum L_{jurai\ luar}`,
+                teks: 'Panjang nok + Total panjang jurai luar',
+              },
+            ],
+            catatan: 'Koreksi dari dokumen awal: rumus lama hanya memakai panjang jurai luar, padahal nok (bubungan datar di puncak) juga ditutup genteng wuwung.',
+            kalkulator: { route: 'AtapLimasScreen', label: 'Kalkulator Atap Limas' },
+          },
+        ],
+      },
+    ],
+  },
+
+  // ===========================================================================
+  // 2. ANALISA HARGA SATUAN PEKERJAAN (AHSP)
+  // ===========================================================================
+  {
+    id: 'ahsp',
+    judul: 'Analisa Harga Satuan Pekerjaan',
+    singkat: 'AHSP',
+    icon: 'pricetags-outline',
+    deskripsi: 'Upah & bahan per satuan pekerjaan',
+    bagian: [
+      {
+        id: 'ahsp',
+        judul: 'Analisa Harga Satuan Pekerjaan',
+        topik: [
+          {
+            id: 'ahsp-persiapan',
+            judul: 'Menyiapkan Data AHSP',
+            langkah: [
+              'Siapkan file AHSP (softfile maupun hardfile) yang sesuai dengan kota atau kabupaten lokasi bangunan.',
+              'Catat pekerjaan apa saja yang ada pada pembangunan, seperti pembersihan lahan, pemasangan bowplank, galian tanah, dan lainnya.',
+              'Cari setiap pekerjaan tersebut pada file AHSP, lalu masukkan nominal harga satuan, upah, maupun bahan sesuai yang tercantum.',
+              'Tidak semua pekerjaan memerlukan bahan dan upah. Ada yang hanya memerlukan upah saja, contohnya pembersihan lokasi.',
+            ],
+            rumus: [
+              {
+                label: 'Harga satuan pekerjaan',
+                latex: String.raw`HSP = \textstyle\sum \text{Upah} + \sum \text{Bahan}`,
+                teks: 'Jumlah upah + Jumlah bahan',
+              },
+            ],
+          },
+          {
+            id: 'ahsp-upah',
+            judul: 'Pekerjaan Upah Saja',
+            langkah: [
+              'Contoh: pekerjaan pembersihan lahan.',
+              'Pada AHSP terdapat harga satuan dan upah untuk pekerja dan mandor.',
+              'Jumlahkan bagian upahnya saja dari pekerja dan mandor.',
+              'Hasil penjumlahan tersebut adalah harga satuan pekerjaan pembersihan lahan.',
+            ],
+            rumus: [
+              {
+                label: 'HSP pembersihan lahan',
+                latex: String.raw`HSP = \text{Upah}_{pekerja} + \text{Upah}_{mandor}`,
+                teks: 'Upah pekerja + Upah mandor',
+              },
+            ],
+          },
+          {
+            id: 'ahsp-upah-bahan',
+            judul: 'Pekerjaan Upah dan Bahan',
+            langkah: [
+              'Contoh: pekerjaan pemasangan bowplank.',
+              'Pada AHSP terdapat harga satuan, upah, dan bahan. Masukkan semua harga sesuai file AHSP.',
+              'Jumlahkan harga upah, lalu jumlahkan harga bahan.',
+              'Harga pekerjaan pemasangan bowplank = jumlah upah + jumlah bahan.',
+              'Lanjutkan langkah yang sama untuk pekerjaan lainnya.',
+            ],
+            rumus: [
+              {
+                label: 'HSP pemasangan bowplank',
+                latex: String.raw`HSP = \textstyle\sum \text{Upah} + \sum \text{Bahan}`,
+                teks: 'Jumlah upah + Jumlah bahan',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+
+  // ===========================================================================
+  // 3. RENCANA ANGGARAN BIAYA (RAB)
+  // ===========================================================================
+  {
+    id: 'rab',
+    judul: 'Rencana Anggaran Biaya',
+    singkat: 'RAB',
+    icon: 'wallet-outline',
+    deskripsi: 'Volume × harga satuan & rekapitulasi',
+    bagian: [
+      {
+        id: 'rab',
+        judul: 'Rencana Anggaran Biaya (RAB)',
+        topik: [
+          {
+            id: 'rab-perhitungan',
+            judul: 'Perhitungan RAB',
+            langkah: [
+              'Siapkan hasil perhitungan sebelumnya, yaitu perhitungan volume dan AHSP.',
+              'Masukkan volume pekerjaan serta harga satuan tiap pekerjaan.',
+              'Kalikan volume dengan harga satuan.',
+              'Contoh: pembersihan lokasi. Jumlah harga = volume lokasi × harga satuan yang telah ditotalkan pada AHSP.',
+              'Ulangi langkah tersebut untuk pekerjaan lainnya.',
+            ],
+            rumus: [
+              {
+                label: 'Jumlah harga pekerjaan',
+                latex: String.raw`\text{Jumlah harga} = \text{Volume} \times HSP`,
+                teks: 'Volume × Harga satuan pekerjaan',
+              },
+            ],
+          },
+          {
+            id: 'rab-rekapitulasi',
+            judul: 'Rekapitulasi Dana',
+            langkah: [
+              'Setelah semua pekerjaan dihitung, totalkan jumlah harga sesuai kelompok sub pekerjaan.',
+              'Hasil total tiap kelompok inilah yang disebut rekapitulasi dana.',
+              'Jumlahkan seluruh kelompok untuk mendapatkan total RAB.',
+              'Rekapitulasi dana nantinya digunakan untuk perhitungan bobot dan penyesuaian time schedule.',
+            ],
+            rumus: [
+              {
+                label: 'Subtotal kelompok pekerjaan',
+                latex: String.raw`\text{Subtotal} = \textstyle\sum \text{Jumlah harga}`,
+                teks: 'Jumlah harga seluruh pekerjaan dalam satu kelompok',
+              },
+              {
+                label: 'Total RAB',
+                latex: String.raw`\text{Total RAB} = \textstyle\sum \text{Subtotal}`,
+                teks: 'Jumlah subtotal seluruh kelompok pekerjaan',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+
+  // ===========================================================================
+  // 4. TIME SCHEDULE
+  // ===========================================================================
+  {
+    id: 'time-schedule',
+    judul: 'Time Schedule',
+    singkat: 'Time Schedule',
+    icon: 'calendar-outline',
+    deskripsi: 'Plotting pekerjaan & kurva S',
+    bagian: [
+      {
+        id: 'time-schedule',
+        judul: 'Time Schedule',
+        topik: [
+          {
+            id: 'ts-plotting',
+            judul: 'Plotting Pekerjaan',
+            langkah: [
+              'Pada file AHSP terdapat nilai koefisien (OH) untuk mandor, tukang, maupun pekerja. Nilai koefisien ini merupakan ketetapan AHSP.',
+              'Hitung total kebutuhan hari orang: koefisien OH pekerja × volume pekerjaan.',
+              'Bagi hasilnya dengan banyak hari kerja dalam seminggu. Hasilnya adalah jumlah pekerja yang dibutuhkan agar pekerjaan selesai dalam 1 minggu.',
+              'Hasilnya biasanya desimal, sehingga perlu dibulatkan ke atas.',
+              'Jika pekerjaan direncanakan 2 minggu, bagi 2. Jika setengah minggu, kali 2, dan seterusnya.',
+              'Sesuaikan plotting dengan lama pekerjaan, banyak pekerjaan, anggaran biaya, maupun faktor lainnya.',
+              'Ulangi langkah ini untuk pekerjaan lainnya.',
+            ],
+            rumus: [
+              {
+                label: 'Jumlah pekerja',
+                latex: String.raw`N = \left\lceil \frac{\text{Koef. OH} \times \text{Volume}}{\text{Hari kerja per minggu} \times \text{Durasi (minggu)}} \right\rceil`,
+                teks: '(Koefisien OH × Volume) ÷ (Hari kerja per minggu × Durasi minggu), dibulatkan ke atas',
+              },
+            ],
+          },
+          {
+            id: 'ts-kurva-s',
+            judul: 'Membuat Kurva S',
+            langkah: [
+              'Kurva S membutuhkan bobot dan akumulasi, yang dihitung dari rekapitulasi dana dan plotting.',
+              'Bobot tiap sub pekerjaan = (biaya sub pekerjaan ÷ total rekapitulasi dana) × 100%. (Pada dokumen awal tertulis terbalik: total dibagi sub pekerjaan.)',
+              'Akumulasi dihitung dari lama sub pekerjaan tiap minggu. Akumulasi minggu berjalan = akumulasi minggu sebelumnya + rencana fisik minggu ini.',
+              'Usahakan akumulasi rencana fisik pada minggu terakhir bernilai 100%.',
+              'Buat tabel berisi jenis pekerjaan, bobot, jumlah, rencana fisik tiap minggu, akumulasi, prosentase, keterangan, dan lama pekerjaan (minggu).',
+              'Isi tabel sesuai perhitungan sebelumnya: rekapitulasi dana, bobot, akumulasi, rencana fisik, dan plotting mingguan.',
+              'Buat diagram garis dari akumulasi plotting mingguan, dari minggu pertama hingga minggu terakhir. Diagram akan membentuk huruf S.',
+              'Jika diagram belum membentuk huruf S, sesuaikan kembali perhitungan plotting.',
+            ],
+            rumus: [
+              {
+                label: 'Bobot pekerjaan',
+                latex: String.raw`\text{Bobot} = \frac{\text{Biaya sub pekerjaan}}{\text{Total rekap dana}} \times 100\%`,
+                teks: '(Biaya sub pekerjaan ÷ Total rekapitulasi dana) × 100%',
+              },
+              {
+                label: 'Akumulasi mingguan',
+                latex: String.raw`\text{Akumulasi}_t = \text{Akumulasi}_{t-1} + \text{Rencana fisik}_t`,
+                teks: 'Akumulasi minggu lalu + Rencana fisik minggu ini (akhir = 100%)',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
 ];
 
-export const MATERI_LIST = [
-  // 1. PONDASI FOOT PLATE
-  {
-    id: 'pondasi-footplate',
-    kategori: 'Pekerjaan Pondasi',
-    judul: 'Perhitungan Volume Pondasi Foot Plate (Pondasi Tapak)',
-    ringkasan: 'Tahapan lengkap perhitungan volume galian tanah, urugan pasir, lantai kerja, struktur footplate limas terpancung, kolom pendek, bekisting hingga urugan tanah kembali.',
-    iconName: 'grid-outline',
-    calcRoute: 'FootPlateScreen',
-    calcTitle: 'Buka Kalkulator Foot Plate',
-    videoPlaceholder: 'Video Pembahasan: Teori Geometri & Penulangan Foot Plate (Segera Hadir dari Klien)',
-    steps: [
-      {
-        step: 1,
-        title: 'Galian Tanah Pondasi Foot Plate',
-        persamaan: 'V_galian = P × L × D × n',
-        desc: 'Dimulai dengan mengukur dimensi galian rencana mulai dari panjang, lebar, kedalaman tanah keras, hingga banyaknya titik rencana pondasi foot plate (contoh: 20 titik).',
-        rumus: 'Volume Galian = Panjang × Lebar × Kedalaman × Jumlah Titik',
-        latex: 'V_{\\text{galian}} = P \\times L \\times D \\times n',
-      },
-      {
-        step: 2,
-        title: 'Urugan Pasir Bawah Foot Plate',
-        persamaan: 'V_pasir = P × L × t_pasir × n',
-        desc: 'Ukur panjang, lebar, dan ketebalan rencana urugan pasir (biasanya 5–10 cm) di bawah dasar foot plate, lalu kalikan dengan total jumlah titik pondasi.',
-        rumus: 'Volume Pasir = Panjang × Lebar × Tebal Pasir × Jumlah Titik',
-        latex: 'V_{\\text{pasir}} = P \\times L \\times t_{\\text{pasir}} \\times n',
-      },
-      {
-        step: 3,
-        title: 'Lantai Kerja Beton Non Struktur (B0 / Lean Concrete)',
-        persamaan: 'V_lantai_kerja = P × L × t_lk × n',
-        desc: 'Ukur panjang, lebar, dan ketebalan lapisan lantai kerja beton rabat (lean concrete tebal 5 cm) sebagai perata sebelum pembesian dipasang.',
-        rumus: 'Volume Lantai Kerja = Panjang × Lebar × Tebal Lantai Kerja × Jumlah Titik',
-        latex: 'V_{\\text{lantai kerja}} = P \\times L \\times t_{\\text{lk}} \\times n',
-      },
-      {
-        step: 4,
-        title: 'Volume Foot Plate (Balok Bawah & Limas Terpancung)',
-        persamaan: 'V_FP = (P × L × t_b × n) + [ 1/3 · h · (A₁ + A₂ + √(A₁ · A₂)) × n ]',
-        desc: 'Struktur tapak terdiri dari balok bawah (persegi panjang) dan piramida terpotong (limas terpancung). Hitung volume balok bawah (P × L × t × n), lalu hitung volume limas terpancung 1/3 × h × (A₁ + A₂ + √(A₁ × A₂)) × n. Jumlahkan kedua volume tersebut.',
-        rumus: 'V_FP = (P × L × t_balok × n) + [1/3 × h × (A1 + A2 + √(A1 × A2)) × n]',
-        latex: 'V_{\\text{FP}} = (P \\times L \\times t_{\\text{b}} \\times n) + \\left[\\frac{1}{3} h (A_1 + A_2 + \\sqrt{A_1 \\cdot A_2}) \\times n\\right]',
-      },
-      {
-        step: 5,
-        title: 'Bekisting Pondasi Foot Plate',
-        persamaan: 'A_bekisting = 2 × (P + L) × t_bekisting × n',
-        desc: 'Hitung keliling sisi tegak tapak pondasi yang memerlukan papan bekisting dengan rumus keliling penampang dikalikan tebal bekisting dan banyaknya titik.',
-        rumus: 'Luas Bekisting = 2 × (Panjang + Lebar) × Tebal Bekisting × Jumlah Titik',
-        latex: 'A_{\\text{bekisting}} = 2 \\times (P + L) \\times t_{\\text{bekisting}} \\times n',
-      },
-      {
-        step: 6,
-        title: 'Kolom Pendek (Pedestal Foot Plate)',
-        persamaan: 'V_pedestal = n × (D × P_kolom × L_kolom)',
-        desc: 'Hitung volume kolom pedestal penghubung tapak ke sloof dengan mengalikan luas penampang kolom (P × L), tinggi kolom pendek, dan jumlah titik.',
-        rumus: 'Volume Kolom Pendek = Jumlah Titik × (Kedalaman × Panjang Kolom × Lebar Kolom)',
-        latex: 'V_{\\text{pedestal}} = n \\times (D \\times P_{\\text{kolom}} \\times L_{\\text{kolom}})',
-      },
-      {
-        step: 7,
-        title: 'Urugan Tanah Kembali Pondasi Foot Plate',
-        persamaan: 'V_urug = [ V_galian - (V_FP + V_pedestal) ] × 1.2',
-        desc: 'Kumpulkan data volume galian tanah awal, kurangi dengan total volume beton footplate dan kolom pendek tertanam, lalu kalikan faktor gembur 1.2.',
-        rumus: 'Volume Urug Kembali = [V_galian - (V_footplate + V_pedestal)] × 1.2',
-        latex: 'V_{\\text{urug}} = \\left[V_{\\text{galian}} - (V_{\\text{FP}} + V_{\\text{pedestal}})\\right] \\times 1.2',
-      },
-    ],
-    tips: 'Pastikan kedalaman galian mencapai tanah keras (N-SPT > 10 atau hasil sondir) agar pondasi tapak tidak mengalami settlement / penurunan diferensial.',
-  },
+// Daftar datar seluruh topik dalam satu materi (untuk navigasi sebelumnya/berikutnya)
+export const getTopikList = (materi) =>
+  materi.bagian.flatMap((bagian) =>
+    bagian.topik.map((topik) => ({ ...topik, bagianJudul: bagian.judul }))
+  );
 
-  // 2. PONDASI BATU KALI & SLOOF
-  {
-    id: 'pondasi-batu-kali',
-    kategori: 'Pekerjaan Pondasi',
-    judul: 'Perhitungan Volume Pondasi Batu Kali & Balok Sloof',
-    ringkasan: 'Kalkulasi volume galian trapesium, urugan pasir, aanstamping batu kosong, pasangan batu kali penampang trapesium, hingga balok sloof beton dan bekistingnya.',
-    iconName: 'layers-outline',
-    calcRoute: 'PondasiScreen',
-    calcTitle: 'Buka Kalkulator Pondasi Batu Belah',
-    videoPlaceholder: 'Video Pembahasan: Pasangan Batu Kali, Aanstamping & Sloof Pengikat (Segera Hadir dari Klien)',
-    steps: [
-      {
-        step: 1,
-        title: 'Galian Tanah Pondasi Batu Kali',
-        persamaan: 'V_galian = L_galian × D_galian × P_pondasi',
-        desc: 'Ukur total panjang keliling pondasi batu kali, lebar rencana galian bawah/atas, dan kedalaman galian tanah.',
-        rumus: 'Volume Galian = Lebar Galian × Dalam Galian × Panjang Pondasi',
-        latex: 'V_{\\text{galian}} = L_{\\text{galian}} \\times D_{\\text{galian}} \\times P_{\\text{pondasi}}',
-      },
-      {
-        step: 2,
-        title: 'Urugan Pasir Bawah Batu Kali',
-        persamaan: 'V_pasir = L × t_pasir × P_pondasi',
-        desc: 'Tebal hamparan pasir uruk di bawah aanstamping (biasanya 5–10 cm) dikalikan lebar dasar galian dan panjang pondasi.',
-        rumus: 'Volume Pasir Uruk = Lebar Galian × Tebal Pasir × Panjang Pondasi',
-        latex: 'V_{\\text{pasir}} = L \\times t_{\\text{pasir}} \\times P_{\\text{pondasi}}',
-      },
-      {
-        step: 3,
-        title: 'Aanstamping (Batu Kosong)',
-        persamaan: 'V_aanstamping = L × D_aanstamping × P_pondasi',
-        desc: 'Penyusunan batu belah tanpa adukan mortar (tebal 15–20 cm) sebagai drainase air tanah di bawah pasangan pondasi utama.',
-        rumus: 'Volume Aanstamping = Lebar Dasar × Tebal Aanstamping × Panjang Pondasi',
-        latex: 'V_{\\text{aanstamping}} = L \\times D_{\\text{aanstamping}} \\times P_{\\text{pondasi}}',
-      },
-      {
-        step: 4,
-        title: 'Pasangan Pondasi Batu Kali (Penampang Trapesium)',
-        persamaan: 'V_pasangan = [ (L_bawah + L_atas) / 2 × T × P ] - V_kolom',
-        desc: 'Penampang pondasi berbentuk trapesium: luas rata-rata penampang [(lebar atas + lebar bawah) / 2 × tinggi pondasi] dikalikan panjang, lalu dikurangi volume pertemuan kolom pendek jika ada.',
-        rumus: 'Volume Pasangan = [1/2 × (Lebar Bawah + Lebar Atas) × Tinggi] × Panjang - V_kolom_tertabrak',
-        latex: 'V_{\\text{pasangan}} = \\left[\\frac{L_{\\text{bawah}} + L_{\\text{atas}}}{2} \\times T_{\\text{pondasi}} \\times P\\right] - V_{\\text{kolom}}',
-      },
-      {
-        step: 5,
-        title: 'Balok Sloof Beton di Atas Pondasi',
-        persamaan: 'V_sloof = P_sloof × (b_sloof × h_sloof)',
-        desc: 'Balok sloof beton bertulang berfungsi meratakan beban dinding ke pondasi batu kali. Dihitung dari luas penampang sloof dikalikan panjang sloof.',
-        rumus: 'Volume Balok Sloof = Panjang Sloof × (Lebar Sloof × Tinggi Sloof)',
-        latex: 'V_{\\text{sloof}} = P_{\\text{sloof}} \\times (b_{\\text{sloof}} \\times h_{\\text{sloof}})',
-      },
-      {
-        step: 6,
-        title: 'Bekisting Balok Sloof',
-        persamaan: 'A_bekisting = 2 × (P_sloof × h_bekisting)',
-        desc: 'Bekisting sloof dipasang pada kedua sisi samping balok sloof sepanjang jalur pondasi.',
-        rumus: 'Luas Bekisting = 2 × (Panjang Sloof × Tinggi Bekisting)',
-        latex: 'A_{\\text{bekisting}} = 2 \\times (P_{\\text{sloof}} \\times h_{\\text{bekisting}})',
-      },
-    ],
-    tips: 'Adukan spesi pasangan batu belah kedap air (trasraam) 1 PC : 3 PP wajib dipasang setinggi minimal 30 cm di atas lantai untuk mencegah rembesan kapiler air tanah.',
-  },
-
-  // 3. PEKERJAAN BETON STRUKTUR (KOLOM, BALOK & PLAT)
-  {
-    id: 'beton-struktur',
-    kategori: 'Pekerjaan Beton',
-    judul: 'Perhitungan Volume Beton Struktur (Kolom, Balok & Plat Lantai)',
-    ringkasan: 'Metode perhitungan volume pengecoran beton dan luas bekisting untuk elemen kolom induk, balok struktural (dengan reduksi kolom tertabrak), serta plat lantai beton bertulang.',
-    iconName: 'business-outline',
-    calcRoute: 'KolomScreen',
-    calcTitle: 'Buka Kalkulator Kolom & Balok',
-    videoPlaceholder: 'Video Pembahasan: Perhitungan Beton Bertulang & Reduksi Kolom Tertabrak (Segera Hadir dari Klien)',
-    steps: [
-      {
-        step: 1,
-        title: 'Volume Kolom Induk',
-        persamaan: 'V_kolom = n × (P_kolom × L_kolom × T_kolom)',
-        desc: 'Kumpulkan data jumlah kolom sejenis, dimensi penampang (panjang × lebar), dan tinggi kolom bersih dari sloof ke dasar balok.',
-        rumus: 'Volume Kolom = Jumlah Kolom × (Panjang × Lebar × Tinggi Kolom)',
-        latex: 'V_{\\text{kolom}} = n \\times (P_{\\text{kolom}} \\times L_{\\text{kolom}} \\times T_{\\text{kolom}})',
-      },
-      {
-        step: 2,
-        title: 'Bekisting Kolom Induk',
-        persamaan: 'A_bekisting = n × [ 2 × (P + L) × T ]',
-        desc: 'Hitung luas permukaan selimut kolom yang bersentuhan dengan cetakan bekisting (keliling 4 sisi atau 2 sisi tergantung kondisi perlekatan dinding).',
-        rumus: 'Luas Bekisting = Jumlah Kolom × [2 × (Panjang + Lebar) × Tinggi Kolom]',
-        latex: 'A_{\\text{bekisting kolom}} = n \\times [2 \\times (P + L) \\times T]',
-      },
-      {
-        step: 3,
-        title: 'Balok Struktur & Kolom Tertabrak',
-        persamaan: 'V_balok = [ P · b · (h - t_p) ] - [ n_k · b · (h - t_p) · L_k ]',
-        desc: 'Untuk menghindari penghitungan ganda (double count), hitung volume balok kotor lalu kurangi dengan volume pertemuan (kolom tertabrak) pada setiap titik pertemuan kolom induk.',
-        rumus: 'V_balok = [P × L × (T - t_plat)] - [n_kolom × L_balok × (T - t_plat) × L_kolom]',
-        latex: 'V_{\\text{balok}} = P \\cdot b (h - t_p) - \\left[n_k \\cdot b (h - t_p) \\cdot L_k\\right]',
-      },
-      {
-        step: 4,
-        title: 'Bekisting Balok Struktur',
-        persamaan: 'A_bekisting = 2 × (P_balok × h_efektif)',
-        desc: 'Dihitung dari dua sisi samping balok (serta dasar balok jika tidak menumpu dinding bata) dikalikan panjang bentang balok bersih.',
-        rumus: 'Luas Bekisting Balok = 2 × (Panjang Balok × Tinggi Efektif Balok)',
-        latex: 'A_{\\text{bekisting balok}} = 2 \\times (P_{\\text{balok}} \\times h_{\\text{efektif}})',
-      },
-      {
-        step: 5,
-        title: 'Volume Plat Lantai Beton',
-        persamaan: 'V_plat = (P × L × t_plat) - (P_void × L_void × t_plat)',
-        desc: 'Kumpulkan data tebal plat lantai, panjang, lebar bentangan gedung, kemudian kurangi dengan luas bukaan/lubang void tangga.',
-        rumus: 'Volume Plat Lantai = (Panjang × Lebar × Tebal Plat) - Luas Lubang Tangga',
-        latex: 'V_{\\text{plat}} = (P \\times L \\times t_{\\text{plat}}) - (P_{\\text{void}} \\times L_{\\text{void}} \\times t_{\\text{plat}})',
-      },
-      {
-        step: 6,
-        title: 'Bekisting Plat Lantai',
-        persamaan: 'A_bekisting = (P · L - A_void) + 2(P + L) · t_plat',
-        desc: 'Hitung luas alas horizontal plat lantai ditambah bekisting keliling tepi luar plat.',
-        rumus: 'Luas Bekisting = (Panjang × Lebar Plat) - Luas Lubang + 2 × (P + L) × t_plat',
-        latex: 'A_{\\text{bekisting plat}} = (P \\cdot L - A_{\\text{void}}) + 2(P + L)t_{\\text{plat}}',
-      },
-    ],
-    tips: 'Selalu gunakan beton decking (tahu beton) setebal 2.5–3.0 cm untuk memastikan selimut beton melindungi tulangan dari korosi air dan udara luar.',
-  },
-
-  // 4. PEKERJAAN TANGGA
-  {
-    id: 'pekerjaan-tangga',
-    kategori: 'Pekerjaan Tangga',
-    judul: 'Perhitungan Volume Plat Tangga, Bordes & Anak Tangga',
-    ringkasan: 'Penentuan panjang miring plat tangga via trigonometri (cosinus sudut kemiringan), volume plat miring atas/bawah, bordes peralihan, bekisting tangga dan volume segitiga anak tangga.',
-    iconName: 'trending-up-outline',
-    calcRoute: 'BalokScreen',
-    calcTitle: 'Buka Menu Estimator',
-    videoPlaceholder: 'Video Pembahasan: Analisa Kemiringan Trigonometri & Volume Anak Tangga (Segera Hadir dari Klien)',
-    steps: [
-      {
-        step: 1,
-        title: 'Panjang Plat Tangga Miring Bawah & Atas',
-        persamaan: 'P_bawah = P_samping / cos θ   |   P_atas = √(H² + P_samping²)',
-        desc: 'Hitung panjang miring plat tangga bawah menggunakan sudut kemiringan tangga: P_bawah = P_samping / cos(sudut). Lalu hitung plat atas dengan rumus Pythagoras: √(tinggi² + panjang_samping²).',
-        rumus: 'P_miring = P_samping / cos(sudut) | P_atas = √(2² + P_samping²)',
-        latex: 'P_{\\text{bawah}} = \\frac{P_{\\text{samping}}}{\\cos(\\theta)}, \\quad P_{\\text{atas}} = \\sqrt{H^2 + P_{\\text{samping}}^2}',
-      },
-      {
-        step: 2,
-        title: 'Volume Plat Tangga Bawah, Atas & Bordes',
-        persamaan: 'V_plat = (P₁ + P₂) × L_tangga × t_plat + (P_b × L_b × t_b)',
-        desc: 'Kalikan panjang masing-masing plat miring dengan lebar tangga dan tebal plat tangga. Tambahkan volume plat bordes datar (Panjang Bordes × Lebar Bordes × Tebal Bordes).',
-        rumus: 'V_plat_tangga = (P_miring_1 + P_miring_2) × L_tangga × t_plat + V_bordes',
-        latex: 'V_{\\text{plat tangga}} = (P_1 + P_2) \\times L_{\\text{tangga}} \\times t_{\\text{plat}} + (P_b \\times L_b \\times t_b)',
-      },
-      {
-        step: 3,
-        title: 'Bekisting Plat Tangga & Bordes',
-        persamaan: 'A_bekisting = 2 × (P_plat + P_bordes) × t_bekisting + (P_tot × L)',
-        desc: 'Hitung luas permukaan cetakan bawah tangga dan bordes serta bekisting tepi samping sepanjang bentangan.',
-        rumus: 'Luas Bekisting = 2 × (Panjang Plat + Panjang Bordes) × Tebal Bekisting + Luas Alas',
-        latex: 'A_{\\text{bekisting}} = 2 \\times (P_{\\text{plat}} + P_{\\text{bordes}}) \\times t_{\\text{bekisting}} + (P_{\\text{tot}} \\times L)',
-      },
-      {
-        step: 4,
-        title: 'Volume Segitiga Anak Tangga (Optrede & Aantrede)',
-        persamaan: 'V_anak = n_anak × [ 1/2 · a · t · L_tangga ]',
-        desc: 'Setiap anak tangga memiliki penampang prisma segitiga: 1/2 × lebar pijakan (aantrede) × tinggi tanjakan (optrede) × lebar tangga, dikalikan dengan total jumlah anak tangga.',
-        rumus: 'V_anak_tangga = Jumlah Anak Tangga × [1/2 × Lebar Pijakan × Tinggi Tanjakan × Lebar Tangga]',
-        latex: 'V_{\\text{anak tangga}} = n_{\\text{anak}} \\times \\left(\\frac{1}{2} \\times a \\times t \\times L_{\\text{tangga}}\\right)',
-      },
-      {
-        step: 5,
-        title: 'Total Volume Beton Tangga',
-        persamaan: 'V_total_tangga = V_plat + V_bordes + V_anak',
-        desc: 'Jumlahkan seluruh volume plat tangga miring, plat bordes, dan volume segitiga anak tangga.',
-        rumus: 'V_total_tangga = Volume Plat Tangga + Volume Plat Bordes + Volume Anak Tangga',
-        latex: 'V_{\\text{total tangga}} = V_{\\text{plat}} + V_{\\text{bordes}} + V_{\\text{anak tangga}}',
-      },
-    ],
-    tips: 'Rumus ideal kenyamanan tangga (Rumus D’Ollivier): 2 × Tanjakan (Optrede) + 1 × Pijakan (Aantrede) = 60 s/d 64 cm dengan sudut kemiringan ideal 30° s/d 35°.',
-  },
-
-  // 5. PEKERJAAN ATAP: KUDA-KUDA & BALOK RANGKAI
-  {
-    id: 'pekerjaan-atap-kuda-kuda',
-    kategori: 'Pekerjaan Atap',
-    judul: 'Perhitungan Rangka Kuda-Kuda Kayu, Balok Rangkai & Jurai',
-    ringkasan: 'Kalkulasi kebutuhan panjang batang kaki kuda-kuda, balok sokong sudut, tiang makelar, balok gording, nok, papan ruiter, hingga jurai luar dan jurai dalam.',
-    iconName: 'triangle-outline',
-    calcRoute: 'AtapPelanaScreen',
-    calcTitle: 'Buka Kalkulator Atap Pelana',
-    videoPlaceholder: 'Video Pembahasan: Analisa Batang Kuda-Kuda & Balok Rangkai Jurai (Segera Hadir dari Klien)',
-    steps: [
-      {
-        step: 1,
-        title: 'Kaki Kuda-Kuda Miring',
-        persamaan: 'L_kaki = (T / sin α) × 2',
-        desc: 'Hitung panjang batang miring kaki kuda-kuda menggunakan fungsi trigonometri sinus terhadap sudut kemiringan atap (misal 30°).',
-        rumus: 'Panjang Kaki Kuda-Kuda = (Tinggi / sin(Sudut)) × 2 Sisi',
-        latex: 'L_{\\text{kaki}} = \\left(\\frac{T}{\\sin(\\alpha)}\\right) \\times 2',
-      },
-      {
-        step: 2,
-        title: 'Balok Sokong / Batang Pengaku',
-        persamaan: 'L_sokong = (B_sokong / cos α) × 2',
-        desc: 'Hitung panjang balok sokong penopang kaki kuda-kuda menggunakan fungsi cosinus terhadap sudut kemiringan.',
-        rumus: 'Panjang Balok Sokong = (Bentang Sokong / cos(Sudut)) × 2',
-        latex: 'L_{\\text{sokong}} = \\left(\\frac{B_{\\text{sokong}}}{\\cos(\\alpha)}\\right) \\times 2',
-      },
-      {
-        step: 3,
-        title: 'Total Panjang Batang & Volume Rangka Kuda-Kuda',
-        persamaan: 'V_kuda-kuda = ∑ L_batang × (b × h)_kayu × n_set',
-        desc: 'Jumlahkan balok tarik bawah, tiang makelar tengah, balok gapit, balok pengunci, kaki kuda-kuda dan balok sokong. Kalikan dengan luas penampang kayu (misal kayu 8/12 = 0.08 × 0.12 m).',
-        rumus: 'Volume Kuda-Kuda = Panjang Total Batang × (Lebar Kayu × Tinggi Kayu) × Jumlah Set',
-        latex: 'V_{\\text{kuda-kuda}} = \\sum L_{\\text{batang}} \\times (b \\times h)_{\\text{kayu}} \\times n_{\\text{set}}',
-      },
-      {
-        step: 4,
-        title: 'Balok Rangkai Kuda-Kuda (Gording, Nok & Balok Tembok)',
-        persamaan: 'L_rangkai = L_nok + L_gording + L_murplat + L_ruiter',
-        desc: 'Kumpulkan data balok tembok (murplat), balok gording memanjang, balok nok atas, papan ruiter, dan balok penyangga.',
-        rumus: 'Panjang Total Balok Rangkai = Σ Panjang (Nok + Gording + Murplat + Ruiter)',
-        latex: 'L_{\\text{rangkai}} = L_{\\text{nok}} + L_{\\text{gording}} + L_{\\text{murplat}} + L_{\\text{ruiter}}',
-      },
-      {
-        step: 5,
-        title: 'Perhitungan Batang Jurai Luar & Jurai Dalam',
-        persamaan: 'L_jurai = √[(1/2 · B · tan α)² + (1/2 · B)²] × 2',
-        desc: 'Jurai adalah pertemuan bidang atap limas atau hip-and-valley. Dihitung dengan rumus akar kuadrat kombinasi tinggi dan lebar bentangan.',
-        rumus: 'Panjang Jurai = √[(1/2 × Lebar × tan(Sudut))² + (1/2 × Lebar)²] × Faktor Sisi',
-        latex: 'L_{\\text{jurai}} = \\sqrt{\\left(\\frac{1}{2} B \\tan(\\alpha)\\right)^2 + \\left(\\frac{1}{2} B\\right)^2} \\times 2',
-      },
-    ],
-    tips: 'Untuk atap baja ringan profil kanal C (C75) dan reng, jumlah set kuda-kuda ditentukan dari bentang bangunan dibagi jarak antar kuda-kuda (maksimal 1.20 meter).',
-  },
-
-  // 6. PEKERJAAN ATAP: USUK, RENG & PENUTUP
-  {
-    id: 'pekerjaan-atap-usuk-reng',
-    kategori: 'Pekerjaan Atap',
-    judul: 'Perhitungan Usuk, Reng, Luas Atap (Hip & Valley) & Genteng',
-    ringkasan: 'Menghitung kebutuhan batang usuk (kaso), reng, luas atap model hip-and-valley dengan dekomposisi bentuk (trapesium, jajar genjang, segitiga), kebutuhan genteng utama dan nok wuwung.',
-    iconName: 'diamond-outline',
-    calcRoute: 'AtapLimasScreen',
-    calcTitle: 'Buka Kalkulator Atap Limas',
-    videoPlaceholder: 'Video Pembahasan: Dekomposisi Luas Atap Hip & Valley & Kebutuhan Genteng (Segera Hadir dari Klien)',
-    steps: [
-      {
-        step: 1,
-        title: 'Kebutuhan Batang Usuk (Kaso)',
-        persamaan: 'N_usuk = [ (P_atap / jarak_usuk) + 1 ] × Jumlah Sisi',
-        desc: 'Kumpulkan data panjang atap dan jarak pasang antar usuk (biasanya 50 cm). Hitung jumlah batang per bidang atap.',
-        rumus: 'Volume Usuk = [((Panjang Atap / Jarak Usuk) + 1) × Jumlah Sisi Bidang]',
-        latex: 'N_{\\text{usuk}} = \\left(\\frac{P_{\\text{atap}}}{\\text{jarak usuk}} + 1\\right) \\times \\text{Jumlah Sisi}',
-      },
-      {
-        step: 2,
-        title: 'Kebutuhan Batang Reng',
-        persamaan: 'N_reng = [ (L_usuk / jarak_reng) + 1 ] × P_atap × Jumlah Sisi',
-        desc: 'Kumpulkan data panjang bidang miring usuk, jarak pasang reng sesuai modul genteng (misal 25–35 cm), dan panjang bentang atap.',
-        rumus: 'Volume Reng = [((Panjang Usuk / Jarak Reng) + 1) × Panjang Atap × Jumlah Sisi]',
-        latex: 'N_{\\text{reng}} = \\left(\\frac{L_{\\text{usuk}}}{\\text{jarak reng}} + 1\\right) \\times P_{\\text{atap}} \\times \\text{Jumlah Sisi}',
-      },
-      {
-        step: 3,
-        title: 'Dekomposisi Luas Atap (Model Hip & Valley)',
-        persamaan: 'A_atap = [ (a + b) / 2 · t ] + (a · t) + (1/2 · a · t)',
-        desc: 'Bagi tampak atas atap limas / perisai menjadi segmen geometri: trapesium, jajar genjang, dan segitiga. Hitung luas masing-masing segmen lalu jumlahkan.',
-        rumus: 'Luas Atap = Σ (Luas Trapesium + Luas Jajargenjang + Luas Segitiga)',
-        latex: 'A_{\\text{atap}} = \\left[\\frac{a+b}{2} \\cdot t\\right] + (a \\cdot t) + \\left(\\frac{1}{2} a \\cdot t\\right)',
-      },
-      {
-        step: 4,
-        title: 'Kebutuhan Genteng Penutup Atap',
-        persamaan: 'N_genteng = A_total_atap × Koefisien_m²',
-        desc: 'Volume kebutuhan penutup atap diambil langsung dari luas total atap. Jika menggunakan genteng keping, kalikan luas dengan koefisien isi per m² (misal genteng metal = 1.62 lbr/m², genteng keramik = 14 bh/m²).',
-        rumus: 'Kebutuhan Genteng = Luas Total Atap × Koefisien Kebutuhan per m²',
-        latex: 'N_{\\text{genteng}} = A_{\\text{total atap}} \\times \\text{Koefisien}_{\\text{m}^2}',
-      },
-      {
-        step: 5,
-        title: 'Genteng Penutup Nok / Wuwung',
-        persamaan: 'L_wuwung = L_nok_horizontal + ∑ L_jurai_luar',
-        desc: 'Volume kebutuhan genteng bubungan / nok dihitung berdasarkan total panjang jurai luar ditambah panjang nok horizontal.',
-        rumus: 'Kebutuhan Wuwung = Total Panjang Nok Horizontal + Total Panjang Jurai Luar',
-        latex: 'L_{\\text{wuwung}} = L_{\\text{nok horizontal}} + \\sum L_{\\text{jurai luar}}',
-      },
-    ],
-    tips: 'Sudut kemiringan atap genteng tanah/keramik minimal 30° untuk mencegah air tampias saat hujan lebat berangin kencang.',
-  },
-
-  // 7. AHSP (ANALISA HARGA SATUAN PEKERJAAN)
-  {
-    id: 'ahsp-bangunan',
-    kategori: 'AHSP & RAB',
-    judul: 'Analisa Harga Satuan Pekerjaan (AHSP) Standar SNI & PUPR',
-    ringkasan: 'Panduan penyusunan analisa harga satuan pekerjaan berdasarkan pedoman Permen PUPR, koefisien tenaga kerja (OH), indeks bahan material, dan perhitungan harga satuan bowplank & pembersihan.',
-    iconName: 'receipt-outline',
-    calcRoute: 'PondasiScreen',
-    calcTitle: 'Buka Kalkulator RAB Pro',
-    videoPlaceholder: 'Video Pembahasan: Penyusunan Analisa Harga Satuan (AHSP) SNI (Segera Hadir dari Klien)',
-    steps: [
-      {
-        step: 1,
-        title: 'Data AHSP Kota / Kabupaten Setempat',
-        persamaan: 'HSP = Biaya Tenaga Kerja (A) + Biaya Bahan (B)',
-        desc: 'Siapkan tabel AHSP resmi dari Dinas PUPR kota/kabupaten lokasi proyek yang mencakup standar koefisien dan daftar upah regional.',
-        rumus: 'Acuan: Permen PUPR No. 1 / 2022 atau Peraturan Walikota/Bupati Setempat',
-        latex: '\\text{HSP} = \\text{Total Biaya Tenaga Kerja (A)} + \\text{Total Biaya Bahan (B)}',
-      },
-      {
-        step: 2,
-        title: 'Analisa Biaya Tenaga Kerja (Upah)',
-        persamaan: 'Biaya Upah = ∑ (Koefisien_i × Tarif Upah_i)',
-        desc: 'Kalikan koefisien standar pekerja, tukang batu/kayu, kepala tukang, dan mandor dengan tarif standar upah harian (Orang Hari / OH).',
-        rumus: 'Total Upah = Σ (Koefisien OH Pekerja × Tarif Upah OH)',
-        latex: '\\text{Biaya Upah} = \\sum_{i=1}^{k} \\left(\\text{Koefisien}_i \\times \\text{Tarif Upah}_i\\right)',
-      },
-      {
-        step: 3,
-        title: 'Analisa Biaya Bahan & Material',
-        persamaan: 'Biaya Bahan = ∑ (Koefisien_j × Harga Bahan_j)',
-        desc: 'Kalikan koefisien kebutuhan material per satuan volume/luas (misal kg besi, sak semen, m³ pasir) dengan harga satuan material.',
-        rumus: 'Total Bahan = Σ (Koefisien Bahan × Harga Satuan Bahan)',
-        latex: '\\text{Biaya Bahan} = \\sum_{j=1}^{m} \\left(\\text{Koefisien}_j \\times \\text{Harga Bahan}_j\\right)',
-      },
-      {
-        step: 4,
-        title: 'Perhitungan Harga Satuan Pekerjaan (HSP)',
-        persamaan: 'HSP_pekerjaan = Total Upah + Total Bahan',
-        desc: 'Jumlahkan total biaya upah tenaga kerja dan total biaya bahan. Pada pekerjaan khusus tertentu (seperti pembersihan lahan), komponen bahan bernilai nol dan hanya terdiri dari upah.',
-        rumus: 'HSP = Total Biaya Upah + Total Biaya Bahan',
-        latex: '\\text{HSP}_{\\text{pekerjaan}} = \\text{Total Upah} + \\text{Total Bahan}',
-      },
-      {
-        step: 5,
-        title: 'Studi Kasus: Pembersihan Lokasi & Bowplank',
-        persamaan: 'HSP_bowplank = Upah_total + Bahan_kayu, paku, papan',
-        desc: 'Pembersihan lahan hanya membutuhkan upah pekerja (koef 0.10 OH) dan mandor (koef 0.05 OH). Pengukuran & bowplank membutuhkan upah plus bahan kayu 5/7, paku 2–3", dan kayu papan 3/20.',
-        rumus: 'HSP Bowplank = Upah(Pekerja + Tukang + Mandor) + Bahan(Kayu + Paku + Papan)',
-        latex: '\\text{HSP}_{\\text{bowplank}} = \\text{Upah}_{\\text{total}} + \\text{Bahan}_{\\text{kayu, paku, papan}}',
-      },
-    ],
-    tips: 'Selalu pastikan koefisien AHSP menggunakan indeks standar SNI/PUPR, sedangkan harga satuan upah dan bahan disesuaikan dengan harga pasar riil di toko bangunan setempat.',
-  },
-
-  // 8. RENCANA ANGGARAN BIAYA (RAB)
-  {
-    id: 'rab-konstruksi',
-    kategori: 'AHSP & RAB',
-    judul: 'Penyusunan Rencana Anggaran Biaya (RAB) Konstruksi',
-    ringkasan: 'Metodologi integrasi volume fisik tiap pekerjaan dengan analisa harga satuan (HSP), pengelompokan sub-pekerjaan, rekapitulasi dana dan rekapitulasi total proyek.',
-    iconName: 'cash-outline',
-    calcRoute: 'RekapRABScreen',
-    calcTitle: 'Buka Rekapitulasi RAB Pro',
-    videoPlaceholder: 'Video Pembahasan: Penyusunan Rencana Anggaran Biaya (RAB) & Rekapitulasi (Segera Hadir dari Klien)',
-    steps: [
-      {
-        step: 1,
-        title: 'Pengumpulan Data Volume & Nilai AHSP',
-        persamaan: 'Data = { V₁, V₂, ..., V_n }  dan  { HSP₁, HSP₂, ..., HSP_n }',
-        desc: 'Ambil seluruh hasil kalkulasi volume fisik pekerjaan (dari sheet pondasi, beton, tangga, atap, dll.) serta nilai HSP yang telah dihitung.',
-        rumus: 'Data Masukan = Volume Fisik Pekerjaan dan HSP Tiap Satuan',
-        latex: '\\text{Data} = \\{V_1, V_2, \\dots, V_n\\} \\quad \\text{dan} \\quad \\{\\text{HSP}_1, \\text{HSP}_2, \\dots, \\text{HSP}_n\\}',
-      },
-      {
-        step: 2,
-        title: 'Perhitungan Biaya Sub-Pekerjaan',
-        persamaan: 'Biaya_i = V_i × HSP_i',
-        desc: 'Kalikan volume fisik masing-masing item pekerjaan dengan harga satuan pekerjaan (HSP) yang bersesuaian.',
-        rumus: 'Subtotal Biaya Pekerjaan = Volume Pekerjaan × Harga Satuan (HSP)',
-        latex: '\\text{Biaya}_i = V_i \\times \\text{HSP}_i',
-      },
-      {
-        step: 3,
-        title: 'Pengelompokan Sub-Pekerjaan Struktural',
-        persamaan: 'Subtotal_Kategori = ∑ Biaya_i  (untuk i ∈ Kategori)',
-        desc: 'Kelompokkan item-item pekerjaan ke dalam kategori utama: Pekerjaan Persiapan & Tanah, Pekerjaan Pondasi, Pekerjaan Struktur Beton Bertulang, dan Pekerjaan Atap.',
-        rumus: 'Subtotal Kategori = Σ Biaya Seluruh Pekerjaan dalam Kategori',
-        latex: '\\text{Subtotal}_{\\text{Kategori}} = \\sum_{i \\in \\text{Kategori}} \\text{Biaya}_i',
-      },
-      {
-        step: 4,
-        title: 'Rekapitulasi Total Proyek (Grand Total)',
-        persamaan: 'Grand Total RAB = ∑ Subtotal_k  (k = 1..M)',
-        desc: 'Jumlahkan seluruh subtotal kelompok pekerjaan untuk mendapatkan grand total nilai estimasi biaya konstruksi.',
-        rumus: 'Grand Total RAB = Σ Subtotal Seluruh Kelompok Pekerjaan',
-        latex: '\\text{Grand Total RAB} = \\sum_{k=1}^{M} \\text{Subtotal}_k',
-      },
-    ],
-    tips: 'Sediakan pos dana tak terduga (contingency cost) sebesar 5% - 10% untuk mengantisipasi kenaikan fluktuasi harga material atau perubahan desain di lapangan.',
-  },
-
-  // 9. TIME SCHEDULE & KURVA S
-  {
-    id: 'time-schedule-kurva-s',
-    kategori: 'Time Schedule',
-    judul: 'Time Schedule, Plotting Tenaga Kerja & Kurva S',
-    ringkasan: 'Perhitungan durasi kerja (plotting man-days), penentuan bobot persentase dari rekapitulasi dana, akumulasi rencana fisik mingguan s.d. 100%, dan pembuatan kurva S pengawasan proyek.',
-    iconName: 'time-outline',
-    calcRoute: 'RekapRABScreen',
-    calcTitle: 'Buka Rekap Proyek',
-    videoPlaceholder: 'Video Pembahasan: Penyusunan Jadwal Proyek & Grafik Kurva S (Segera Hadir dari Klien)',
-    steps: [
-      {
-        step: 1,
-        title: 'Plotting Tenaga Kerja (Man-Days / OH)',
-        persamaan: 'Durasi = ⌈ (Koefisien OH × V_pekerjaan) / (Hari Kerja × Jumlah Tukang) ⌉',
-        desc: 'Ambil koefisien OH pekerja dari AHSP, kalikan dengan volume pekerjaan untuk memperoleh total kebutuhan hari orang (OH), lalu bagi dengan jumlah hari kerja efektif per minggu.',
-        rumus: 'Plotting Durasi = (Koefisien OH × Volume Pekerjaan) / Hari Kerja per Minggu',
-        latex: '\\text{Durasi (minggu)} = \\left\\lceil \\frac{\\text{Koefisien OH} \\times V_{\\text{pekerjaan}}}{\\text{Hari Kerja} \\times \\text{Jumlah Tukang}} \\right\\rceil',
-      },
-      {
-        step: 2,
-        title: 'Penyesuaian Durasi Pekerjaan (Rounding Up)',
-        persamaan: 'Durasi Efektif = Roundup(Plotting Durasi)',
-        desc: 'Hasil plotting dibulatkan ke atas. Jika pekerjaan butuh 2 minggu bagi 2, jika setengah minggu kali 2, dan sesuaikan dengan kapasitas tenaga di lapangan.',
-        rumus: 'Durasi Rencana = Pembulatan Ke Atas (Ceiling)',
-        latex: '\\text{Durasi Efektif} = \\text{roundup}(\\text{Plotting Durasi})',
-      },
-      {
-        step: 3,
-        title: 'Perhitungan Bobot Persentase Pekerjaan',
-        persamaan: 'Bobot_i (%) = (Biaya Sub-Pekerjaan_i / Total RAB) × 100%',
-        desc: 'Hitung kontribusi finansial tiap sub-pekerjaan terhadap total biaya proyek dalam satuan persentase.',
-        rumus: 'Bobot Pekerjaan (%) = (Biaya Sub-Pekerjaan / Total Rekapitulasi RAB) × 100%',
-        latex: '\\text{Bobot}_i (\\%) = \\left(\\frac{\\text{Biaya Sub-Pekerjaan}_i}{\\text{Grand Total RAB}}\\right) \\times 100\\%',
-      },
-      {
-        step: 4,
-        title: 'Distribusi Bobot Mingguan (Rencana Fisik)',
-        persamaan: 'Bobot Mingguan_i,t = Bobot_i / Durasi Minggu_i',
-        desc: 'Bagi nilai bobot pekerjaan ke dalam minggu-minggu durasi pelaksanaan pekerjaan tersebut secara merata atau bertahap.',
-        rumus: 'Bobot Mingguan = Bobot Pekerjaan / Durasi Minggu Pelaksanaan',
-        latex: '\\text{Bobot Mingguan}_{i, t} = \\frac{\\text{Bobot}_i}{\\text{Durasi Minggu}_i}',
-      },
-      {
-        step: 5,
-        title: 'Akumulasi Rencana Fisik Mingguan (Harus 100%)',
-        persamaan: 'Akumulasi_t = Akumulasi_(t-1) + Rencana Fisik_t   |   Akumulasi_T = 100%',
-        desc: 'Jumlahkan rencana fisik minggu berjalan dengan akumulasi minggu sebelumnya. Nilai akhir pada minggu penyelesaian proyek wajib bernilai tepat 100%.',
-        rumus: 'Akumulasi Minggu (t) = Akumulasi Minggu (t-1) + Rencana Fisik Minggu (t)',
-        latex: '\\text{Akumulasi}_t = \\sum_{w=1}^{t} \\left(\\sum_{i} \\text{Bobot Mingguan}_{i, w}\\right), \\quad \\text{Akumulasi}_{T} = 100\\%',
-      },
-      {
-        step: 6,
-        title: 'Pembuatan Grafik Kurva S (S-Curve)',
-        persamaan: 'S(t) = (t, Akumulasi_t)   untuk t = 1, 2, ..., T',
-        desc: 'Plot nilai akumulasi mingguan dari minggu awal hingga minggu akhir pada diagram cartesius. Hubungkan titik-titik tersebut hingga membentuk kurva berkarakteristik huruf S yang halus.',
-        rumus: 'S-Curve: Garis Hubung Titik Akumulasi Rencana Fisik dari Minggu 1 s.d. Minggu Akhir',
-        latex: 'S(t) = (t, \\text{Akumulasi}_t) \\quad \\text{untuk } t = 1, 2, \\dots, T',
-      },
-    ],
-    tips: 'Kurva S berbentuk huruf "S" karena progress pekerjaan di awal relatif lambat (pekerjaan persiapan/fondasi), memuncak pesat di tengah (struktur & arsitektur), dan melambat kembali di akhir (finishing & serah terima).',
-  },
-];
+export const countTopik = (materi) =>
+  materi.bagian.reduce((sum, bagian) => sum + bagian.topik.length, 0);

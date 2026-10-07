@@ -12,7 +12,9 @@ import {
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/colors';
+import { fonts } from '../constants/typography';
 import { isSessionValid, startSession, clearAppSession } from '../utils/sessionManager';
 
 // Screens
@@ -26,7 +28,6 @@ import BalokScreen from '../screens/BalokScreen';
 import AtapPelanaScreen from '../screens/AtapPelanaScreen';
 import AtapLimasScreen from '../screens/AtapLimasScreen';
 import MateriScreen from '../screens/MateriScreen';
-import RekapRABScreen from '../screens/RekapRABScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -66,24 +67,14 @@ const NAV_CATEGORIES = [
   },
 ];
 
-// Custom Excel Sheet Tab Bar dengan Submenu Navigasi
-function ExcelSheetTabBar({ state, navigation }) {
+// Tab bar ringkas dengan submenu kalkulator per kategori
+function MainTabBar({ state, navigation }) {
   const currentRouteName = state.routes[state.index]?.name;
   const [activeMenuCategory, setActiveMenuCategory] = useState(null);
+  const insets = useSafeAreaInsets();
 
-  // Cari apakah rute saat ini berada dalam salah satu kategori submenu
-  const getCurrentCategoryActive = (category) => {
-    return category.screens.some((s) => s.name === currentRouteName);
-  };
-
-  const getActiveSubmenuLabel = (category) => {
-    const found = category.screens.find((s) => s.name === currentRouteName);
-    return found ? found.label : null;
-  };
-
-  const handleOpenCategory = (cat) => {
-    setActiveMenuCategory(cat);
-  };
+  const findActiveScreen = (category) =>
+    category.screens.find((s) => s.name === currentRouteName);
 
   const handleSelectScreen = (screenName) => {
     setActiveMenuCategory(null);
@@ -92,238 +83,114 @@ function ExcelSheetTabBar({ state, navigation }) {
 
   const isHome = currentRouteName === 'HomeTab';
   const isMateri = currentRouteName === 'MateriScreen';
-  const isRekap = currentRouteName === 'RekapRABScreen';
+
+  const renderTab = ({ key, label, icon, active, onPress, chevron }) => (
+    <TouchableOpacity
+      key={key}
+      onPress={onPress}
+      activeOpacity={0.7}
+      style={[styles.tabItem, active && styles.tabItemActive]}
+    >
+      <Ionicons name={icon} size={15} color={active ? colors.primary : colors.textSecondary} />
+      <Text style={[styles.tabLabel, active && styles.tabLabelActive]} numberOfLines={1}>
+        {label}
+      </Text>
+      {chevron ? (
+        <Ionicons name="chevron-down" size={12} color={active ? colors.primary : colors.textMuted} />
+      ) : null}
+    </TouchableOpacity>
+  );
 
   return (
     <>
-      <View style={styles.sheetTabBarContainer}>
-        {/* Left branding with Estimator Logo */}
+      <View style={[styles.tabBar, { height: 48 + insets.bottom, paddingBottom: insets.bottom }]}>
         <TouchableOpacity
-          style={styles.sheetTabBarLeft}
-          activeOpacity={0.8}
+          style={styles.brand}
+          activeOpacity={0.7}
           onPress={() => navigation.navigate('HomeTab')}
         >
           <Image
             source={require('../../assets/brand/logo_icon.png')}
-            style={styles.brandLogoIcon}
+            style={styles.brandLogo}
             resizeMode="contain"
           />
-          <View>
-            <Text style={styles.sheetBrandText}>ESTIMATOR</Text>
-            <Text style={styles.sheetBrandSub}>RAB KONSTRUKSI</Text>
-          </View>
+          <Text style={styles.brandText}>ESTIMATOR</Text>
         </TouchableOpacity>
 
-        {/* Horizontal Navigation Items */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.sheetTabScroll}
+          contentContainerStyle={styles.tabScroll}
         >
-          {/* 1. Beranda Tab */}
-          <TouchableOpacity
-            onPress={() => navigation.navigate('HomeTab')}
-            activeOpacity={0.8}
-            style={[styles.sheetTabItem, isHome && styles.sheetTabItemActive]}
-          >
-            <Ionicons
-              name={isHome ? 'home' : 'home-outline'}
-              size={13}
-              color={isHome ? colors.primaryDark : '#94A3B8'}
-            />
-            <Text style={[styles.sheetTabLabel, isHome && styles.sheetTabLabelActive]}>
-              Beranda
-            </Text>
-            {isHome && <View style={styles.activeIndicator} />}
-          </TouchableOpacity>
-
-          {/* 2. Submenu Kategori: Pondasi, Beton, Atap */}
-          {NAV_CATEGORIES.map((category) => {
-            const isCatActive = getCurrentCategoryActive(category);
-            const activeSubLabel = getActiveSubmenuLabel(category);
-
-            return (
-              <TouchableOpacity
-                key={category.id}
-                onPress={() => handleOpenCategory(category)}
-                activeOpacity={0.8}
-                style={[
-                  styles.sheetTabItem,
-                  styles.sheetTabCategory,
-                  isCatActive && styles.sheetTabCategoryActive,
-                ]}
-              >
-                <Ionicons
-                  name={isCatActive ? category.activeIcon : category.icon}
-                  size={13}
-                  color={isCatActive ? colors.primary : '#94A3B8'}
-                />
-                <Text
-                  style={[
-                    styles.sheetTabLabel,
-                    isCatActive && styles.sheetTabCategoryLabelActive,
-                  ]}
-                >
-                  {category.label}
-                  {isCatActive && activeSubLabel ? ` : ${activeSubLabel}` : ''}
-                </Text>
-                <Ionicons
-                  name="chevron-down"
-                  size={11}
-                  color={isCatActive ? colors.primary : '#94A3B8'}
-                />
-                {isCatActive && <View style={styles.activeIndicator} />}
-              </TouchableOpacity>
-            );
+          {renderTab({
+            key: 'home',
+            label: 'Beranda',
+            icon: isHome ? 'home' : 'home-outline',
+            active: isHome,
+            onPress: () => navigation.navigate('HomeTab'),
+          })}
+          {renderTab({
+            key: 'materi',
+            label: 'Panduan Teknis',
+            icon: isMateri ? 'book' : 'book-outline',
+            active: isMateri,
+            onPress: () => navigation.navigate('MateriScreen'),
           })}
 
-          {/* 3. Panduan Teknis (Materi & Rumus) */}
-          <TouchableOpacity
-            onPress={() => navigation.navigate('MateriScreen')}
-            activeOpacity={0.8}
-            style={[
-              styles.sheetTabItem,
-              styles.sheetTabMateri,
-              isMateri && styles.sheetTabMateriActive,
-            ]}
-          >
-            <Ionicons
-              name={isMateri ? 'book' : 'book-outline'}
-              size={13}
-              color={isMateri ? '#FFFFFF' : '#FECA38'}
-            />
-            <Text
-              style={[
-                styles.sheetTabLabel,
-                styles.sheetTabLabelMateri,
-                isMateri && styles.sheetTabLabelMateriActive,
-              ]}
-            >
-              Panduan Teknis
-            </Text>
-            {isMateri && <View style={styles.activeIndicator} />}
-          </TouchableOpacity>
+          <View style={styles.tabDivider} />
 
-          {/* 4. Rekapitulasi RAB Proyek */}
-          <TouchableOpacity
-            onPress={() => navigation.navigate('RekapRABScreen')}
-            activeOpacity={0.8}
-            style={[
-              styles.sheetTabItem,
-              styles.sheetTabRekap,
-              isRekap && styles.sheetTabRekapActive,
-            ]}
-          >
-            <Ionicons
-              name={isRekap ? 'receipt' : 'receipt-outline'}
-              size={13}
-              color={isRekap ? '#FFFFFF' : '#FECA38'}
-            />
-            <Text
-              style={[
-                styles.sheetTabLabel,
-                styles.sheetTabLabelRekap,
-                isRekap && styles.sheetTabLabelRekapActive,
-              ]}
-            >
-              Rekapitulasi RAB
-            </Text>
-            {isRekap && <View style={styles.activeIndicator} />}
-          </TouchableOpacity>
+          {NAV_CATEGORIES.map((category) => {
+            const activeScreen = findActiveScreen(category);
+            return renderTab({
+              key: category.id,
+              label: activeScreen ? activeScreen.label : category.label,
+              icon: activeScreen ? category.activeIcon : category.icon,
+              active: !!activeScreen,
+              onPress: () => setActiveMenuCategory(category),
+              chevron: true,
+            });
+          })}
         </ScrollView>
       </View>
 
-      {/* Modal Dropdown Submenu */}
+      {/* Submenu kalkulator */}
       <Modal
         visible={!!activeMenuCategory}
-        transparent={true}
+        transparent
         animationType="fade"
         onRequestClose={() => setActiveMenuCategory(null)}
       >
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={() => setActiveMenuCategory(null)}
-        >
-          <View style={styles.submenuContainer}>
-            <View style={styles.submenuHeader}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Ionicons
-                  name={activeMenuCategory?.activeIcon || 'grid'}
-                  size={16}
-                  color={colors.primary}
-                />
-                <Text style={styles.submenuHeaderTitle}>
-                  Pilih Sub-Pekerjaan {activeMenuCategory?.label}
-                </Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => setActiveMenuCategory(null)}
-                style={styles.submenuCloseBtn}
-              >
-                <Ionicons name="close" size={16} color="#64748B" />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.submenuItemsList}>
-              {activeMenuCategory?.screens.map((item) => {
-                const isSelected = currentRouteName === item.name;
-                return (
-                  <TouchableOpacity
-                    key={item.name}
-                    style={[
-                      styles.submenuItemCard,
-                      isSelected && styles.submenuItemCardActive,
-                    ]}
-                    activeOpacity={0.8}
-                    onPress={() => handleSelectScreen(item.name)}
-                  >
-                    <View
-                      style={[
-                        styles.submenuCodeBadge,
-                        isSelected && styles.submenuCodeBadgeActive,
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.submenuCodeText,
-                          isSelected && styles.submenuCodeTextActive,
-                        ]}
-                      >
-                        {item.code}
-                      </Text>
-                    </View>
-
-                    <View style={{ flex: 1 }}>
-                      <Text
-                        style={[
-                          styles.submenuItemTitle,
-                          isSelected && styles.submenuItemTitleActive,
-                        ]}
-                      >
-                        {item.label}
-                      </Text>
-                      <Text style={styles.submenuItemDesc} numberOfLines={1}>
-                        {item.desc}
-                      </Text>
-                    </View>
-
-                    {isSelected ? (
-                      <Ionicons
-                        name="checkmark-circle"
-                        size={18}
-                        color={colors.primary}
-                      />
-                    ) : (
-                      <Ionicons
-                        name="chevron-forward"
-                        size={15}
-                        color="#CBD5E1"
-                      />
-                    )}
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+        <Pressable style={styles.modalOverlay} onPress={() => setActiveMenuCategory(null)}>
+          <View style={styles.submenu}>
+            <Text style={styles.submenuTitle}>{activeMenuCategory?.label}</Text>
+            {activeMenuCategory?.screens.map((item) => {
+              const isSelected = currentRouteName === item.name;
+              return (
+                <TouchableOpacity
+                  key={item.name}
+                  style={[styles.submenuItem, isSelected && styles.submenuItemActive]}
+                  activeOpacity={0.7}
+                  onPress={() => handleSelectScreen(item.name)}
+                >
+                  <Ionicons
+                    name={item.icon}
+                    size={16}
+                    color={isSelected ? colors.primary : colors.textSecondary}
+                  />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.submenuItemTitle, isSelected && styles.submenuItemTitleActive]}>
+                      {item.label}
+                    </Text>
+                    <Text style={styles.submenuItemDesc} numberOfLines={1}>
+                      {item.desc}
+                    </Text>
+                  </View>
+                  {isSelected ? (
+                    <Ionicons name="checkmark" size={16} color={colors.primary} />
+                  ) : null}
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </Pressable>
       </Modal>
@@ -335,7 +202,7 @@ function ExcelSheetTabBar({ state, navigation }) {
 function MainTabs() {
   return (
     <Tab.Navigator
-      tabBar={(props) => <ExcelSheetTabBar {...props} />}
+      tabBar={(props) => <MainTabBar {...props} />}
       screenOptions={{
         headerShown: false,
       }}
@@ -349,7 +216,6 @@ function MainTabs() {
       <Tab.Screen name="AtapPelanaScreen" component={AtapPelanaScreen} />
       <Tab.Screen name="AtapLimasScreen" component={AtapLimasScreen} />
       <Tab.Screen name="MateriScreen" component={MateriScreen} />
-      <Tab.Screen name="RekapRABScreen" component={RekapRABScreen} />
     </Tab.Navigator>
   );
 }
@@ -381,212 +247,113 @@ export default function AppNavigator() {
 }
 
 const styles = StyleSheet.create({
-  sheetTabBarContainer: {
+  tabBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E1E1E', // Dark Charcoal header/tab bar sesuai style guide klien
-    borderTopWidth: 2,
-    borderTopColor: colors.primary,
-    height: 42,
-    paddingHorizontal: 8,
-    zIndex: 50,
+    height: 48,
+    paddingHorizontal: 12,
+    backgroundColor: colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: colors.hairline,
   },
-  sheetTabBarLeft: {
+  brand: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 7,
-    paddingRight: 10,
+    gap: 6,
+    paddingRight: 12,
+    marginRight: 4,
     borderRightWidth: 1,
-    borderRightColor: '#334155',
+    borderRightColor: colors.hairline,
   },
-  brandLogoIcon: {
+  brandLogo: {
     width: 22,
     height: 22,
   },
-  sheetBrandText: {
-    color: '#FECA38', // Emas Estimator
-    fontSize: 11,
-    fontWeight: '900',
-    letterSpacing: 0.5,
+  brandText: {
+    fontFamily: fonts.bold,
+    fontSize: 12,
+    letterSpacing: 0.4,
+    color: colors.primary,
   },
-  sheetBrandSub: {
-    color: '#94A3B8',
-    fontSize: 7.5,
-    fontWeight: '600',
-    letterSpacing: -0.2,
-  },
-  sheetTabScroll: {
-    flexDirection: 'row',
+  tabScroll: {
     alignItems: 'center',
-    paddingLeft: 6,
-    gap: 4,
+    gap: 2,
+    paddingLeft: 4,
   },
-  sheetTabItem: {
+  tabItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: '#2A2A2A',
-    paddingHorizontal: 11,
+    paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 5,
-    position: 'relative',
+    borderRadius: 16,
   },
-  sheetTabItemActive: {
-    backgroundColor: '#FFFFFF',
+  tabItemActive: {
+    backgroundColor: colors.primaryLight,
   },
-  sheetTabLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#CBD5E1',
+  tabLabel: {
+    fontFamily: fonts.medium,
+    fontSize: 12,
+    color: colors.textSecondary,
   },
-  sheetTabLabelActive: {
-    color: colors.primaryDark,
-    fontWeight: '800',
+  tabLabelActive: {
+    fontFamily: fonts.semibold,
+    color: colors.primary,
   },
-  activeIndicator: {
-    position: 'absolute',
-    bottom: -6,
-    left: 8,
-    right: 8,
-    height: 2.5,
-    backgroundColor: colors.primary,
-    borderRadius: 2,
-  },
-  // Category Submenu Button Styles
-  sheetTabCategory: {
-    backgroundColor: '#262626',
-    borderWidth: 1,
-    borderColor: '#3D3D3D',
-  },
-  sheetTabCategoryActive: {
-    backgroundColor: '#FFFFFF',
-    borderColor: colors.primary,
-  },
-  sheetTabCategoryLabelActive: {
-    color: colors.primaryDark,
-    fontWeight: '800',
-  },
-  // Panduan Teknis & Rekap
-  sheetTabMateri: {
-    backgroundColor: '#2D2010',
-    borderWidth: 1,
-    borderColor: '#5B3908',
-  },
-  sheetTabMateriActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.secondary,
-  },
-  sheetTabLabelMateri: {
-    color: '#FECA38',
-    fontWeight: '700',
-  },
-  sheetTabLabelMateriActive: {
-    color: '#FFFFFF',
-    fontWeight: '900',
-  },
-  sheetTabRekap: {
-    backgroundColor: '#352309',
-    borderWidth: 1,
-    borderColor: colors.primary,
-  },
-  sheetTabRekapActive: {
-    backgroundColor: colors.primary,
-  },
-  sheetTabLabelRekap: {
-    color: '#FECA38',
-    fontWeight: '700',
-  },
-  sheetTabLabelRekapActive: {
-    color: '#FFFFFF',
-    fontWeight: '900',
+  tabDivider: {
+    width: 1,
+    height: 18,
+    backgroundColor: colors.hairline,
+    marginHorizontal: 6,
   },
 
-  // Modal Submenu Popover
+  // Submenu kalkulator
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(30,30,30,0.35)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
-  submenuContainer: {
-    width: 360,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
-    padding: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 8,
-    borderWidth: 1.5,
-    borderColor: colors.primary,
+  submenu: {
+    width: 320,
+    backgroundColor: colors.surface,
+    borderRadius: 14,
+    padding: 12,
+    gap: 4,
   },
-  submenuHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
-    marginBottom: 8,
+  submenuTitle: {
+    fontFamily: fonts.semibold,
+    fontSize: 11,
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    color: colors.textMuted,
+    paddingHorizontal: 8,
+    paddingBottom: 4,
   },
-  submenuHeaderTitle: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: '#1E1E1E',
-  },
-  submenuCloseBtn: {
-    padding: 4,
-  },
-  submenuItemsList: {
-    gap: 6,
-  },
-  submenuItemCard: {
+  submenuItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    padding: 10,
-    borderRadius: 7,
-    backgroundColor: '#F8FAFC',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    borderRadius: 10,
   },
-  submenuItemCardActive: {
-    backgroundColor: '#FFF7ED',
-    borderColor: colors.primary,
-  },
-  submenuCodeBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 6,
-    backgroundColor: '#E2E8F0',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  submenuCodeBadgeActive: {
-    backgroundColor: colors.primary,
-  },
-  submenuCodeText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#475569',
-  },
-  submenuCodeTextActive: {
-    color: '#FFFFFF',
+  submenuItemActive: {
+    backgroundColor: colors.primaryLight,
   },
   submenuItemTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#1E1E1E',
+    fontFamily: fonts.medium,
+    fontSize: 13,
+    color: colors.text,
   },
   submenuItemTitleActive: {
-    color: colors.primaryDark,
-    fontWeight: '800',
+    fontFamily: fonts.semibold,
+    color: colors.primary,
   },
   submenuItemDesc: {
-    fontSize: 10,
-    color: '#64748B',
-    marginTop: 2,
+    fontFamily: fonts.regular,
+    fontSize: 11,
+    color: colors.textSecondary,
   },
 });

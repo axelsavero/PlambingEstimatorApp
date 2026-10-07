@@ -1,23 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Alert } from 'react-native';
 import LandscapeCalculatorLayout from '../components/LandscapeCalculatorLayout';
 import {
   DEFAULT_SLOOF,
   hitungSloof,
 } from '../utils/constructionCalculations';
-import { getProjectInputs, saveSheetInputs } from '../utils/rabStorage';
+import { saveSheetInputs } from '../utils/rabStorage';
+import useSheetInputs from '../utils/useSheetInputs';
 
 export default function SloofScreen() {
-  const [inputs, setInputs] = useState(DEFAULT_SLOOF);
-
-  useEffect(() => {
-    (async () => {
-      const stored = await getProjectInputs();
-      if (stored?.sloof) {
-        setInputs({ ...DEFAULT_SLOOF, ...stored.sloof });
-      }
-    })();
-  }, []);
+  const [inputs, setInputs] = useSheetInputs('sloof', DEFAULT_SLOOF);
 
   const handleChange = (field, val) => {
     setInputs((prev) => ({ ...prev, [field]: val }));
@@ -25,11 +17,6 @@ export default function SloofScreen() {
 
   const handleResetField = (field) => {
     handleChange(field, DEFAULT_SLOOF[field]);
-  };
-
-  const handleSave = async () => {
-    await saveSheetInputs('sloof', inputs);
-    Alert.alert('Berhasil', 'Estimasi Struktur Sloof Beton telah disimpan ke Rekap RAB.');
   };
 
   const handleReset = () => {
@@ -109,7 +96,7 @@ export default function SloofScreen() {
 
   return (
     <LandscapeCalculatorLayout
-      title="Pekerjaan Struktur Sloof Beton"
+      title="Struktur Sloof Beton"
       subtitle="Sheet 4: Pembesian Sengkang Tumpuan/Lapangan, Bekisting & Beton K-275"
       iconName="remove-outline"
       diagramSource={require('../../assets/diagrams/sloof.png')}
@@ -119,7 +106,6 @@ export default function SloofScreen() {
       defaultInputs={DEFAULT_SLOOF}
       currentInputs={inputs}
       onResetField={handleResetField}
-      onSave={handleSave}
       onReset={handleReset}
     />
   );

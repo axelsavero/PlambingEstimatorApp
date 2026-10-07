@@ -1,23 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Alert } from 'react-native';
 import LandscapeCalculatorLayout from '../components/LandscapeCalculatorLayout';
 import {
   DEFAULT_PONDASI,
   hitungPondasi,
 } from '../utils/constructionCalculations';
-import { getProjectInputs, saveSheetInputs } from '../utils/rabStorage';
+import { saveSheetInputs } from '../utils/rabStorage';
+import useSheetInputs from '../utils/useSheetInputs';
 
 export default function PondasiScreen() {
-  const [inputs, setInputs] = useState(DEFAULT_PONDASI);
-
-  useEffect(() => {
-    (async () => {
-      const stored = await getProjectInputs();
-      if (stored?.pondasi) {
-        setInputs({ ...DEFAULT_PONDASI, ...stored.pondasi });
-      }
-    })();
-  }, []);
+  const [inputs, setInputs] = useSheetInputs('pondasi', DEFAULT_PONDASI);
 
   const handleChange = (field, val) => {
     setInputs((prev) => ({ ...prev, [field]: val }));
@@ -35,11 +27,6 @@ export default function PondasiScreen() {
         return { ...prev, campuran1_3: 0, campuran1_4: 1 };
       }
     });
-  };
-
-  const handleSave = async () => {
-    await saveSheetInputs('pondasi', inputs);
-    Alert.alert('Berhasil', 'Estimasi Pondasi Batu Belah telah disimpan ke Rekap RAB.');
   };
 
   const handleReset = () => {
@@ -134,7 +121,7 @@ export default function PondasiScreen() {
 
   return (
     <LandscapeCalculatorLayout
-      title="Pekerjaan Pemasangan Pondasi Batu Belah"
+      title="Pondasi Batu Belah"
       subtitle="Sheet 2: Galian, Aanstamping, Mortar Pasangan & Urukan"
       iconName="layers"
       diagramSource={require('../../assets/diagrams/pondasi.png')}
@@ -144,7 +131,6 @@ export default function PondasiScreen() {
       defaultInputs={DEFAULT_PONDASI}
       currentInputs={inputs}
       onResetField={handleResetField}
-      onSave={handleSave}
       onReset={handleReset}
     />
   );

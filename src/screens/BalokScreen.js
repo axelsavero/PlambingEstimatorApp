@@ -1,23 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Alert } from 'react-native';
 import LandscapeCalculatorLayout from '../components/LandscapeCalculatorLayout';
 import {
   DEFAULT_BALOK,
   hitungBalok,
 } from '../utils/constructionCalculations';
-import { getProjectInputs, saveSheetInputs } from '../utils/rabStorage';
+import { saveSheetInputs } from '../utils/rabStorage';
+import useSheetInputs from '../utils/useSheetInputs';
 
 export default function BalokScreen() {
-  const [inputs, setInputs] = useState(DEFAULT_BALOK);
-
-  useEffect(() => {
-    (async () => {
-      const stored = await getProjectInputs();
-      if (stored?.balok) {
-        setInputs({ ...DEFAULT_BALOK, ...stored.balok });
-      }
-    })();
-  }, []);
+  const [inputs, setInputs] = useSheetInputs('balok', DEFAULT_BALOK);
 
   const handleChange = (field, val) => {
     setInputs((prev) => ({ ...prev, [field]: val }));
@@ -25,11 +17,6 @@ export default function BalokScreen() {
 
   const handleResetField = (field) => {
     handleChange(field, DEFAULT_BALOK[field]);
-  };
-
-  const handleSave = async () => {
-    await saveSheetInputs('balok', inputs);
-    Alert.alert('Berhasil', 'Estimasi Struktur Balok Beton telah disimpan ke Rekap RAB.');
   };
 
   const handleReset = () => {
@@ -111,7 +98,7 @@ export default function BalokScreen() {
 
   return (
     <LandscapeCalculatorLayout
-      title="Pekerjaan Struktur Balok Beton"
+      title="Struktur Balok Beton"
       subtitle="Sheet 6: Besi Tulangan 1 & 2, Sengkang Tumpuan/Lapangan, Bekisting & Cor"
       iconName="cube-outline"
       diagramSource={require('../../assets/diagrams/balok.png')}
@@ -121,7 +108,6 @@ export default function BalokScreen() {
       defaultInputs={DEFAULT_BALOK}
       currentInputs={inputs}
       onResetField={handleResetField}
-      onSave={handleSave}
       onReset={handleReset}
     />
   );

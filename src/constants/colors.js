@@ -41,6 +41,8 @@ export const colors = {
   border: '#FDE68A',            // Soft Warm Gold Border
   borderLight: '#F3E8D2',       // Subtle Card Border
   borderDark: '#CBD5E1',
+  hairline: '#F0E8DC',          // Garis tipis netral-hangat untuk kartu minimalis
+  surfaceMuted: '#FAF6F0',      // Permukaan sekunder (input, item tidak aktif)
 
   // Quadrant Layout Specific Tones
   quadrantHeaderBg: '#FFF6E5',  // Subtle Warm Header

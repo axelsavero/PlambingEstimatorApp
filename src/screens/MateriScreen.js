@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,364 +6,245 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
-import { MATERI_CATEGORIES, MATERI_LIST } from '../data/materiData';
+import { fonts } from '../constants/typography';
+import { MATERI, getTopikList } from '../data/materiData';
 import MathEquation from '../components/MathEquation';
 import SkylineWatermarkBackground from '../components/SkylineWatermarkBackground';
 
-export default function MateriScreen({ navigation }) {
-  const [selectedCategory, setSelectedCategory] = useState('Semua');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedItemId, setSelectedItemId] = useState(MATERI_LIST[0]?.id || '');
-  const [isPlayingVideo, setIsPlayingVideo] = useState(false);
+export default function MateriScreen({ navigation, route }) {
+  const [materiId, setMateriId] = useState(route?.params?.materiId || MATERI[0].id);
+  const [topikId, setTopikId] = useState(null);
+  const [query, setQuery] = useState('');
+  const detailRef = useRef(null);
 
-  // Filter list by category and search
-  const filteredList = MATERI_LIST.filter((item) => {
-    const matchesCategory =
-      selectedCategory === 'Semua' || item.kategori === selectedCategory;
-    const query = searchQuery.toLowerCase().trim();
-    const matchesSearch =
-      !query ||
-      item.judul.toLowerCase().includes(query) ||
-      item.ringkasan.toLowerCase().includes(query) ||
-      item.steps?.some(
-        (s) =>
-          s.title.toLowerCase().includes(query) ||
-          s.desc.toLowerCase().includes(query) ||
-          s.rumus.toLowerCase().includes(query)
-      );
-    return matchesCategory && matchesSearch;
-  });
+  // Dibuka dari Beranda dengan materi tertentu
+  useEffect(() => {
+    if (route?.params?.materiId) {
+      setMateriId(route.params.materiId);
+    }
+  }, [route?.params?.materiId]);
 
-  // Currently selected item for detail panel
-  const activeItem =
-    MATERI_LIST.find((item) => item.id === selectedItemId) ||
-    filteredList[0] ||
-    MATERI_LIST[0];
+  const materi = MATERI.find((m) => m.id === materiId) || MATERI[0];
+  const topikList = useMemo(() => getTopikList(materi), [materi]);
 
-  const handleOpenCalculator = (route) => {
-    if (!route || !navigation) return;
-    navigation.navigate(route);
-  };
+  // Reset pilihan & pencarian saat ganti materi
+  useEffect(() => {
+    setTopikId(topikList[0]?.id || null);
+    setQuery('');
+  }, [materiId]);
+
+  useEffect(() => {
+    detailRef.current?.scrollTo({ y: 0, animated: false });
+  }, [topikId]);
+
+  const topikIndex = Math.max(0, topikList.findIndex((t) => t.id === topikId));
+  const topik = topikList[topikIndex];
+  const prevTopik = topikList[topikIndex - 1];
+  const nextTopik = topikList[topikIndex + 1];
+
+  const q = query.trim().toLowerCase();
+  const matches = (t) =>
+    !q ||
+    t.judul.toLowerCase().includes(q) ||
+    (t.grup || '').toLowerCase().includes(q) ||
+    t.langkah.some((l) => l.toLowerCase().includes(q));
+
+  const showBagianHeader = materi.bagian.length > 1;
 
   return (
     <SkylineWatermarkBackground style={styles.container}>
-      {/* Top Header Bar: Panduan Teknis */}
-      <View style={styles.topBar}>
-        <View style={styles.topBarLeft}>
-          <Image
-            source={require('../../assets/brand/logo_icon.png')}
-            style={styles.logoBadge}
-            resizeMode="contain"
-          />
-          <View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Text style={styles.topBarTitle}>Panduan Teknis & Rumus</Text>
-              <View style={styles.topBarBadge}>
-                <Text style={styles.topBarBadgeText}>ESTIMATOR</Text>
-              </View>
-            </View>
-            <Text style={styles.topBarSubtitle}>
-              Buku Referensi Teori Perhitungan Volume, Rumus KaTeX, AHSP PUPR & Kurva S
-            </Text>
-          </View>
-        </View>
-
+      {/* Header: judul + tab 4 materi */}
+      <View style={styles.header}>
         <TouchableOpacity
-          style={styles.btnHome}
           onPress={() => navigation.navigate('HomeTab')}
-          activeOpacity={0.8}
+          style={styles.backBtn}
+          hitSlop={8}
         >
-          <Ionicons name="home-outline" size={13} color={colors.primaryDark} />
-          <Text style={styles.btnHomeText}>Kembali ke Beranda</Text>
+          <Ionicons name="arrow-back" size={18} color={colors.text} />
         </TouchableOpacity>
+        <Text style={styles.headerTitle}>Panduan Teknis</Text>
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.tabs}
+        >
+          {MATERI.map((m) => {
+            const active = m.id === materiId;
+            return (
+              <TouchableOpacity
+                key={m.id}
+                onPress={() => setMateriId(m.id)}
+                style={[styles.tab, active && styles.tabActive]}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.tabText, active && styles.tabTextActive]}>
+                  {m.singkat}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
       </View>
 
-      {/* Main Split Body (Landscape Left Sidebar & Right Detail Pane) */}
-      <View style={styles.splitRow}>
-        {/* LEFT COLUMN: Search, Categories & Master Topic List */}
-        <View style={styles.leftColumn}>
-          {/* Search Box */}
-          <View style={styles.searchBoxWrap}>
-            <View style={styles.searchBox}>
-              <Ionicons name="search" size={14} color="#64748B" />
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Cari materi, rumus, langkah..."
-                placeholderTextColor="#94A3B8"
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-              />
-              {searchQuery.length > 0 ? (
-                <TouchableOpacity onPress={() => setSearchQuery('')}>
-                  <Ionicons name="close-circle" size={15} color="#94A3B8" />
-                </TouchableOpacity>
-              ) : null}
-            </View>
+      <View style={styles.body}>
+        {/* Sidebar: daftar topik */}
+        <View style={styles.sidebar}>
+          <View style={styles.search}>
+            <Ionicons name="search" size={14} color={colors.textMuted} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Cari topik"
+              placeholderTextColor={colors.textMuted}
+              value={query}
+              onChangeText={setQuery}
+            />
+            {query ? (
+              <TouchableOpacity onPress={() => setQuery('')} hitSlop={8}>
+                <Ionicons name="close-circle" size={14} color={colors.textMuted} />
+              </TouchableOpacity>
+            ) : null}
           </View>
 
-          {/* Category Chips Scroll */}
-          <View style={styles.categoryScrollWrap}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.categoryScroll}
-            >
-              {MATERI_CATEGORIES.map((cat) => {
-                const isActive = selectedCategory === cat;
-                return (
-                  <TouchableOpacity
-                    key={cat}
-                    style={[styles.categoryChip, isActive && styles.categoryChipActive]}
-                    onPress={() => setSelectedCategory(cat)}
-                    activeOpacity={0.7}
-                  >
-                    <Text
-                      style={[
-                        styles.categoryChipText,
-                        isActive && styles.categoryChipTextActive,
-                      ]}
-                    >
-                      {cat}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-          </View>
-
-          {/* Topics List */}
-          <ScrollView
-            style={styles.topicListScroll}
-            contentContainerStyle={styles.topicListContent}
-            showsVerticalScrollIndicator={true}
-          >
-            {filteredList.length === 0 ? (
-              <View style={styles.emptyWrap}>
-                <Ionicons name="document-text-outline" size={32} color="#94A3B8" />
-                <Text style={styles.emptyText}>Tidak ada materi yang cocok</Text>
-              </View>
-            ) : (
-              filteredList.map((item) => {
-                const isSelected = activeItem?.id === item.id;
-                return (
-                  <TouchableOpacity
-                    key={item.id}
-                    style={[
-                      styles.topicCard,
-                      isSelected && styles.topicCardActive,
-                    ]}
-                    onPress={() => setSelectedItemId(item.id)}
-                    activeOpacity={0.75}
-                  >
-                    <View style={styles.topicCardHeader}>
-                      <View style={styles.catBadge}>
-                        <Text style={styles.catBadgeText}>{item.kategori}</Text>
-                      </View>
-                      <View style={styles.stepBadge}>
-                        <Ionicons name="list" size={10} color="#B45309" />
-                        <Text style={styles.stepBadgeText}>
-                          {item.steps?.length || 0} Langkah
-                        </Text>
-                      </View>
-                    </View>
-
-                    <Text
-                      style={[
-                        styles.topicCardTitle,
-                        isSelected && styles.topicCardTitleActive,
-                      ]}
-                      numberOfLines={2}
-                    >
-                      {item.judul}
-                    </Text>
-
-                    <Text style={styles.topicCardSummary} numberOfLines={2}>
-                      {item.ringkasan}
-                    </Text>
-
-                    <View style={styles.topicCardFooter}>
-                      <View style={styles.videoBadge}>
-                        <Ionicons name="play-circle" size={12} color="#ED7E08" />
-                        <Text style={styles.videoBadgeText}>Video Panduan</Text>
-                      </View>
-                      <View style={styles.readMoreWrap}>
-                        <Text
-                          style={[
-                            styles.readMoreText,
-                            isSelected && styles.readMoreTextActive,
-                          ]}
+          <ScrollView contentContainerStyle={styles.sidebarList}>
+            {materi.bagian.map((bagian) => {
+              const items = bagian.topik.filter(matches);
+              if (!items.length) return null;
+              return (
+                <View key={bagian.id} style={styles.bagian}>
+                  {showBagianHeader ? (
+                    <Text style={styles.bagianTitle}>{bagian.judul}</Text>
+                  ) : null}
+                  {items.map((t, i) => {
+                    const active = t.id === topik?.id;
+                    const showGrup = t.grup && t.grup !== items[i - 1]?.grup;
+                    return (
+                      <View key={t.id}>
+                        {showGrup ? <Text style={styles.grupTitle}>{t.grup}</Text> : null}
+                        <TouchableOpacity
+                          onPress={() => setTopikId(t.id)}
+                          style={[styles.topikItem, active && styles.topikItemActive]}
+                          activeOpacity={0.7}
                         >
-                          Pelajari
-                        </Text>
-                        <Ionicons
-                          name="chevron-forward"
-                          size={13}
-                          color={isSelected ? colors.primary : '#64748B'}
-                        />
+                          <Text
+                            style={[styles.topikText, active && styles.topikTextActive]}
+                            numberOfLines={1}
+                          >
+                            {t.judul}
+                          </Text>
+                        </TouchableOpacity>
                       </View>
-                    </View>
-
-                    {isSelected ? <View style={styles.activeTopicBar} /> : null}
-                  </TouchableOpacity>
-                );
-              })
-            )}
+                    );
+                  })}
+                </View>
+              );
+            })}
+            {topikList.every((t) => !matches(t)) ? (
+              <Text style={styles.empty}>Tidak ada topik yang cocok.</Text>
+            ) : null}
           </ScrollView>
         </View>
 
-        {/* RIGHT COLUMN: Detail Content View */}
-        <View style={styles.rightColumn}>
-          {activeItem ? (
-            <ScrollView
-              style={styles.detailScroll}
-              contentContainerStyle={styles.detailContent}
-              showsVerticalScrollIndicator={true}
-            >
-              {/* Header Topic Banner */}
-              <View style={styles.detailBanner}>
-                <View style={styles.bannerTopRow}>
-                  <View style={styles.bannerCatBadge}>
-                    <Text style={styles.bannerCatBadgeText}>{activeItem.kategori}</Text>
+        {/* Detail topik */}
+        {topik ? (
+          <ScrollView
+            ref={detailRef}
+            style={styles.detail}
+            contentContainerStyle={styles.detailContent}
+          >
+            <Text style={styles.breadcrumb} numberOfLines={1}>
+              {[materi.judul, showBagianHeader ? topik.bagianJudul : null, topik.grup]
+                .filter(Boolean)
+                .join('  ›  ')}
+            </Text>
+
+            <View style={styles.titleRow}>
+              <Text style={styles.title}>{topik.judul}</Text>
+              {topik.kalkulator ? (
+                <TouchableOpacity
+                  style={styles.calcBtn}
+                  onPress={() => navigation.navigate(topik.kalkulator.route)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="calculator-outline" size={14} color={colors.primary} />
+                  <Text style={styles.calcBtnText}>Buka kalkulator</Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
+
+            {/* Langkah */}
+            <View style={styles.steps}>
+              {topik.langkah.map((langkah, i) => (
+                <View key={i} style={styles.step}>
+                  <View style={styles.stepNum}>
+                    <Text style={styles.stepNumText}>{i + 1}</Text>
                   </View>
-                  {activeItem.terkaitKalkulator && (
-                    <TouchableOpacity
-                      style={styles.btnLaunchCalc}
-                      onPress={() => handleOpenCalculator(activeItem.terkaitKalkulator)}
-                      activeOpacity={0.8}
-                    >
-                      <Ionicons name="calculator" size={13} color="#FFFFFF" />
-                      <Text style={styles.btnLaunchCalcText}>Buka Kalkulator Sheet</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-
-                <Text style={styles.detailTitle}>{activeItem.judul}</Text>
-                <Text style={styles.detailSummary}>{activeItem.ringkasan}</Text>
-              </View>
-
-              {/* VIDEO PLAYER CARD (Sesuai Mockup Klien 5b03a4c5...) */}
-              <View style={styles.videoPlayerCard}>
-                <View style={styles.videoCardTop}>
-                  <View style={styles.videoCardTopLeft}>
-                    <View style={styles.videoIconCircle}>
-                      <Ionicons name="videocam" size={14} color="#ED7E08" />
-                    </View>
-                    <View>
-                      <Text style={styles.videoCardTitle}>
-                        Video Tutorial: {activeItem.judul}
-                      </Text>
-                      <Text style={styles.videoCardDuration}>
-                        Durasi Panduan Teknis: 05:42 Menit • HD 1080p
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.videoReadyBadge}>
-                    <Text style={styles.videoReadyBadgeText}>Materi Siap</Text>
-                  </View>
-                </View>
-
-                {/* Simulated Screen / Canvas */}
-                <View style={styles.videoScreen}>
-                  <TouchableOpacity
-                    style={styles.bigPlayButton}
-                    activeOpacity={0.8}
-                    onPress={() => setIsPlayingVideo(!isPlayingVideo)}
-                  >
-                    <Ionicons
-                      name={isPlayingVideo ? 'pause' : 'play'}
-                      size={28}
-                      color="#FFFFFF"
-                      style={{ marginLeft: isPlayingVideo ? 0 : 3 }}
-                    />
-                  </TouchableOpacity>
-
-                  <View style={styles.videoScreenOverlayBottom}>
-                    <View style={styles.videoProgressBarWrap}>
-                      <View
-                        style={[
-                          styles.videoProgressBarFill,
-                          { width: isPlayingVideo ? '45%' : '20%' },
-                        ]}
-                      />
-                    </View>
-                    <View style={styles.videoControlsRow}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                        <TouchableOpacity onPress={() => setIsPlayingVideo(!isPlayingVideo)}>
-                          <Ionicons
-                            name={isPlayingVideo ? 'pause' : 'play'}
-                            size={16}
-                            color="#FFFFFF"
-                          />
-                        </TouchableOpacity>
-                        <Text style={styles.videoTimerText}>
-                          {isPlayingVideo ? '02:34 / 05:42' : '01:08 / 05:42'}
-                        </Text>
-                      </View>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                        <Ionicons name="volume-medium" size={15} color="#CBD5E1" />
-                        <Ionicons name="scan-outline" size={14} color="#CBD5E1" />
-                      </View>
-                    </View>
-                  </View>
-                </View>
-              </View>
-
-              {/* Rincian Langkah & Formula KaTeX */}
-              <View style={styles.stepsSectionHeader}>
-                <Ionicons name="calculator-outline" size={16} color={colors.primary} />
-                <Text style={styles.stepsSectionTitle}>
-                  Langkah Perhitungan & Notasi Matematis (KaTeX)
-                </Text>
-              </View>
-
-              {activeItem.steps?.map((stepItem, sIdx) => (
-                <View key={sIdx} style={styles.stepCard}>
-                  <View style={styles.stepCardHeader}>
-                    <View style={styles.stepNumberCircle}>
-                      <Text style={styles.stepNumberText}>{stepItem.step}</Text>
-                    </View>
-                    <Text style={styles.stepTitleText}>{stepItem.title}</Text>
-                  </View>
-
-                  <Text style={styles.stepDescText}>{stepItem.desc}</Text>
-
-                  {/* Render Equation Component: Persamaan vs Teks Rumus */}
-                  <MathEquation
-                    title={`Tahap ${stepItem.step}: ${stepItem.title}`}
-                    persamaan={stepItem.persamaan}
-                    latex={stepItem.latex}
-                    readable={stepItem.rumus}
-                  />
+                  <Text style={styles.stepText}>{langkah}</Text>
                 </View>
               ))}
-
-              {/* Tips & Catatan Pengawas */}
-              {activeItem.tips ? (
-                <View style={styles.tipCard}>
-                  <View style={styles.tipHeader}>
-                    <Ionicons name="alert-circle" size={16} color="#B45309" />
-                    <Text style={styles.tipTitle}>
-                      Catatan Praktis & Standar Lapangan
-                    </Text>
-                  </View>
-                  <Text style={styles.tipText}>{activeItem.tips}</Text>
-                </View>
-              ) : null}
-            </ScrollView>
-          ) : (
-            <View style={styles.emptyDetailWrap}>
-              <Ionicons name="book-outline" size={44} color="#94A3B8" />
-              <Text style={styles.emptyDetailText}>
-                Pilih salah satu topik di sebelah kiri untuk melihat materi dan rumus
-              </Text>
             </View>
-          )}
-        </View>
+
+            {/* Rumus */}
+            {topik.rumus?.length ? (
+              <>
+                <Text style={styles.sectionLabel}>Rumus</Text>
+                <View style={styles.rumusGrid}>
+                  {topik.rumus.map((r, i) => (
+                    <View key={`${topik.id}-${i}`} style={styles.rumusCell}>
+                      <MathEquation label={r.label} latex={r.latex} teks={r.teks} />
+                    </View>
+                  ))}
+                </View>
+              </>
+            ) : null}
+
+            {topik.catatan ? (
+              <View style={styles.note}>
+                <Ionicons name="information-circle-outline" size={15} color={colors.primaryDark} />
+                <Text style={styles.noteText}>{topik.catatan}</Text>
+              </View>
+            ) : null}
+
+            <View style={styles.videoRow}>
+              <Ionicons name="play-circle-outline" size={15} color={colors.textMuted} />
+              <Text style={styles.videoText}>Video pembahasan segera hadir</Text>
+            </View>
+
+            {/* Sebelumnya / berikutnya */}
+            <View style={styles.pager}>
+              {prevTopik ? (
+                <TouchableOpacity
+                  style={styles.pagerBtn}
+                  onPress={() => setTopikId(prevTopik.id)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="chevron-back" size={16} color={colors.textSecondary} />
+                  <View style={styles.pagerTextWrap}>
+                    <Text style={styles.pagerHint}>Sebelumnya</Text>
+                    <Text style={styles.pagerTitle} numberOfLines={1}>{prevTopik.judul}</Text>
+                  </View>
+                </TouchableOpacity>
+              ) : <View style={styles.pagerSpacer} />}
+
+              {nextTopik ? (
+                <TouchableOpacity
+                  style={[styles.pagerBtn, styles.pagerBtnNext]}
+                  onPress={() => setTopikId(nextTopik.id)}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.pagerTextWrap, { alignItems: 'flex-end' }]}>
+                    <Text style={styles.pagerHint}>Berikutnya</Text>
+                    <Text style={styles.pagerTitle} numberOfLines={1}>{nextTopik.judul}</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+                </TouchableOpacity>
+              ) : <View style={styles.pagerSpacer} />}
+            </View>
+          </ScrollView>
+        ) : null}
       </View>
     </SkylineWatermarkBackground>
   );
@@ -373,488 +254,290 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  topBar: {
+
+  // Header
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderBottomWidth: 1.5,
-    borderBottomColor: '#FED7AA',
-  },
-  topBarLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  logoBadge: {
-    width: 28,
-    height: 28,
-  },
-  topBarTitle: {
-    fontSize: 13,
-    fontWeight: '900',
-    color: '#1E1E1E',
-  },
-  topBarBadge: {
-    backgroundColor: '#FEF3C7',
-    paddingHorizontal: 5,
-    paddingVertical: 1,
-    borderRadius: 3,
-    borderWidth: 0.5,
-    borderColor: '#F59E0B',
-  },
-  topBarBadgeText: {
-    fontSize: 8,
-    fontWeight: '800',
-    color: '#B45309',
-  },
-  topBarSubtitle: {
-    fontSize: 9.5,
-    color: '#64748B',
-  },
-  btnHome: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#FFF7ED',
-    paddingHorizontal: 9,
-    paddingVertical: 5,
-    borderRadius: 5,
-    borderWidth: 1,
-    borderColor: '#FED7AA',
-  },
-  btnHomeText: {
-    fontSize: 10.5,
-    fontWeight: '700',
-    color: colors.primaryDark,
-  },
-  splitRow: {
-    flex: 1,
-    flexDirection: 'row',
-  },
-  leftColumn: {
-    flex: 1,
-    borderRightWidth: 1,
-    borderRightColor: '#FED7AA',
-    backgroundColor: '#FFFFFF',
-  },
-  rightColumn: {
-    flex: 1.7,
-    backgroundColor: '#FFFDF9',
-  },
-  searchBoxWrap: {
-    padding: 8,
-    backgroundColor: '#FFFFFF',
+    height: 52,
+    paddingHorizontal: 16,
+    gap: 10,
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+    borderBottomColor: colors.hairline,
   },
-  searchBox: {
+  backBtn: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontFamily: fonts.semibold,
+    fontSize: 16,
+    color: colors.text,
+    marginRight: 8,
+  },
+  tabs: {
+    gap: 4,
+    alignItems: 'center',
+  },
+  tab: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  tabActive: {
+    backgroundColor: colors.primaryLight,
+  },
+  tabText: {
+    fontFamily: fonts.medium,
+    fontSize: 13,
+    color: colors.textSecondary,
+  },
+  tabTextActive: {
+    fontFamily: fonts.semibold,
+    color: colors.primary,
+  },
+
+  body: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+
+  // Sidebar
+  sidebar: {
+    width: 240,
+    backgroundColor: 'rgba(255,255,255,0.8)',
+    borderRightWidth: 1,
+    borderRightColor: colors.hairline,
+  },
+  search: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    height: 32,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    gap: 6,
+    margin: 12,
+    marginBottom: 4,
+    paddingHorizontal: 10,
+    height: 34,
+    borderRadius: 8,
+    backgroundColor: colors.surfaceMuted,
   },
   searchInput: {
     flex: 1,
-    marginLeft: 6,
-    fontSize: 11,
-    color: '#1E1E1E',
+    fontFamily: fonts.regular,
+    fontSize: 12,
+    color: colors.text,
+    paddingVertical: 0,
   },
-  categoryScrollWrap: {
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
-  },
-  categoryScroll: {
+  sidebarList: {
     paddingHorizontal: 8,
-    paddingVertical: 6,
-    gap: 5,
+    paddingBottom: 16,
   },
-  categoryChip: {
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-    borderRadius: 12,
-    backgroundColor: '#F1F5F9',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+  bagian: {
+    marginTop: 8,
   },
-  categoryChipActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  categoryChipText: {
-    fontSize: 9.5,
-    color: '#475569',
-    fontWeight: '600',
-  },
-  categoryChipTextActive: {
-    color: '#FFFFFF',
-    fontWeight: '800',
-  },
-  topicListScroll: {
-    flex: 1,
-  },
-  topicListContent: {
-    padding: 8,
-    gap: 6,
-  },
-  emptyWrap: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  emptyText: {
+  bagianTitle: {
+    fontFamily: fonts.semibold,
     fontSize: 11,
-    color: '#94A3B8',
-    marginTop: 6,
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    color: colors.textMuted,
+    paddingHorizontal: 8,
+    paddingTop: 6,
+    paddingBottom: 2,
   },
-  topicCard: {
-    backgroundColor: '#FFFDF9',
-    borderRadius: 6,
-    padding: 8,
-    borderWidth: 1,
-    borderColor: '#FDE68A',
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  topicCardActive: {
-    backgroundColor: '#FFF7ED',
-    borderColor: colors.primary,
-  },
-  topicCardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  catBadge: {
-    backgroundColor: '#FEF3C7',
-    paddingHorizontal: 5,
-    paddingVertical: 1,
-    borderRadius: 3,
-  },
-  catBadgeText: {
-    fontSize: 8,
-    fontWeight: '800',
-    color: '#B45309',
-  },
-  stepBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    backgroundColor: '#FFFBEB',
-    paddingHorizontal: 5,
-    paddingVertical: 1,
-    borderRadius: 3,
-  },
-  stepBadgeText: {
-    fontSize: 8,
-    fontWeight: '700',
-    color: '#B45309',
-  },
-  topicCardTitle: {
+  grupTitle: {
+    fontFamily: fonts.medium,
     fontSize: 11,
-    fontWeight: '800',
-    color: '#1E1E1E',
-    marginBottom: 2,
-  },
-  topicCardTitleActive: {
     color: colors.primaryDark,
+    paddingHorizontal: 8,
+    paddingTop: 8,
+    paddingBottom: 2,
   },
-  topicCardSummary: {
-    fontSize: 9.5,
-    color: '#64748B',
-    lineHeight: 13,
+  topikItem: {
+    paddingHorizontal: 8,
+    paddingVertical: 7,
+    borderRadius: 8,
   },
-  topicCardFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 6,
-    paddingTop: 5,
-    borderTopWidth: 0.5,
-    borderTopColor: '#FDE68A',
+  topikItemActive: {
+    backgroundColor: colors.primaryLight,
   },
-  videoBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
+  topikText: {
+    fontFamily: fonts.regular,
+    fontSize: 13,
+    color: colors.text,
   },
-  videoBadgeText: {
-    fontSize: 8.5,
-    fontWeight: '700',
+  topikTextActive: {
+    fontFamily: fonts.semibold,
     color: colors.primary,
   },
-  readMoreWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-  },
-  readMoreText: {
-    fontSize: 9,
-    fontWeight: '700',
-    color: '#64748B',
-  },
-  readMoreTextActive: {
-    color: colors.primary,
-  },
-  activeTopicBar: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 3,
-    backgroundColor: colors.primary,
+  empty: {
+    fontFamily: fonts.regular,
+    fontSize: 12,
+    color: colors.textMuted,
+    padding: 8,
   },
 
-  // RIGHT DETAIL PANE
-  detailScroll: {
+  // Detail
+  detail: {
     flex: 1,
   },
   detailContent: {
-    padding: 10,
-    gap: 8,
-    paddingBottom: 25,
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 32,
   },
-  detailBanner: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#FED7AA',
+  breadcrumb: {
+    fontFamily: fonts.regular,
+    fontSize: 11,
+    color: colors.textMuted,
   },
-  bannerTopRow: {
+  titleRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 6,
+    gap: 12,
+    marginTop: 2,
+    marginBottom: 12,
   },
-  bannerCatBadge: {
-    backgroundColor: '#FEF3C7',
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 4,
+  title: {
+    flex: 1,
+    fontFamily: fonts.semibold,
+    fontSize: 20,
+    lineHeight: 28,
+    color: colors.text,
   },
-  bannerCatBadgeText: {
-    fontSize: 8.5,
-    fontWeight: '800',
-    color: '#B45309',
-  },
-  btnLaunchCalc: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: colors.primary,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  btnLaunchCalcText: {
-    fontSize: 9.5,
-    fontWeight: '800',
-    color: '#FFFFFF',
-  },
-  detailTitle: {
-    fontSize: 13.5,
-    fontWeight: '900',
-    color: '#1E1E1E',
-    marginBottom: 3,
-  },
-  detailSummary: {
-    fontSize: 10.5,
-    color: '#475569',
-    lineHeight: 15,
-  },
-
-  // VIDEO PLAYER CARD
-  videoPlayerCard: {
-    backgroundColor: '#1E1E1E',
-    borderRadius: 8,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.primary,
-  },
-  videoCardTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    backgroundColor: '#2A2A2A',
-    borderBottomWidth: 1,
-    borderBottomColor: '#3D3D3D',
-  },
-  videoCardTopLeft: {
+  calcBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.quadrantBorder,
   },
-  videoIconCircle: {
+  calcBtnText: {
+    fontFamily: fonts.medium,
+    fontSize: 12,
+    color: colors.primary,
+  },
+
+  steps: {
+    gap: 10,
+  },
+  step: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  stepNum: {
     width: 22,
     height: 22,
-    borderRadius: 5,
-    backgroundColor: '#FFF7ED',
+    borderRadius: 11,
+    backgroundColor: colors.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 1,
   },
-  videoCardTitle: {
-    fontSize: 10.5,
-    fontWeight: '800',
-    color: '#FFFFFF',
+  stepNumText: {
+    fontFamily: fonts.semibold,
+    fontSize: 11,
+    color: colors.primary,
   },
-  videoCardDuration: {
-    fontSize: 8.5,
-    color: '#94A3B8',
-  },
-  videoReadyBadge: {
-    backgroundColor: '#FEF3C7',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 3,
-  },
-  videoReadyBadgeText: {
-    fontSize: 8.5,
-    fontWeight: '800',
-    color: '#B45309',
-  },
-  videoScreen: {
-    height: 140,
-    backgroundColor: '#121212',
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-  },
-  bigPlayButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  videoScreenOverlayBottom: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  videoProgressBarWrap: {
-    height: 3,
-    backgroundColor: '#475569',
-    borderRadius: 2,
-    marginBottom: 4,
-    overflow: 'hidden',
-  },
-  videoProgressBarFill: {
-    height: '100%',
-    backgroundColor: colors.primary,
-  },
-  videoControlsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  videoTimerText: {
-    fontSize: 9,
-    color: '#FFFFFF',
-    fontWeight: '600',
+  stepText: {
+    flex: 1,
+    fontFamily: fonts.regular,
+    fontSize: 13,
+    lineHeight: 21,
+    color: colors.text,
   },
 
-  // Steps & KaTeX
-  stepsSectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 4,
-  },
-  stepsSectionTitle: {
-    fontSize: 11.5,
-    fontWeight: '900',
-    color: '#1E1E1E',
-  },
-  stepCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 7,
-    borderWidth: 1,
-    borderColor: '#FED7AA',
-    padding: 8,
-    gap: 4,
-  },
-  stepCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  stepNumberCircle: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  stepNumberText: {
-    fontSize: 10,
-    fontWeight: '900',
-    color: '#FFFFFF',
-  },
-  stepTitleText: {
+  sectionLabel: {
+    fontFamily: fonts.semibold,
     fontSize: 11,
-    fontWeight: '800',
-    color: '#1E1E1E',
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    color: colors.textMuted,
+    marginTop: 20,
+    marginBottom: 8,
   },
-  stepDescText: {
-    fontSize: 9.5,
-    color: '#475569',
-    lineHeight: 14,
+  rumusGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
   },
-  tipCard: {
-    backgroundColor: '#FFFBEB',
-    borderRadius: 7,
-    borderWidth: 1,
-    borderColor: '#FDE68A',
-    padding: 8,
-    gap: 3,
+  rumusCell: {
+    flexGrow: 1,
+    flexBasis: 260,
   },
-  tipHeader: {
+
+  note: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 12,
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: colors.primaryGhost,
+  },
+  noteText: {
+    flex: 1,
+    fontFamily: fonts.regular,
+    fontSize: 12,
+    lineHeight: 18,
+    color: colors.textSecondary,
+  },
+
+  videoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 6,
+    marginTop: 16,
   },
-  tipTitle: {
-    fontSize: 10.5,
-    fontWeight: '800',
-    color: '#B45309',
+  videoText: {
+    fontFamily: fonts.regular,
+    fontSize: 11,
+    color: colors.textMuted,
   },
-  tipText: {
-    fontSize: 9.5,
-    color: '#92400E',
-    lineHeight: 14,
+
+  pager: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 20,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: colors.hairline,
   },
-  emptyDetailWrap: {
+  pagerBtn: {
     flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 30,
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.hairline,
   },
-  emptyDetailText: {
+  pagerBtnNext: {
+    justifyContent: 'flex-end',
+  },
+  pagerSpacer: {
+    flex: 1,
+  },
+  pagerTextWrap: {
+    flex: 1,
+  },
+  pagerHint: {
+    fontFamily: fonts.regular,
+    fontSize: 10,
+    color: colors.textMuted,
+  },
+  pagerTitle: {
+    fontFamily: fonts.medium,
     fontSize: 12,
-    color: '#94A3B8',
-    textAlign: 'center',
-    marginTop: 8,
+    color: colors.text,
   },
 });

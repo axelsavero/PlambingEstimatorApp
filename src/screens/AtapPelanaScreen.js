@@ -1,23 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Alert } from 'react-native';
 import LandscapeCalculatorLayout from '../components/LandscapeCalculatorLayout';
 import {
   DEFAULT_ATAP_PELANA,
   hitungAtapPelana,
 } from '../utils/constructionCalculations';
-import { getProjectInputs, saveSheetInputs, saveRoofChoice } from '../utils/rabStorage';
+import { saveSheetInputs } from '../utils/rabStorage';
+import useSheetInputs from '../utils/useSheetInputs';
 
 export default function AtapPelanaScreen() {
-  const [inputs, setInputs] = useState(DEFAULT_ATAP_PELANA);
-
-  useEffect(() => {
-    (async () => {
-      const stored = await getProjectInputs();
-      if (stored?.atap_pelana) {
-        setInputs({ ...DEFAULT_ATAP_PELANA, ...stored.atap_pelana });
-      }
-    })();
-  }, []);
+  const [inputs, setInputs] = useSheetInputs('atap_pelana', DEFAULT_ATAP_PELANA);
 
   const handleChange = (field, val) => {
     setInputs((prev) => ({ ...prev, [field]: val }));
@@ -33,15 +25,6 @@ export default function AtapPelanaScreen() {
       toggleLisplank30: size === 30 ? 1 : 0,
       toggleLisplank20: size === 20 ? 1 : 0,
     }));
-  };
-
-  const handleSave = async () => {
-    await saveSheetInputs('atap_pelana', inputs);
-    await saveRoofChoice('pelana');
-    Alert.alert(
-      'Berhasil',
-      'Estimasi Atap Pelana Baja Ringan disimpan dan diaktifkan di Rekap RAB!'
-    );
   };
 
   const handleReset = () => {
@@ -135,7 +118,7 @@ export default function AtapPelanaScreen() {
 
   return (
     <LandscapeCalculatorLayout
-      title="Pekerjaan Atap Pelana Baja Ringan"
+      title="Atap Pelana Baja Ringan"
       subtitle="Sheet 11: Rangka Kuda-Kuda C75, Reng, Genteng Metal Pasir, Nok & Lisplank"
       iconName="triangle-outline"
       diagrams={[
@@ -155,7 +138,6 @@ export default function AtapPelanaScreen() {
       defaultInputs={DEFAULT_ATAP_PELANA}
       currentInputs={inputs}
       onResetField={handleResetField}
-      onSave={handleSave}
       onReset={handleReset}
     />
   );

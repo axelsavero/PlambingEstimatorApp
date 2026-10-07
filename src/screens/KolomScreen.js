@@ -1,23 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Alert } from 'react-native';
 import LandscapeCalculatorLayout from '../components/LandscapeCalculatorLayout';
 import {
   DEFAULT_KOLOM,
   hitungKolom,
 } from '../utils/constructionCalculations';
-import { getProjectInputs, saveSheetInputs } from '../utils/rabStorage';
+import { saveSheetInputs } from '../utils/rabStorage';
+import useSheetInputs from '../utils/useSheetInputs';
 
 export default function KolomScreen() {
-  const [inputs, setInputs] = useState(DEFAULT_KOLOM);
-
-  useEffect(() => {
-    (async () => {
-      const stored = await getProjectInputs();
-      if (stored?.kolom) {
-        setInputs({ ...DEFAULT_KOLOM, ...stored.kolom });
-      }
-    })();
-  }, []);
+  const [inputs, setInputs] = useSheetInputs('kolom', DEFAULT_KOLOM);
 
   const handleChange = (field, val) => {
     setInputs((prev) => ({ ...prev, [field]: val }));
@@ -25,11 +17,6 @@ export default function KolomScreen() {
 
   const handleResetField = (field) => {
     handleChange(field, DEFAULT_KOLOM[field]);
-  };
-
-  const handleSave = async () => {
-    await saveSheetInputs('kolom', inputs);
-    Alert.alert('Berhasil', 'Estimasi Struktur Kolom Beton telah disimpan ke Rekap RAB.');
   };
 
   const handleReset = () => {
@@ -110,7 +97,7 @@ export default function KolomScreen() {
 
   return (
     <LandscapeCalculatorLayout
-      title="Pekerjaan Struktur Kolom Beton"
+      title="Struktur Kolom Beton"
       subtitle="Sheet 5: Besi Utama, Support & Sengkang, Bekisting & Cor Beton"
       iconName="business-outline"
       diagramSource={require('../../assets/diagrams/kolom.png')}
@@ -120,7 +107,6 @@ export default function KolomScreen() {
       defaultInputs={DEFAULT_KOLOM}
       currentInputs={inputs}
       onResetField={handleResetField}
-      onSave={handleSave}
       onReset={handleReset}
     />
   );

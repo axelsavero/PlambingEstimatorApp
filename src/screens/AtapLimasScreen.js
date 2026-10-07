@@ -1,23 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Alert } from 'react-native';
 import LandscapeCalculatorLayout from '../components/LandscapeCalculatorLayout';
 import {
   DEFAULT_ATAP_LIMAS,
   hitungAtapLimas,
 } from '../utils/constructionCalculations';
-import { getProjectInputs, saveSheetInputs, saveRoofChoice } from '../utils/rabStorage';
+import { saveSheetInputs } from '../utils/rabStorage';
+import useSheetInputs from '../utils/useSheetInputs';
 
 export default function AtapLimasScreen() {
-  const [inputs, setInputs] = useState(DEFAULT_ATAP_LIMAS);
-
-  useEffect(() => {
-    (async () => {
-      const stored = await getProjectInputs();
-      if (stored?.atap_limas) {
-        setInputs({ ...DEFAULT_ATAP_LIMAS, ...stored.atap_limas });
-      }
-    })();
-  }, []);
+  const [inputs, setInputs] = useSheetInputs('atap_limas', DEFAULT_ATAP_LIMAS);
 
   const handleChange = (field, val) => {
     setInputs((prev) => ({ ...prev, [field]: val }));
@@ -33,15 +25,6 @@ export default function AtapLimasScreen() {
       toggleLisplank30: size === 30 ? 1 : 0,
       toggleLisplank20: size === 20 ? 1 : 0,
     }));
-  };
-
-  const handleSave = async () => {
-    await saveSheetInputs('atap_limas', inputs);
-    await saveRoofChoice('limas');
-    Alert.alert(
-      'Berhasil',
-      'Estimasi Atap Limas Baja Ringan disimpan dan diaktifkan di Rekap RAB!'
-    );
   };
 
   const handleReset = () => {
@@ -136,7 +119,7 @@ export default function AtapLimasScreen() {
 
   return (
     <LandscapeCalculatorLayout
-      title="Pekerjaan Atap Limas Baja Ringan"
+      title="Atap Limas Baja Ringan"
       subtitle="Sheet 11.A: Geometri Limas, Jurai, Nok, Profil C75, Reng & Penutup"
       iconName="diamond-outline"
       diagramSource={require('../../assets/diagrams/atap_limas.png')}
@@ -146,7 +129,6 @@ export default function AtapLimasScreen() {
       defaultInputs={DEFAULT_ATAP_LIMAS}
       currentInputs={inputs}
       onResetField={handleResetField}
-      onSave={handleSave}
       onReset={handleReset}
     />
   );

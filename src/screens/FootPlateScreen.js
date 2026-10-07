@@ -1,23 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Alert } from 'react-native';
 import LandscapeCalculatorLayout from '../components/LandscapeCalculatorLayout';
 import {
   DEFAULT_FOOTPLATE,
   hitungFootPlate,
 } from '../utils/constructionCalculations';
-import { getProjectInputs, saveSheetInputs } from '../utils/rabStorage';
+import { saveSheetInputs } from '../utils/rabStorage';
+import useSheetInputs from '../utils/useSheetInputs';
 
 export default function FootPlateScreen() {
-  const [inputs, setInputs] = useState(DEFAULT_FOOTPLATE);
-
-  useEffect(() => {
-    (async () => {
-      const stored = await getProjectInputs();
-      if (stored?.footplate) {
-        setInputs({ ...DEFAULT_FOOTPLATE, ...stored.footplate });
-      }
-    })();
-  }, []);
+  const [inputs, setInputs] = useSheetInputs('footplate', DEFAULT_FOOTPLATE);
 
   const handleChange = (field, val) => {
     setInputs((prev) => ({ ...prev, [field]: val }));
@@ -25,11 +17,6 @@ export default function FootPlateScreen() {
 
   const handleResetField = (field) => {
     handleChange(field, DEFAULT_FOOTPLATE[field]);
-  };
-
-  const handleSave = async () => {
-    await saveSheetInputs('footplate', inputs);
-    Alert.alert('Berhasil', 'Estimasi Foot Plate telah disimpan ke Rekap RAB.');
   };
 
   const handleReset = () => {
@@ -120,7 +107,7 @@ export default function FootPlateScreen() {
 
   return (
     <LandscapeCalculatorLayout
-      title="Pekerjaan Pondasi Tapak Beton (Foot Plate)"
+      title="Pondasi Tapak (Foot Plate)"
       subtitle="Sheet 3: Pembesian 6 Tipe Tulangan, Bekisting & Pengecoran K-300"
       iconName="grid-outline"
       diagramSource={require('../../assets/diagrams/footplate.png')}
@@ -130,7 +117,6 @@ export default function FootPlateScreen() {
       defaultInputs={DEFAULT_FOOTPLATE}
       currentInputs={inputs}
       onResetField={handleResetField}
-      onSave={handleSave}
       onReset={handleReset}
     />
   );
