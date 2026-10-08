@@ -16,11 +16,12 @@ export default function SkylineWatermarkBackground({ children, style, contentCon
           />
         </View>
 
-        {/* Layer 2: Siluet Gedung Modern Skyline di Bagian Bawah */}
+        {/* Layer 2: Siluet gedung di bawah. Strip sudah dipotong rapat (tanpa margin
+            & pantulan) dan ditampilkan sesuai rasio aslinya agar puncak gedung tidak terpotong */}
         <Image
-          source={require('../../assets/brand/modern_skyline.png')}
+          source={require('../../assets/brand/skyline_strip.png')}
           style={styles.skylineImage}
-          resizeMode="cover"
+          resizeMode="stretch"
         />
       </View>
 
@@ -67,7 +68,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     width: '100%',
-    height: 90,
+    aspectRatio: 3138 / 429, // rasio skyline_strip.png
     opacity: 0.16, // Siluet skyline lembut
   },
   contentLayer: {

@@ -156,18 +156,17 @@ export const MATERI = [
             grup: 'Pondasi Foot Plate',
             judul: 'Urugan Tanah Kembali Foot Plate',
             langkah: [
-              'Kumpulkan data volume galian tanah, urugan pasir, lantai kerja, foot plate, dan kolom pendek yang tertanam di dalam galian.',
-              'Kurangi volume galian dengan seluruh volume yang mengisi lubang galian tersebut.',
+              'Kumpulkan data volume galian tanah foot plate, total volume foot plate, dan total volume kolom pendek foot plate.',
+              'Kurangi volume galian dengan (total volume foot plate + total volume kolom pendek), lalu kalikan 1,2.',
               'Volume urugan tanah kembali pondasi foot plate telah ditemukan.',
             ],
             rumus: [
               {
                 label: 'Volume urugan kembali',
-                latex: String.raw`V_{urug} = V_{galian} - (V_{pasir} + V_{lk} + V_{FP} + V_{kp})`,
-                teks: 'Volume galian − (Urugan pasir + Lantai kerja + Foot plate + Kolom pendek)',
+                latex: String.raw`V_{urug} = \left[V_{galian} - (V_{FP} + V_{kp})\right] \times 1{,}2`,
+                teks: '(Volume galian − (Volume foot plate + Volume kolom pendek)) × 1,2',
               },
             ],
-            catatan: 'Koreksi dari dokumen awal: urugan pasir dan lantai kerja juga mengisi lubang galian sehingga ikut dikurangkan. Faktor 1,2 bukan bagian dari volume pekerjaan; volume urugan diukur dalam kondisi terpasang (padat), sedangkan faktor pemadatan sudah tercakup dalam koefisien bahan AHSP. Faktor ±1,2 hanya dipakai bila tanah urug didatangkan dari luar.',
             kalkulator: { route: 'FootPlateScreen', label: 'Kalkulator Foot Plate' },
           },
 
@@ -832,7 +831,7 @@ export const MATERI = [
             langkah: [
               'Pada file AHSP terdapat nilai koefisien (OH) untuk mandor, tukang, maupun pekerja. Nilai koefisien ini merupakan ketetapan AHSP.',
               'Hitung total kebutuhan hari orang: koefisien OH pekerja × volume pekerjaan.',
-              'Bagi hasilnya dengan banyak hari kerja dalam seminggu. Hasilnya adalah jumlah pekerja yang dibutuhkan agar pekerjaan selesai dalam 1 minggu.',
+              'Bagi hasilnya dengan banyak hari kerja dalam seminggu. Hasilnya adalah kebutuhan pekerja sesuai dengan jadwal yang direncanakan.',
               'Hasilnya biasanya desimal, sehingga perlu dibulatkan ke atas.',
               'Jika pekerjaan direncanakan 2 minggu, bagi 2. Jika setengah minggu, kali 2, dan seterusnya.',
               'Sesuaikan plotting dengan lama pekerjaan, banyak pekerjaan, anggaran biaya, maupun faktor lainnya.',
@@ -840,7 +839,7 @@ export const MATERI = [
             ],
             rumus: [
               {
-                label: 'Jumlah pekerja',
+                label: 'Kebutuhan pekerja sesuai jadwal',
                 latex: String.raw`N = \left\lceil \frac{\text{Koef. OH} \times \text{Volume}}{\text{Hari kerja per minggu} \times \text{Durasi (minggu)}} \right\rceil`,
                 teks: '(Koefisien OH × Volume) ÷ (Hari kerja per minggu × Durasi minggu), dibulatkan ke atas',
               },
