@@ -35,7 +35,8 @@
     "plugins": [
       "expo-sharing",
       "expo-font",
-      "expo-screen-orientation"
+      "expo-screen-orientation",
+      "expo-video"
     ],
     "extra": {
       "eas": {

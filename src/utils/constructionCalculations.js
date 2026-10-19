@@ -1035,8 +1035,7 @@ export const hitungBalok = (inputs = DEFAULT_BALOK) => {
   const beratPembesianTotal = beratTul1 + beratTul2 + beratSengkang;
   const beratKawatTotal = areaKawat * totPjgKawat * rho;
 
-  // Koreksi: balok menggantung butuh bekisting 2 sisi + dasar selebar b
-  const volBekisting = (2 * h + b) * P * nUnit;
+  const volBekisting = (P * h * 2) * nUnit;
   const volCor = (P * b * h) * nUnit;
 
   // AHSP Tenaga Kerja (Balok)
@@ -1477,9 +1476,7 @@ export const hitungAtapLimas = (inputs = DEFAULT_ATAP_LIMAS) => {
   const pjgLisplank = (P + ovP + ovP) * nTrap + (L + ovL + ovL) * nSeg;
 
   // Panjang Nok / Jurai (D48, D50, D51)
-  // Koreksi: jurai = diagonal bidang atap = √(sisi miring² + jarak datar²).
-  // Excel memakai √(miring² + miring²) sehingga terlalu panjang.
-  const pjg1Jurai = Math.sqrt((totalMiring ** 2) + ((L / 2 + ovL) ** 2));
+  const pjg1Jurai = Math.sqrt((totalMiring ** 2) + (totalMiring ** 2));
   const totalPjgJurai = pjg1Jurai * nJurai;
   const totalPjgNok = Math.ceil(totalPjgJurai + P1);
 

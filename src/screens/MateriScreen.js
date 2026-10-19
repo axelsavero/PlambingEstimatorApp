@@ -8,9 +8,11 @@ import {
   TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { MATERI, getTopikList } from '../data/materiData';
+import { VIDEO } from '../data/videoData';
 import MathEquation from '../components/MathEquation';
 import SkylineWatermarkBackground from '../components/SkylineWatermarkBackground';
 
@@ -53,6 +55,8 @@ export default function MateriScreen({ navigation, route }) {
     t.langkah.some((l) => l.toLowerCase().includes(q));
 
   const showBagianHeader = materi.bagian.length > 1;
+  // Materi dengan satu topik saja (AHSP, RAB, Time Schedule) tidak perlu sidebar
+  const showSidebar = topikList.length > 1;
 
   return (
     <SkylineWatermarkBackground style={styles.container}>
@@ -92,6 +96,7 @@ export default function MateriScreen({ navigation, route }) {
 
       <View style={styles.body}>
         {/* Sidebar: daftar topik */}
+        {showSidebar ? (
         <View style={styles.sidebar}>
           <View style={styles.search}>
             <Ionicons name="search" size={14} color={colors.textMuted} />
@@ -147,6 +152,7 @@ export default function MateriScreen({ navigation, route }) {
             ) : null}
           </ScrollView>
         </View>
+        ) : null}
 
         {/* Detail topik */}
         {topik ? (
@@ -155,11 +161,13 @@ export default function MateriScreen({ navigation, route }) {
             style={styles.detail}
             contentContainerStyle={styles.detailContent}
           >
-            <Text style={styles.breadcrumb} numberOfLines={1}>
-              {[materi.judul, showBagianHeader ? topik.bagianJudul : null, topik.grup]
-                .filter(Boolean)
-                .join('  ›  ')}
-            </Text>
+            {showSidebar ? (
+              <Text style={styles.breadcrumb} numberOfLines={1}>
+                {[materi.judul, showBagianHeader ? topik.bagianJudul : null, topik.grup]
+                  .filter(Boolean)
+                  .join('  ›  ')}
+              </Text>
+            ) : null}
 
             <View style={styles.titleRow}>
               <Text style={styles.title}>{topik.judul}</Text>
@@ -208,10 +216,16 @@ export default function MateriScreen({ navigation, route }) {
               </View>
             ) : null}
 
-            <View style={styles.videoRow}>
-              <Ionicons name="play-circle-outline" size={15} color={colors.textMuted} />
-              <Text style={styles.videoText}>Video pembahasan segera hadir</Text>
-            </View>
+            <Text style={styles.sectionLabel}>Video Pembahasan</Text>
+            {VIDEO[topik.id] ? (
+              // key: buat player baru setiap ganti topik
+              <TopikVideo key={topik.id} source={VIDEO[topik.id]} />
+            ) : (
+              <View style={styles.videoRow}>
+                <Ionicons name="play-circle-outline" size={15} color={colors.textMuted} />
+                <Text style={styles.videoText}>Video pembahasan segera hadir</Text>
+              </View>
+            )}
 
             {/* Sebelumnya / berikutnya */}
             <View style={styles.pager}>
@@ -247,6 +261,19 @@ export default function MateriScreen({ navigation, route }) {
         ) : null}
       </View>
     </SkylineWatermarkBackground>
+  );
+}
+
+function TopikVideo({ source }) {
+  const player = useVideoPlayer(source);
+  return (
+    <VideoView
+      player={player}
+      style={styles.video}
+      nativeControls
+      contentFit="contain"
+      fullscreenOptions={{ enable: true }}
+    />
   );
 }
 
@@ -489,11 +516,18 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
 
+  video: {
+    width: '100%',
+    maxWidth: 640,
+    aspectRatio: 16 / 9,
+    borderRadius: 10,
+    overflow: 'hidden',
+    backgroundColor: '#000',
+  },
   videoRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginTop: 16,
   },
   videoText: {
     fontFamily: fonts.regular,

@@ -118,19 +118,17 @@ export const MATERI = [
             grup: 'Pondasi Foot Plate',
             judul: 'Bekisting Foot Plate',
             langkah: [
-              'Ukur kebutuhan bekisting foot plate: jumlah foot plate, panjang, lebar, dan tebal (tinggi) balok foot plate.',
-              'Bekisting dipasang di keempat sisi tegak foot plate, jadi yang dihitung adalah keliling × tebal.',
-              'Hitung dengan rumus 2 × (panjang + lebar) × tebal × banyak foot plate.',
-              'Luas kebutuhan bekisting foot plate telah ditemukan.',
+              'Ukur kebutuhan bekisting foot plate: jumlah foot plate, panjang, dan tebal bekisting.',
+              'Hitung dengan rumus 2 × (panjang × tebal) × banyak foot plate.',
+              'Volume kebutuhan bekisting foot plate telah ditemukan.',
             ],
             rumus: [
               {
-                label: 'Luas bekisting',
-                latex: String.raw`A_{bek} = 2 \times (P + L) \times t \times n`,
-                teks: '2 × (Panjang + Lebar) × Tebal × Jumlah foot plate',
+                label: 'Volume bekisting',
+                latex: String.raw`V_{bek} = 2 \times (P \times t) \times n`,
+                teks: '2 × (Panjang × Tebal) × Banyak foot plate',
               },
             ],
-            catatan: 'Koreksi dari dokumen awal: rumus 2 × (panjang × tebal) hanya menghitung 2 sisi. Foot plate memiliki 4 sisi tegak, sehingga yang benar adalah keliling 2 × (P + L) dikali tebal.',
             kalkulator: { route: 'FootPlateScreen', label: 'Kalkulator Foot Plate' },
           },
           {
@@ -310,19 +308,17 @@ export const MATERI = [
             id: 'bekisting-kolom',
             judul: 'Bekisting Kolom Induk',
             langkah: [
-              'Kumpulkan data jumlah kolom, tinggi kolom, panjang dan lebar penampang kolom.',
-              'Bekisting kolom menutup keempat sisi kolom, jadi yang dihitung adalah keliling penampang × tinggi.',
-              'Hitung dengan rumus 2 × (panjang + lebar) × tinggi kolom × jumlah kolom.',
-              'Luas bekisting kolom telah ditemukan.',
+              'Kumpulkan data jumlah kolom, tinggi kolom, dan lebar kolom.',
+              'Hitung dengan rumus (2 × (tinggi kolom × lebar kolom)) × jumlah kolom.',
+              'Volume bekisting kolom telah ditemukan.',
             ],
             rumus: [
               {
-                label: 'Luas bekisting kolom',
-                latex: String.raw`A_{bek} = 2 \times (P + L) \times T \times n`,
-                teks: '2 × (Panjang + Lebar) × Tinggi × Jumlah kolom',
+                label: 'Volume bekisting kolom',
+                latex: String.raw`V_{bek} = \left[2 \times (T \times L)\right] \times n`,
+                teks: '(2 × (Tinggi kolom × Lebar kolom)) × Jumlah kolom',
               },
             ],
-            catatan: 'Koreksi dari dokumen awal: rumus 2 × (tinggi × lebar) hanya menghitung 2 sisi kolom. Kolom berdiri bebas dicetak di keempat sisinya.',
             kalkulator: { route: 'KolomScreen', label: 'Kalkulator Kolom' },
           },
           {
@@ -358,19 +354,17 @@ export const MATERI = [
             id: 'bekisting-balok',
             judul: 'Bekisting Balok',
             langkah: [
-              'Kumpulkan data panjang balok, lebar balok, tinggi balok, dan tebal plat.',
-              'Bekisting balok terdiri dari dua sisi samping setinggi (tinggi balok − tebal plat) ditambah bekisting dasar selebar balok.',
-              'Hitung dengan rumus (2 × (tinggi balok − tebal plat) + lebar balok) × panjang balok.',
-              'Luas bekisting balok telah ditemukan.',
+              'Kumpulkan data panjang balok dan lebar balok.',
+              'Hitung dengan rumus 2 × (panjang balok × lebar balok).',
+              'Volume bekisting balok telah ditemukan.',
             ],
             rumus: [
               {
-                label: 'Luas bekisting balok',
-                latex: String.raw`A_{bek} = \left[2 (h - t_p) + b\right] \times P`,
-                teks: '(2 × (Tinggi balok − Tebal plat) + Lebar balok) × Panjang balok',
+                label: 'Volume bekisting balok',
+                latex: String.raw`V_{bek} = 2 \times (P \times L)`,
+                teks: '2 × (Panjang balok × Lebar balok)',
               },
             ],
-            catatan: 'Koreksi dari dokumen awal: rumus 2 × (panjang × lebar) memakai lebar balok untuk sisi samping. Sisi samping balok setinggi (h − tebal plat), dan balok yang menggantung juga membutuhkan bekisting dasar selebar b.',
             kalkulator: { route: 'BalokScreen', label: 'Kalkulator Balok' },
           },
           {
@@ -458,35 +452,17 @@ export const MATERI = [
             id: 'bekisting-tangga',
             judul: 'Bekisting Plat Tangga',
             langkah: [
-              'Kumpulkan data panjang plat tangga, lebar tangga, panjang dan lebar bordes, tebal plat, serta jumlah dan tinggi anak tangga.',
-              'Hitung bekisting bawah: panjang plat × lebar tangga + panjang bordes × lebar bordes.',
-              'Hitung bekisting tepi samping: 2 × (panjang plat + panjang bordes) × tebal plat.',
-              'Hitung bekisting tegak anak tangga: jumlah anak tangga × tinggi anak tangga × lebar tangga.',
-              'Jumlahkan ketiganya.',
+              'Kumpulkan data panjang plat, panjang bordes, dan tebal bekisting.',
+              'Hitung dengan rumus 2 × (panjang plat + panjang bordes) × tebal bekisting.',
+              'Volume bekisting plat tangga telah ditemukan.',
             ],
             rumus: [
               {
-                label: 'Bekisting bawah',
-                latex: String.raw`A_{bawah} = P_{plat} \times L + P_b \times L_b`,
-                teks: 'Panjang plat × Lebar tangga + Panjang bordes × Lebar bordes',
-              },
-              {
-                label: 'Bekisting tepi',
-                latex: String.raw`A_{tepi} = 2 \times (P_{plat} + P_b) \times t`,
-                teks: '2 × (Panjang plat + Panjang bordes) × Tebal plat',
-              },
-              {
-                label: 'Bekisting anak tangga',
-                latex: String.raw`A_{anak} = n \times t_{anak} \times L`,
-                teks: 'Jumlah anak tangga × Tinggi anak tangga × Lebar tangga',
-              },
-              {
-                label: 'Luas bekisting tangga',
-                latex: String.raw`A_{bek} = A_{bawah} + A_{tepi} + A_{anak}`,
-                teks: 'Bekisting bawah + tepi + anak tangga',
+                label: 'Volume bekisting plat tangga',
+                latex: String.raw`V_{bek} = 2 \times (P_{plat} + P_{bordes}) \times t_{bek}`,
+                teks: '2 × (Panjang plat + Panjang bordes) × Tebal bekisting',
               },
             ],
-            catatan: 'Koreksi dari dokumen awal: rumus lama hanya menghitung bekisting tepi samping. Plat tangga dan bordes juga membutuhkan bekisting di bawahnya, dan setiap anak tangga membutuhkan papan tegak.',
           },
           {
             id: 'anak-tangga',
@@ -551,25 +527,34 @@ export const MATERI = [
             judul: 'Balok Rangkai Kuda-Kuda',
             langkah: [
               'Kumpulkan data balok tembok, balok gording, nok, papan ruiter, jurai luar, jurai dalam, dan balok penyangga.',
-              'Tentukan jarak datar r = ½ × lebar bentang dan tinggi atap H = r × tan(sudut). Pada contoh, lebar = 3,5 m.',
-              'Jurai berjalan diagonal di denah, sehingga panjangnya: √(2 × r² + H²). Untuk atap dengan kemiringan sama, rumus ini berlaku untuk jurai luar maupun jurai dalam.',
-              'Kalikan panjang satu jurai dengan jumlah jurai.',
-              'Jumlahkan semua data untuk mendapatkan panjang total balok rangkai kuda-kuda.',
-              'Hitung volume: panjang total × luas penampang balok kayu.',
+              'Hitung jurai terlebih dahulu dengan rumus √((½ × 3,5 × tan(θ))² + (½ × 3,5)²), dengan θ = sudut kemiringan atap dan 3,5 = panjang jurai (m).',
+              'Hasil perhitungan tersebut merupakan nilai jurai dalam. Untuk jurai luar, kalikan hasilnya dengan 2.',
+              'Jumlahkan semua data panjang balok rangka kuda-kuda, termasuk kaki kuda-kuda, balok sokong, jurai dalam, dan jurai luar. Hasilnya adalah panjang total.',
+              'Hitung volume dengan rumus panjang total × luas balok kayu yang digunakan.',
+              'Volume balok rangka kuda-kuda telah diketahui.',
             ],
             rumus: [
               {
-                label: 'Panjang satu jurai',
-                latex: String.raw`L_{jurai} = \sqrt{2r^2 + H^2}, \quad r = \tfrac{1}{2}B,\; H = r \tan \alpha`,
-                teks: '√(2 × (½ × Lebar)² + (½ × Lebar × tan(sudut))²)',
+                label: 'Jurai dalam',
+                latex: String.raw`L_{jurai\ dalam} = \sqrt{\left(\tfrac{1}{2} \times 3{,}5 \times \tan\theta\right)^2 + \left(\tfrac{1}{2} \times 3{,}5\right)^2}`,
+                teks: '√((½ × 3,5 × tan(θ))² + (½ × 3,5)²)',
               },
               {
-                label: 'Volume balok rangkai',
-                latex: String.raw`V = \textstyle\sum L_{rangkai} \times A_{kayu}`,
-                teks: 'Panjang total × Luas penampang kayu',
+                label: 'Jurai luar',
+                latex: String.raw`L_{jurai\ luar} = L_{jurai\ dalam} \times 2`,
+                teks: 'Jurai dalam × 2',
+              },
+              {
+                label: 'Panjang total',
+                latex: String.raw`P_{total} = \textstyle\sum \text{Kaki} + \sum \text{Sokong} + \sum \text{Jurai dalam} + \sum \text{Jurai luar}`,
+                teks: 'Σ Kaki kuda-kuda + Σ Balok sokong + Σ Jurai dalam + Σ Jurai luar',
+              },
+              {
+                label: 'Volume balok rangka kuda-kuda',
+                latex: String.raw`V = P_{total} \times A_{kayu}`,
+                teks: 'Panjang total × Luas balok kayu',
               },
             ],
-            catatan: 'Koreksi dari dokumen awal: rumus √((½B tan α)² + (½B)²) menghasilkan panjang sisi miring (usuk), bukan jurai. Jurai berada di diagonal denah sehingga jarak datarnya r√2, dan panjangnya √(2r² + H²). Panjang satu jurai luar sama dengan jurai dalam, jadi tidak dikali 2.',
             kalkulator: { route: 'AtapLimasScreen', label: 'Kalkulator Atap Limas' },
           },
           {
@@ -662,18 +647,17 @@ export const MATERI = [
             id: 'wuwung',
             judul: 'Genteng Penutup Wuwung',
             langkah: [
-              'Genteng wuwung menutup seluruh garis puncak atap, yaitu nok (bubungan datar) dan semua jurai luar.',
-              'Panjang kebutuhan wuwung = panjang nok + total panjang jurai luar.',
-              'Untuk jumlah buah, bagi dengan panjang efektif satu genteng wuwung.',
+              'Kebutuhan genteng penutup wuwung diambil dari panjang jurai luar yang telah dihitung sebelumnya (m).',
+              'Panjang jurai luar = kebutuhan genteng penutup wuwung.',
+              'Kebutuhan genteng penutup wuwung telah diketahui.',
             ],
             rumus: [
               {
-                label: 'Panjang wuwung',
-                latex: String.raw`L_{wuwung} = L_{nok} + \textstyle\sum L_{jurai\ luar}`,
-                teks: 'Panjang nok + Total panjang jurai luar',
+                label: 'Kebutuhan genteng penutup wuwung',
+                latex: String.raw`\text{Kebutuhan wuwung} = L_{jurai\ luar}`,
+                teks: 'Panjang jurai luar',
               },
             ],
-            catatan: 'Koreksi dari dokumen awal: rumus lama hanya memakai panjang jurai luar, padahal nok (bubungan datar di puncak) juga ditutup genteng wuwung.',
             kalkulator: { route: 'AtapLimasScreen', label: 'Kalkulator Atap Limas' },
           },
         ],
@@ -696,52 +680,26 @@ export const MATERI = [
         judul: 'Analisa Harga Satuan Pekerjaan',
         topik: [
           {
-            id: 'ahsp-persiapan',
-            judul: 'Menyiapkan Data AHSP',
+            id: 'ahsp',
+            judul: 'Analisa Harga Satuan Pekerjaan',
             langkah: [
               'Siapkan file AHSP (softfile maupun hardfile) yang sesuai dengan kota atau kabupaten lokasi bangunan.',
               'Catat pekerjaan apa saja yang ada pada pembangunan, seperti pembersihan lahan, pemasangan bowplank, galian tanah, dan lainnya.',
               'Cari setiap pekerjaan tersebut pada file AHSP, lalu masukkan nominal harga satuan, upah, maupun bahan sesuai yang tercantum.',
               'Tidak semua pekerjaan memerlukan bahan dan upah. Ada yang hanya memerlukan upah saja, contohnya pembersihan lokasi.',
-            ],
-            rumus: [
-              {
-                label: 'Harga satuan pekerjaan',
-                latex: String.raw`HSP = \textstyle\sum \text{Upah} + \sum \text{Bahan}`,
-                teks: 'Jumlah upah + Jumlah bahan',
-              },
-            ],
-          },
-          {
-            id: 'ahsp-upah',
-            judul: 'Pekerjaan Upah Saja',
-            langkah: [
-              'Contoh: pekerjaan pembersihan lahan.',
-              'Pada AHSP terdapat harga satuan dan upah untuk pekerja dan mandor.',
-              'Jumlahkan bagian upahnya saja dari pekerja dan mandor.',
-              'Hasil penjumlahan tersebut adalah harga satuan pekerjaan pembersihan lahan.',
-            ],
-            rumus: [
-              {
-                label: 'HSP pembersihan lahan',
-                latex: String.raw`HSP = \text{Upah}_{pekerja} + \text{Upah}_{mandor}`,
-                teks: 'Upah pekerja + Upah mandor',
-              },
-            ],
-          },
-          {
-            id: 'ahsp-upah-bahan',
-            judul: 'Pekerjaan Upah dan Bahan',
-            langkah: [
-              'Contoh: pekerjaan pemasangan bowplank.',
-              'Pada AHSP terdapat harga satuan, upah, dan bahan. Masukkan semua harga sesuai file AHSP.',
-              'Jumlahkan harga upah, lalu jumlahkan harga bahan.',
+              'Contoh pembersihan lahan: pada AHSP terdapat harga satuan dan upah pekerja serta mandor. Jumlahkan bagian upahnya saja.',
+              'Contoh pemasangan bowplank: pada AHSP terdapat harga satuan, upah, dan bahan. Masukkan semua harga sesuai file AHSP, lalu jumlahkan upah dan bahannya.',
               'Harga pekerjaan pemasangan bowplank = jumlah upah + jumlah bahan.',
               'Lanjutkan langkah yang sama untuk pekerjaan lainnya.',
             ],
             rumus: [
               {
-                label: 'HSP pemasangan bowplank',
+                label: 'Pekerjaan upah saja',
+                latex: String.raw`HSP = \text{Upah}_{pekerja} + \text{Upah}_{mandor}`,
+                teks: 'Upah pekerja + Upah mandor',
+              },
+              {
+                label: 'Pekerjaan upah dan bahan',
                 latex: String.raw`HSP = \textstyle\sum \text{Upah} + \sum \text{Bahan}`,
                 teks: 'Jumlah upah + Jumlah bahan',
               },
@@ -767,14 +725,16 @@ export const MATERI = [
         judul: 'Rencana Anggaran Biaya (RAB)',
         topik: [
           {
-            id: 'rab-perhitungan',
-            judul: 'Perhitungan RAB',
+            id: 'rab',
+            judul: 'Rencana Anggaran Biaya (RAB)',
             langkah: [
               'Siapkan hasil perhitungan sebelumnya, yaitu perhitungan volume dan AHSP.',
               'Masukkan volume pekerjaan serta harga satuan tiap pekerjaan.',
               'Kalikan volume dengan harga satuan.',
               'Contoh: pembersihan lokasi. Jumlah harga = volume lokasi × harga satuan yang telah ditotalkan pada AHSP.',
               'Ulangi langkah tersebut untuk pekerjaan lainnya.',
+              'Setelah semua pekerjaan dihitung, totalkan jumlah harga sesuai kelompok sub pekerjaan sebagai rekapitulasi dana.',
+              'Rekapitulasi dana nantinya digunakan untuk perhitungan bobot dan penyesuaian time schedule.',
             ],
             rumus: [
               {
@@ -782,18 +742,6 @@ export const MATERI = [
                 latex: String.raw`\text{Jumlah harga} = \text{Volume} \times HSP`,
                 teks: 'Volume × Harga satuan pekerjaan',
               },
-            ],
-          },
-          {
-            id: 'rab-rekapitulasi',
-            judul: 'Rekapitulasi Dana',
-            langkah: [
-              'Setelah semua pekerjaan dihitung, totalkan jumlah harga sesuai kelompok sub pekerjaan.',
-              'Hasil total tiap kelompok inilah yang disebut rekapitulasi dana.',
-              'Jumlahkan seluruh kelompok untuk mendapatkan total RAB.',
-              'Rekapitulasi dana nantinya digunakan untuk perhitungan bobot dan penyesuaian time schedule.',
-            ],
-            rumus: [
               {
                 label: 'Subtotal kelompok pekerjaan',
                 latex: String.raw`\text{Subtotal} = \textstyle\sum \text{Jumlah harga}`,
@@ -826,8 +774,8 @@ export const MATERI = [
         judul: 'Time Schedule',
         topik: [
           {
-            id: 'ts-plotting',
-            judul: 'Plotting Pekerjaan',
+            id: 'time-schedule',
+            judul: 'Time Schedule',
             langkah: [
               'Pada file AHSP terdapat nilai koefisien (OH) untuk mandor, tukang, maupun pekerja. Nilai koefisien ini merupakan ketetapan AHSP.',
               'Hitung total kebutuhan hari orang: koefisien OH pekerja × volume pekerjaan.',
@@ -835,22 +783,9 @@ export const MATERI = [
               'Hasilnya biasanya desimal, sehingga perlu dibulatkan ke atas.',
               'Jika pekerjaan direncanakan 2 minggu, bagi 2. Jika setengah minggu, kali 2, dan seterusnya.',
               'Sesuaikan plotting dengan lama pekerjaan, banyak pekerjaan, anggaran biaya, maupun faktor lainnya.',
-              'Ulangi langkah ini untuk pekerjaan lainnya.',
-            ],
-            rumus: [
-              {
-                label: 'Kebutuhan pekerja sesuai jadwal',
-                latex: String.raw`N = \left\lceil \frac{\text{Koef. OH} \times \text{Volume}}{\text{Hari kerja per minggu} \times \text{Durasi (minggu)}} \right\rceil`,
-                teks: '(Koefisien OH × Volume) ÷ (Hari kerja per minggu × Durasi minggu), dibulatkan ke atas',
-              },
-            ],
-          },
-          {
-            id: 'ts-kurva-s',
-            judul: 'Membuat Kurva S',
-            langkah: [
+              'Ulangi langkah plotting ini untuk pekerjaan lainnya.',
               'Kurva S membutuhkan bobot dan akumulasi, yang dihitung dari rekapitulasi dana dan plotting.',
-              'Bobot tiap sub pekerjaan = (biaya sub pekerjaan ÷ total rekapitulasi dana) × 100%. (Pada dokumen awal tertulis terbalik: total dibagi sub pekerjaan.)',
+              'Bobot tiap sub pekerjaan = (biaya sub pekerjaan ÷ total rekapitulasi dana) × 100%.',
               'Akumulasi dihitung dari lama sub pekerjaan tiap minggu. Akumulasi minggu berjalan = akumulasi minggu sebelumnya + rencana fisik minggu ini.',
               'Usahakan akumulasi rencana fisik pada minggu terakhir bernilai 100%.',
               'Buat tabel berisi jenis pekerjaan, bobot, jumlah, rencana fisik tiap minggu, akumulasi, prosentase, keterangan, dan lama pekerjaan (minggu).',
@@ -859,6 +794,11 @@ export const MATERI = [
               'Jika diagram belum membentuk huruf S, sesuaikan kembali perhitungan plotting.',
             ],
             rumus: [
+              {
+                label: 'Kebutuhan pekerja sesuai jadwal',
+                latex: String.raw`N = \left\lceil \frac{\text{Koef. OH} \times \text{Volume}}{\text{Hari kerja per minggu} \times \text{Durasi (minggu)}} \right\rceil`,
+                teks: '(Koefisien OH × Volume) ÷ (Hari kerja per minggu × Durasi minggu), dibulatkan ke atas',
+              },
               {
                 label: 'Bobot pekerjaan',
                 latex: String.raw`\text{Bobot} = \frac{\text{Biaya sub pekerjaan}}{\text{Total rekap dana}} \times 100\%`,

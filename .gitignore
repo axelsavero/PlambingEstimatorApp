@@ -39,3 +39,6 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# video materi (dibagikan terpisah, ±300 MB)
+assets/videos/
